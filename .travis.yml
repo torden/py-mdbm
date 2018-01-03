@@ -23,5 +23,4 @@ before_script:
     - ulimit -s unlimited
 script:
     - PYTHON=`which python` make
-    - ls -al
-    #- gdb `which python` -batch -ex "bt full" \ -ex quit
+    - gdb `which python` core -batch -ex "bt full" \ -ex quit
