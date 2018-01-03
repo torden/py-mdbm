@@ -7,12 +7,6 @@
 #include <signal.h>
 #include <unistd.h>
 
-typedef struct {
-    PyObject_HEAD
-    MDBM *pmdbm;
-} MDBMObj;
-
-PyObject *MDBMError = NULL;
 
 #define MDBM_LOG_OFF            -1
 #define MDBM_LOG_EMERGENCY      LOG_EMERG
@@ -29,15 +23,80 @@ PyObject *MDBMError = NULL;
 #define MDBM_LOG_ABORT          LOG_EMERG
 #define MDBM_LOG_FATAL          LOG_ALERT
 
+#define CAPTURE_START() {\
+    dev_null = open("/dev/null", O_WRONLY);\
+    org_stdout = dup(STDOUT_FILENO);\
+    org_stderr = dup(STDERR_FILENO);\
+    if (loglevel == -1) {\
+        dup2(dev_null, STDOUT_FILENO);\
+        dup2(dev_null, STDERR_FILENO);\
+    }\
+}
+
+#define CAPTURE_END() {\
+    close(dev_null);\
+    if (loglevel == -1) {\
+        dup2(org_stdout, STDOUT_FILENO);\
+        dup2(org_stderr, STDERR_FILENO);\
+    }\
+}
+
+
 #if !defined(PyModule_AddIntMacro) // New in verison 2.0
 #define PyModule_AddIntMacro(module, name)      PyModule_AddIntConstant(module, #name, name);
 #endif
-#if !defined(PyModule_AddStringMacro) // New in version 2.0
+#if !defined(PyModule_AddStringMacro) // New in version 2.6
 #define PyModule_AddStringMacro(module, name)   PyModule_AddStringConstant(module, #name, name);
 #endif
 
 PyMethodDef mdbm_methods[] = {
-    {"open", (PyCFunction)pymdbm_open, METH_VARARGS, "open(path, flags, mode, [psize, presize])" "Creates and/or opens a database."},
+    {"open", (PyCFunction)pymdbm_open, METH_VARARGS, 
+        "open(path, flags, mode, [psize, presize])"
+        "Creates and/or opens a database."
+    },
+    {"close", (PyCFunction)pymdbm_close, METH_NOARGS, 
+        "close()"
+        "Creates and/or opens a database."
+    },
+    {"close_fd", (PyCFunction)pymdbm_close_fd, METH_NOARGS, 
+        "close_fd()"
+        "Closes an MDBM's underlying file descriptor."
+    },
+    {"sync", (PyCFunction)pymdbm_sync, METH_NOARGS, 
+        "sync()"
+        "msync's all pages to disk asynchronously."
+    },
+    {"fsync", (PyCFunction)pymdbm_fsync, METH_NOARGS, 
+        "fsync()"
+        "fsync's an MDBM.  Syncs all pages to disk synchronously."
+    },
+    {"preload", (PyCFunction)pymdbm_preload, METH_NOARGS, 
+        "preload()"
+        "Preload mdbm: Read every 4k bytes to force all pages into memory"
+    },
+    {"compress_tree", (PyCFunction)pymdbm_compress_tree, METH_NOARGS, 
+        "compress_tree()"
+        "Compresses the existing MDBM directory."
+        "Attempts to rebalance the directory and to compress the db to a smaller size."
+    },
+    {"truncate", (PyCFunction)pymdbm_truncate, METH_NOARGS, 
+        "truncate()"
+        "Truncates the MDBM to single empty page"
+    },
+    {"purge", (PyCFunction)pymdbm_purge, METH_NOARGS, 
+        "purge()"
+        "Purges (removes) all entries from an MDBM."
+        "This does not change the MDBM's configuration or general structure."
+    },
+    {"store", (PyCFunction)pymdbm_store, METH_VARARGS, 
+        "store(key, val, [flags])"
+        "Stores the record specified by the key and val parameters."
+    },
+    {"fetch", (PyCFunction)pymdbm_fetch, METH_VARARGS, 
+        "fetch(key)"
+        "Fetches the record specified by the key argument"
+    },
+
     {0,0}
 };
 
@@ -77,8 +136,6 @@ static PyTypeObject MDBMType = {
     0,                              /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT,             /*tp_xxx4*/
 };
-
-
 
 #if PY_MAJOR_VERSION >= 3
 
@@ -283,7 +340,7 @@ PyMODINIT_FUNC initmdbm(void) {
 #endif
 
 
-
+// METHODS
 PyObject *pymdbm_open(PyObject *self, PyObject *args) {
 
     const char *pfn = NULL;
@@ -307,7 +364,9 @@ PyObject *pymdbm_open(PyObject *self, PyObject *args) {
         return NULL;
     }
 
+    CAPTURE_START();
     pmdbm_link->pmdbm = mdbm_open(pfn, flags, mode, psize, presize);
+    CAPTURE_END();
     if (pmdbm_link->pmdbm == NULL) {
         PyErr_SetFromErrno(MDBMError);
         Py_DECREF(pmdbm_link);
@@ -315,4 +374,173 @@ PyObject *pymdbm_open(PyObject *self, PyObject *args) {
 
     return (PyObject *)pmdbm_link;
 }
+
+PyObject *pymdbm_close(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    if ( pmdbm_link->pmdbm != NULL ) {
+        mdbm_close(pmdbm_link->pmdbm);
+        pmdbm_link->pmdbm = NULL;
+    } else {
+        PyErr_SetString(MDBMError, "failed to close an existing MDBM");
+    }
+
+    Py_INCREF(Py_None);
+ 
+    return Py_None;
+}
+
+PyObject *pymdbm_close_fd(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    if ( pmdbm_link->pmdbm != NULL ) {
+        mdbm_close_fd(pmdbm_link->pmdbm);
+        pmdbm_link->pmdbm = NULL;
+    } else {
+        PyErr_SetString(MDBMError, "failed to close an existing MDBM");
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+
+
+PyObject *pymdbm_sync(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_sync(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+
+        Py_INCREF(Py_False);
+        return Py_False;
+    }
+ 
+    Py_INCREF(Py_True);
+    return Py_True;
+}
+
+
+PyObject *pymdbm_fsync(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_fsync(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+
+        Py_INCREF(Py_False);
+        return Py_False;
+    }
+ 
+    Py_INCREF(Py_True);
+    return Py_True;
+}
+
+PyObject *pymdbm_preload(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_preload(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+
+        Py_INCREF(Py_False);
+        return Py_False;
+    }
+ 
+    Py_INCREF(Py_True);
+    return Py_True;
+}
+
+PyObject *pymdbm_compress_tree(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    CAPTURE_START();
+    mdbm_compress_tree(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *pymdbm_truncate(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    CAPTURE_START();
+    mdbm_truncate(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *pymdbm_purge(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    CAPTURE_START();
+    mdbm_purge(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    char *pkey = NULL;
+    char *pval = NULL;
+    int flags = MDBM_INSERT;
+
+    int rv = -1;
+    datum key, val;
+
+    rv = PyArg_ParseTuple(args, "ss|i", &pkey, &pval, &flags);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required key and value");
+        return NULL;
+    }
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+    val.dptr = pval;
+    val.dsize = (int)strlen(pval);
+
+    CAPTURE_START();
+    rv = mdbm_store(pmdbm_link->pmdbm, key, val, (int)flags);
+    CAPTURE_END();
+
+    if (rv == -1) {
+        Py_INCREF(Py_False);
+        return Py_False;
+    }
+ 
+    Py_INCREF(Py_True);
+    return Py_True;
+}
+
+PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    char *pkey = NULL;
+
+    int rv = -1;
+    datum key, val;
+
+    rv = PyArg_ParseTuple(args, "s", &pkey);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required key and value");
+        return NULL;
+    }
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+
+    CAPTURE_START();
+    val = mdbm_fetch(pmdbm_link->pmdbm, key);
+    CAPTURE_END();
+
+    if (val.dptr == NULL) {
+        Py_INCREF(Py_False);
+        return Py_False;
+    }
+ 
+    return PyString_FromStringAndSize(val.dptr, val.dsize);
+}
+
 
