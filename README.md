@@ -1,4 +1,4 @@
-# PHP-mdbm
+# Py-mdbm
 
 *Unfortunately, Not ready for use.*
 
