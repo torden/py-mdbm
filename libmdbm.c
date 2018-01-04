@@ -211,12 +211,13 @@ static void mdbm_dealloc(register MDBMObj *pmdbm_link) {
     PyObject_Del(pmdbm_link);
 }
 
-static inline char* copy_strptr(char *dptr, int dsize) {
+static inline char *copy_strptr(char *dptr, int dsize) {
 
     char *pretval = NULL;
 
-    pretval = (char *) calloc(sizeof(char *), dsize+1);
+    pretval = (char *) PyMem_Malloc(dsize+1);
     if (pretval == NULL) {
+		PyErr_NoMemory();
         return NULL;
     }
 
@@ -827,6 +828,9 @@ PyObject *pymdbm_first(register MDBMObj *pmdbm_link, PyObject *unused) {
     PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
     PyTuple_SetItem(retval, 1, PyString_FromString(pretval));
 
+	PyMem_Free(pretkey);
+	PyMem_Free(pretval);
+
     return retval;
 }
 
@@ -858,6 +862,9 @@ PyObject *pymdbm_next(register MDBMObj *pmdbm_link, PyObject *unused) {
     PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
     PyTuple_SetItem(retval, 1, PyString_FromString(pretval));
 
+	PyMem_Free(pretkey);
+	PyMem_Free(pretval);
+
     return retval;
 }
 
@@ -883,6 +890,8 @@ PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused) {
     retval = PyTuple_New(1);
     PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
 
+	PyMem_Free(pretkey);
+
     return retval;
 }
 
@@ -907,6 +916,8 @@ PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused) {
 
     retval = PyTuple_New(1);
     PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
+
+	PyMem_Free(pretkey);
 
     return retval;
 }
