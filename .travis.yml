@@ -1,7 +1,7 @@
 language: python
 sudo: required
 python:
-#  - "2.6"
+  - "2.6"
   - "2.7"
 #  - "3.3"
 #  - "3.4"
@@ -24,3 +24,5 @@ before_script:
 script:
     - PYTHON=`which python` make
 #    - gdb `which python` core -batch -ex "bt full" \ -ex quit
+after_failure:
+    - gdb -ex r -ex br  --args `which python` test.py -batch

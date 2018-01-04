@@ -111,7 +111,13 @@ static void mdbm_dealloc(register MDBMObj *pmdbm_link) {
 }
 
 static PyObject *mdbm_getattr(MDBMObj *pmdbm_link, char *name) {
+
+    if (pmdbm_link->pmdbm == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "not an exists open the mdbm");
+        return NULL;
+    }
     return Py_FindMethod(mdbm_methods, (PyObject *)pmdbm_link, name);
+
 }
 
 static PyTypeObject MDBMType = {
@@ -165,6 +171,7 @@ PyMODINIT_FUNC initmdbm(void) {
     PyObject *d = NULL;
     PyObject *s = NULL;
 
+    MDBMType.ob_type = &PyType_Type; //FIX #3: SIGSEG on python2.6
     m = Py_InitModule3(mdbmmod_name, mdbm_methods, mdbmmod_docs);
     if (m == NULL) {
         return;
