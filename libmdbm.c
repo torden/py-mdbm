@@ -111,6 +111,11 @@ PyMethodDef mdbm_methods[] = {
         "fetch(key)"
         "Fetches the record specified by the key argument"
     },
+    {"get_page", (PyCFunction)pymdbm_get_page, METH_VARARGS, 
+        "get_page(key)"
+		"Gets the MDBM page number for a given key."
+		"The key does not actually have to exist."
+    },
     {"delete", (PyCFunction)pymdbm_delete, METH_VARARGS, 
         "delete(key)"
         "Deletes a specific record."
@@ -205,6 +210,59 @@ PyMethodDef mdbm_methods[] = {
 		"Returns whether or not MDBM is currently locked (owned) by the calling process."
 		"em Owned MDBMs have multiple nested locks in place."
     },
+	{"lock_reset", (PyCFunction)pymdbm_lock_reset, METH_VARARGS, 
+        "lock_reset(mdbm_file_path)"
+		"Resets the global lock ownership state of a database."
+		"*USE THIS FUNCTION WITH EXTREME CAUTION!*"
+		"The global lock ownership state of an MDBM is visible to other"
+		"processes and is reset system-wide.  Resetting a lock state while other"
+		"threads/processes are accessing this database might cause those operations to fail."
+    },
+	{"delete_lockfiles", (PyCFunction)pymdbm_delete_lockfiles, METH_VARARGS, 
+        "delete_lockfiles(mdbm_file_path)"
+		"Removes all lockfiles associated with an MDBM file."
+		"USE THIS FUNCTION WITH EXTREME CAUTION!"
+		"NOTE: This is only intended to clean-up lockfiles when removing an MDBM file."
+		"This function can only be used when all processes that access"
+		"the MDBM whose locks are being deleted are not running."
+		"Calling it on an MDBM still in use will cause corruption and undefined behavior."
+		"Deleting lockfiles resets lock ownership and locking mode (exclusive/partition/shared)."
+    },
+	{"check", (PyCFunction)pymdbm_check, METH_VARARGS, 
+        "check(level, verbose)"
+		"Checks an MDBM's integrity, and displays information on standard output."
+		"\tlevel : between 0 and 10"
+		"\tverbose : True or False"
+    },
+	{"chk_page", (PyCFunction)pymdbm_chk_page, METH_VARARGS, 
+        "chk_all_page(page_num)"
+		"Checks the specified page for errors."
+		"It will print errors found on the page, "
+		"including bad key size, bad val size, and bad offsets of various fields."
+		"Ref : See get_page()"
+    },
+	{"chk_all_page", (PyCFunction)pymdbm_chk_all_page, METH_VARARGS, 
+        "chk_all_page()"
+		"Checks the database for errors."
+		"It will report same as mdbm_chk_page for all pages in the database."
+		"See chk_page() to determine if errors detected in the database."
+    },
+	{"count_records", (PyCFunction)pymdbm_count_records, METH_VARARGS, 
+        "count_records()"
+		"Counts the number of records in an MDBM."
+    },
+	{"count_pages", (PyCFunction)pymdbm_count_pages, METH_VARARGS, 
+        "count_pages()"
+		"Counts the number of pages used by an MDBM."
+		"returns Number of pages: Count of all directory+data+LargeObject pages used by an MDBM."
+    },
+	{"get_errno", (PyCFunction)pymdbm_get_errno, METH_VARARGS, 
+        "get_errno()"
+		"Returns the value of internally saved errno."
+		"Contains the value of errno that is set during some lock failures."
+		"Under other circumstances, mdbm_get_errno will not return the actual value of the errno variable."
+    },
+
     {0,0}
 };
 
@@ -652,6 +710,35 @@ PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
     return PyString_FromStringAndSize(val.dptr, val.dsize);
 }
 
+PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    char *pkey = NULL;
+    mdbm_ubig_t rv = -1;
+    datum key;
+
+    rv = PyArg_ParseTuple(args, "s", &pkey);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required string(key)");
+        return NULL;
+    }
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+
+    CAPTURE_START();
+    rv = mdbm_get_page(pmdbm_link->pmdbm, &key);
+    CAPTURE_END();
+
+    if (rv == -1) {
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+
+
 PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args) {
 
     char *pkey = NULL;
@@ -851,6 +938,44 @@ PyObject *pymdbm_isowned(register MDBMObj *pmdbm_link, PyObject *unused) {
 	_RETURN_NONE();
 }
 
+PyObject *pymdbm_lock_reset(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	char *pfn = NULL;
+    int rv = -1;
+	int flags = 0;
+
+    rv = PyArg_ParseTuple(args, "s", &pfn);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required string(file_path)");
+        return NULL;
+    }
+
+    CAPTURE_START();
+    rv = mdbm_lock_reset(pfn, flags); // flags Reserved for future use, and must be 0.
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_delete_lockfiles(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	char *pfn = NULL;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "s", &pfn);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required string(file_path)");
+        return NULL;
+    }
+
+    CAPTURE_START();
+    rv = mdbm_delete_lockfiles(pfn);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
+
 
 PyObject *pymdbm_first(register MDBMObj *pmdbm_link, PyObject *unused) {
 
@@ -973,6 +1098,96 @@ PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused) {
 
     return retval;
 }
+
+PyObject *pymdbm_check(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	int level = -1;
+	int verbose = -1;
+
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "ii", &level, &verbose);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required level(10 >= level >= 0), verbose(True | False)");
+        return NULL;
+    }
+
+	if (level < 0 || level > 10) {
+        PyErr_Format(MDBMError, "mdbm::check does not support level(=%d)", level);
+        return NULL;
+	}
+
+	if (verbose < 0 || verbose > 1) {
+        PyErr_Format(MDBMError, "mdbm::check does not support verbose(=%d)", verbose);
+        return NULL;
+	}
+
+    CAPTURE_START();
+    rv = mdbm_check(pmdbm_link->pmdbm, level, verbose);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_chk_page(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	int pagenum = -1;
+
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &pagenum);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required int(pagenum)");
+        return NULL;
+    }
+
+    CAPTURE_START();
+    rv = mdbm_chk_page(pmdbm_link->pmdbm, pagenum);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_chk_all_page(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+	int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_chk_all_page(pmdbm_link->pmdbm);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_count_records(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+	uint64_t rv = -1;
+    CAPTURE_START();
+    rv = mdbm_count_records(pmdbm_link->pmdbm);
+    CAPTURE_END();
+
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_count_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+	mdbm_ubig_t rv = -1;
+    CAPTURE_START();
+    rv = mdbm_count_pages(pmdbm_link->pmdbm);
+    CAPTURE_END();
+
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+	mdbm_ubig_t rv = -1;
+    CAPTURE_START();
+    rv = mdbm_get_errno(pmdbm_link->pmdbm);
+    CAPTURE_END();
+
+    return PyLong_FromLong((long)rv);
+}
+
 
 /*
  * Local variables:
