@@ -196,8 +196,15 @@ PyMethodDef mdbm_methods[] = {
         "Returns the next key pair from the database."
         "The order that records are returned is not specified."
     },
-
-
+    {"islocked", (PyCFunction)pymdbm_islocked, METH_NOARGS, 
+        "islocked()"
+ 		"returns whether or not mdbm is locked by another process or thread."
+    },
+	{"isowned", (PyCFunction)pymdbm_isowned, METH_NOARGS, 
+        "isowned()"
+		"Returns whether or not MDBM is currently locked (owned) by the calling process."
+		"em Owned MDBMs have multiple nested locks in place."
+    },
     {0,0}
 };
 
@@ -799,6 +806,51 @@ PyObject *pymdbm_unlock(register MDBMObj *pmdbm_link, PyObject *unused) {
  
     return PyLong_FromLong((long)rv);
 }
+
+PyObject *pymdbm_islocked(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_islocked(pmdbm_link->pmdbm);
+    CAPTURE_END();
+	switch(rv) {
+		case 0:
+			_RETURN_FALSE();
+			break;
+		case 1:
+			_RETURN_TRUE();
+			break;
+		default:
+        	PyErr_SetString(MDBMError, "mdbm::islocked() does not obtain the current MDBM's lock.");
+        	_RETURN_NONE();
+			break;
+    }
+
+	_RETURN_NONE();
+}
+
+PyObject *pymdbm_isowned(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_isowned(pmdbm_link->pmdbm);
+    CAPTURE_END();
+	switch(rv) {
+		case 0:
+			_RETURN_FALSE();
+			break;
+		case 1:
+			_RETURN_TRUE();
+			break;
+		default:
+        	PyErr_SetString(MDBMError, "mdbm::islocked() does not obtain the current MDBM's lock owner.");
+        	_RETURN_NONE();
+			break;
+    }
+
+	_RETURN_NONE();
+}
+
 
 PyObject *pymdbm_first(register MDBMObj *pmdbm_link, PyObject *unused) {
 

@@ -50,6 +50,34 @@ PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused);
 
 
+
+PyObject *pymdbm_islocked(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_isowned(register MDBMObj *pmdbm_link, PyObject *unused);
+
+/*
+mdbm_lock_reset
+mdbm_delete_lockfiles
+mdbm_get_lockmode
+
+mdbm_check
+mdbm_chk_all_page
+mdbm_protect
+mdbm_chk_error
+mdbm_chk_page
+mdbm_count_records
+mdbm_count_pages
+mdbm_set_cachemode
+mdbm_get_cachemode
+mdbm_get_cachemode_name
+
+mdbm_get_errno
+mdbm_lock_pages
+mdbm_unlock_pages
+mdbm_get_hash_value
+mdbm_get_page
+*/
+
+
 #endif
 
 /*
