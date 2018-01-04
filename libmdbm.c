@@ -827,8 +827,6 @@ PyObject *pymdbm_first(register MDBMObj *pmdbm_link, PyObject *unused) {
     PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
     PyTuple_SetItem(retval, 1, PyString_FromString(pretval));
 
-    Py_DECREF(pretkey);
-    Py_DECREF(pretval);
     return retval;
 }
 
@@ -860,8 +858,6 @@ PyObject *pymdbm_next(register MDBMObj *pmdbm_link, PyObject *unused) {
     PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
     PyTuple_SetItem(retval, 1, PyString_FromString(pretval));
 
-    Py_DECREF(pretkey);
-    Py_DECREF(pretval);
     return retval;
 }
 
@@ -887,7 +883,6 @@ PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused) {
     retval = PyTuple_New(1);
     PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
 
-    Py_DECREF(pretkey);
     return retval;
 }
 
@@ -913,14 +908,8 @@ PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused) {
     retval = PyTuple_New(1);
     PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
 
-    Py_DECREF(pretkey);
     return retval;
 }
-
-
-
-
-
 
 /*
  * Local variables:
