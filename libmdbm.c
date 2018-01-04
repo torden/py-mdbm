@@ -186,6 +186,18 @@ PyMethodDef mdbm_methods[] = {
         "Returns the next key/value pair from the database."
         "The order that records are returned is not specified."
     },
+    {"firstkey", (PyCFunction)pymdbm_firstkey, METH_NOARGS, 
+        "firstkey()"
+        "Returns the first key from the database."
+        "The order that records are returned is not specified."
+    },
+    {"nextkey", (PyCFunction)pymdbm_nextkey, METH_NOARGS, 
+        "nextkey()"
+        "Returns the next key pair from the database."
+        "The order that records are returned is not specified."
+    },
+
+
     {0,0}
 };
 
@@ -852,6 +864,59 @@ PyObject *pymdbm_next(register MDBMObj *pmdbm_link, PyObject *unused) {
     Py_DECREF(pretval);
     return retval;
 }
+
+PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    datum key;
+    PyObject *retval;
+    char *pretkey;
+
+    CAPTURE_START();
+    key = mdbm_firstkey(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (key.dptr == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretkey = copy_strptr(key.dptr, key.dsize);
+    if (pretkey == NULL) {
+        _RETURN_FALSE();
+    }
+
+
+    retval = PyTuple_New(1);
+    PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
+
+    Py_DECREF(pretkey);
+    return retval;
+}
+
+PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    datum key;
+    PyObject *retval;
+    char *pretkey;
+
+    CAPTURE_START();
+    key = mdbm_nextkey(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (key.dptr == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretkey = copy_strptr(key.dptr, key.dsize);
+    if (pretkey == NULL) {
+        _RETURN_FALSE();
+    }
+
+
+    retval = PyTuple_New(1);
+    PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
+
+    Py_DECREF(pretkey);
+    return retval;
+}
+
 
 
 

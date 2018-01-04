@@ -46,6 +46,10 @@ PyObject *pymdbm_unlock(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_first(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_next(register MDBMObj *pmdbm_link, PyObject *unused);
 
+PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused);
+
+
 #endif
 
 /*

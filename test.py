@@ -66,6 +66,13 @@ class TestMDBMMethods(unittest.TestCase):
         kv = self.dbm.next()
         self.assertTrue(kv)
 
+    def test_10_firstkey(self):
+        key = self.dbm.firstkey()
+        self.assertTrue(key)
+
+    def test_11_nextkey(self):
+        key = self.dbm.nextkey()
+        self.assertTrue(key)
 
     def test_80_lock_unlock(self):
         rv = self.dbm.lock()
