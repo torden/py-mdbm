@@ -27,5 +27,36 @@ PyObject *pymdbm_purge(register MDBMObj *pmdbm_link, PyObject *unused);
 
 PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args);
+
+
+PyObject *pymdbm_get_hash(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_set_hash(register MDBMObj *pmdbm_link, PyObject *args);
+
+PyObject *pymdbm_get_alignment(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_get_limit_size(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_get_version(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_get_size(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_get_page_size(register MDBMObj *pmdbm_link, PyObject *unused);
+
+PyObject *pymdbm_lock(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_unlock(register MDBMObj *pmdbm_link, PyObject *unused);
+
+
+PyObject *pymdbm_first(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_next(register MDBMObj *pmdbm_link, PyObject *unused);
+
+PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused);
+
 
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */
