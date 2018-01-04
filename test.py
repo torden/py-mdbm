@@ -6,13 +6,13 @@ import mdbm
 class TestMDBMMethods(unittest.TestCase):
 
     def setUp(self):
-        path = "/tmp/test_py.mdbm"
+        self.path = "/tmp/test_py.mdbm"
         flags = mdbm.MDBM_O_RDWR
         flags = flags | mdbm.MDBM_O_CREAT
         flags = flags | mdbm.MDBM_LARGE_OBJECTS
         flags = flags | mdbm.MDBM_ANY_LOCKS
 
-        self.dbm = mdbm.open(path, flags, 0666, 0, 0)
+        self.dbm = mdbm.open(self.path, flags, 0666, 0, 0)
 
     def tearDown(self):
         self.dbm.sync()
@@ -74,6 +74,36 @@ class TestMDBMMethods(unittest.TestCase):
         key = self.dbm.nextkey()
         self.assertTrue(key)
 
+    def test_12_count_records(self):
+        cnt = self.dbm.count_records()
+        self.assertTrue((cnt >= 1))
+
+    def test_13_count_pages(self):
+        cnt = self.dbm.count_records()
+        self.assertTrue((cnt >= 1))
+
+    def test_14_get_page(self):
+        rv = self.dbm.get_page(str(1))
+        self.assertTrue((rv >= 0))
+
+    def test_15_get_errno(self):
+        rv = self.dbm.get_errno()
+        self.assertTrue((rv == 0))
+
+    def test_70_check(self):
+        rv = self.dbm.check(10, False)
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.check(10, True)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_71_check_page(self):
+        rv = self.dbm.chk_page(0);
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_72_check_all_page(self):
+        rv = self.dbm.chk_all_page();
+        self.assertTrue(rv, "rv=%s" % rv)
+
     def test_80_lock_unlock(self):
         rv = self.dbm.lock()
         self.assertTrue(rv, "rv=%s" % rv)
@@ -104,7 +134,7 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.unlock()
         self.assertTrue(rv, "rv=%s" % rv)
 
-    def test_99_lock_delete_unlock(self):
+    def test_82_lock_delete_unlock(self):
         rv = self.dbm.lock()
         self.assertTrue(rv, "rv=%s" % rv)
 
@@ -113,6 +143,24 @@ class TestMDBMMethods(unittest.TestCase):
 
         rv = self.dbm.unlock()
         self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_83_islocked(self):
+        rv = self.dbm.lock()
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.islocked()
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.unlock()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_84_islocked(self):
+        rv = self.dbm.lock()
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.isowned()
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.unlock()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+
 
     def test_90_get_alignment(self):
         rv = self.dbm.get_alignment()
@@ -133,6 +181,21 @@ class TestMDBMMethods(unittest.TestCase):
     def test_90_get_page_size(self):
         rv = self.dbm.get_page_size()
         self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_98_lock_reset(self):
+        rv = self.dbm.lock()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.lock_reset(self.path)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_99_delete_lockfiles(self):
+        rv = self.dbm.lock()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.delete_lockfiles(self.path)
+        self.assertTrue(rv, "rv=%s" % rv)
+
 
     def test_999_misc(self):
         pass

@@ -11,7 +11,7 @@ setup(name = "py-mdbm",
         sources = ["libmdbm.c"],
         include_dirs = ['/usr/include', '/usr/local/mdbm/include'],
         libraries = ['mdbm'],
-        extra_compile_args=['-march=native', '-Wl,-rpath=/usr/local/mdbm/lib64/', '-lmdbm', '-fPIC'],
+        extra_compile_args=['-march=native', '-Wl,-rpath=/usr/local/mdbm/lib64/', '-lmdbm'],
         library_dirs = ['/usr/lib64', '/usr/local/mdbm/lib64/'],
     )]
 )

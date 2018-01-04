@@ -27,6 +27,7 @@ PyObject *pymdbm_purge(register MDBMObj *pmdbm_link, PyObject *unused);
 
 PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args);
 
 
@@ -49,6 +50,33 @@ PyObject *pymdbm_next(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused);
 
+
+
+PyObject *pymdbm_islocked(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_isowned(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_lock_reset(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_delete_lockfiles(register MDBMObj *pmdbm_link, PyObject *args);
+
+PyObject *pymdbm_check(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_chk_page(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_chk_all_page(register MDBMObj *pmdbm_link, PyObject *unused);
+
+PyObject *pymdbm_count_records(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_count_pages(register MDBMObj *pmdbm_link, PyObject *unused);
+
+PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused);
+
+/*
+mdbm_protect
+mdbm_chk_error
+mdbm_set_cachemode
+mdbm_get_cachemode
+mdbm_get_cachemode_name
+
+mdbm_lock_pages
+mdbm_unlock_pages
+mdbm_get_hash_value
+*/
 
 #endif
 
