@@ -49,6 +49,21 @@
 #define PyModule_AddStringMacro(module, name)   PyModule_AddStringConstant(module, #name, name);
 #endif
 
+#define _RETURN_FUNC(_arg) {\
+    Py_INCREF(_arg); \
+    return _arg;\
+}
+
+#define _RETURN_FALSE() { _RETURN_FUNC(Py_False); }
+#define _RETURN_TRUE() { _RETURN_FUNC(Py_True); }
+#define _RETURN_NONE() { _RETURN_FUNC(Py_None); }
+#define _RETURN_RV_BOOLEN(rv) {\
+    if (rv == -1) {\
+         _RETURN_FUNC(Py_False);\
+    }\
+    _RETURN_FUNC(Py_True);\
+}
+
 PyMethodDef mdbm_methods[] = {
     {"open", (PyCFunction)pymdbm_open, METH_VARARGS, 
         "open(path, flags, mode, [psize, presize])"
@@ -96,7 +111,81 @@ PyMethodDef mdbm_methods[] = {
         "fetch(key)"
         "Fetches the record specified by the key argument"
     },
+    {"delete", (PyCFunction)pymdbm_delete, METH_VARARGS, 
+        "delete(key)"
+        "Deletes a specific record."
+    },
 
+    {"get_hash", (PyCFunction)pymdbm_get_hash, METH_NOARGS, 
+        "get_hash()"
+        "Gets the MDBM's hash function identifier."
+    },
+    {"set_hash", (PyCFunction)pymdbm_set_hash, METH_VARARGS, 
+        "set_hash(key)"
+        "Sets the hashing function for a given MDBM."
+        "The hash function must be set before storing anything to the db "
+        "(this is not enforced, but entries stored before the hash change will become inaccessible if the hash function is changed)."
+        ""
+        "NOTE: setting the hash must be be done at creation time, or when there is no data in an MDBM."
+        "Changing the hash function when there is existing data"
+        "will result in not being able access that data in the future."
+    },
+    {"get_alignment", (PyCFunction)pymdbm_get_alignment, METH_NOARGS, 
+        "get_alignment()"
+        "Gets the MDBM's record byte-alignment."
+        "return Alignment mask."
+        "\t0 - 8-bit alignment     (mdbm.MDBM_ALIGN_8_BITS)"
+        "\t1 - 16-bit alignment    (mdbm.MDBM_ALIGN_16_BITS)"
+        "\t3 - 32-bit alignment    (mdbm.MDBM_ALIGN_32_BITS)"
+        "\t7 - 64-bit alignment    (mdbm.MDBM_ALIGN_64_BITS)"
+    },
+    {"get_limit_size", (PyCFunction)pymdbm_get_limit_size, METH_NOARGS, 
+        "get_limit_size()"
+        "Gets the MDBM's size limit."
+        "Returns the limit set for the size of the db using the limit_size_v3 routine."
+        "return database size limit"
+        "\t0 No limit is set"
+        "\tTotal number of bytes for maximum database size, including header and directory"
+    },
+    {"get_version", (PyCFunction)pymdbm_get_version, METH_NOARGS, 
+        "get_version()"
+        "Gets the on-disk format version number of an MDBM."
+        "return On-disk file format version number"
+        "\t2 - MDBM V2"
+        "\t3 - MDBM V3"
+    },
+    {"get_size", (PyCFunction)pymdbm_get_size, METH_NOARGS, 
+        "get_size()"
+        "Gets the current MDBM's size."
+        "return Size of database in bytes."
+    },
+    {"get_page_size", (PyCFunction)pymdbm_get_page_size, METH_NOARGS, 
+        "get_page_size()"
+        "Get the MDBM's page size."
+        "return Number of bytes in a database page"
+    },
+    {"lock", (PyCFunction)pymdbm_lock, METH_NOARGS, 
+        "lock()"
+        "Locks the database for exclusive access by the caller."
+        "The lock is nestable, so a caller already holding the lock may call lock() again "
+        "as long as an equal number of calls to unlock() are made to release the lock."
+    },
+    {"unlock", (PyCFunction)pymdbm_unlock, METH_NOARGS, 
+        "unlock()"
+        "Locks the database for exclusive access by the caller."
+        "The lock is nestable, so a caller already holding the lock may call lock() again "
+        "as long as an equal number of calls to unlock() are made to release the lock."
+    },
+    {"first", (PyCFunction)pymdbm_first, METH_NOARGS, 
+        "first()"
+        "Returns the first key/value pair from the database."
+        "The order that records are returned is not specified."
+    },
+    {"next", (PyCFunction)pymdbm_next, METH_NOARGS, 
+        "next()"
+        "Returns the next key/value pair from the database."
+        "The order that records are returned is not specified."
+    },
     {0,0}
 };
 
@@ -109,6 +198,27 @@ static void mdbm_dealloc(register MDBMObj *pmdbm_link) {
     }
     PyObject_Del(pmdbm_link);
 }
+
+static inline char* copy_strptr(char *dptr, int dsize) {
+
+    char *pretval = NULL;
+
+    pretval = (char *) calloc(sizeof(char *), dsize+1);
+    if (pretval == NULL) {
+        return NULL;
+    }
+
+    memset(pretval, 0x00, dsize+1);
+
+    strncpy(pretval, dptr, dsize);
+    if (pretval == NULL) {
+        return NULL;
+    }
+
+    return pretval;
+}
+
+
 
 static PyObject *mdbm_getattr(MDBMObj *pmdbm_link, char *name) {
 
@@ -391,9 +501,7 @@ PyObject *pymdbm_close(register MDBMObj *pmdbm_link, PyObject *unused) {
         PyErr_SetString(MDBMError, "failed to close an existing MDBM");
     }
 
-    Py_INCREF(Py_None);
- 
-    return Py_None;
+    _RETURN_NONE();
 }
 
 PyObject *pymdbm_close_fd(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -405,8 +513,7 @@ PyObject *pymdbm_close_fd(register MDBMObj *pmdbm_link, PyObject *unused) {
         PyErr_SetString(MDBMError, "failed to close an existing MDBM");
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    _RETURN_NONE();
 }
 
 
@@ -417,14 +524,8 @@ PyObject *pymdbm_sync(register MDBMObj *pmdbm_link, PyObject *unused) {
     CAPTURE_START();
     rv = mdbm_sync(pmdbm_link->pmdbm);
     CAPTURE_END();
-    if (rv == -1) {
 
-        Py_INCREF(Py_False);
-        return Py_False;
-    }
- 
-    Py_INCREF(Py_True);
-    return Py_True;
+    _RETURN_RV_BOOLEN(rv);
 }
 
 
@@ -434,14 +535,8 @@ PyObject *pymdbm_fsync(register MDBMObj *pmdbm_link, PyObject *unused) {
     CAPTURE_START();
     rv = mdbm_fsync(pmdbm_link->pmdbm);
     CAPTURE_END();
-    if (rv == -1) {
 
-        Py_INCREF(Py_False);
-        return Py_False;
-    }
- 
-    Py_INCREF(Py_True);
-    return Py_True;
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_preload(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -450,14 +545,8 @@ PyObject *pymdbm_preload(register MDBMObj *pmdbm_link, PyObject *unused) {
     CAPTURE_START();
     rv = mdbm_preload(pmdbm_link->pmdbm);
     CAPTURE_END();
-    if (rv == -1) {
 
-        Py_INCREF(Py_False);
-        return Py_False;
-    }
- 
-    Py_INCREF(Py_True);
-    return Py_True;
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_compress_tree(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -465,8 +554,8 @@ PyObject *pymdbm_compress_tree(register MDBMObj *pmdbm_link, PyObject *unused) {
     CAPTURE_START();
     mdbm_compress_tree(pmdbm_link->pmdbm);
     CAPTURE_END();
-    Py_INCREF(Py_None);
-    return Py_None;
+
+    _RETURN_NONE();
 }
 
 PyObject *pymdbm_truncate(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -474,8 +563,8 @@ PyObject *pymdbm_truncate(register MDBMObj *pmdbm_link, PyObject *unused) {
     CAPTURE_START();
     mdbm_truncate(pmdbm_link->pmdbm);
     CAPTURE_END();
-    Py_INCREF(Py_None);
-    return Py_None;
+
+    _RETURN_NONE();
 }
 
 PyObject *pymdbm_purge(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -483,8 +572,8 @@ PyObject *pymdbm_purge(register MDBMObj *pmdbm_link, PyObject *unused) {
     CAPTURE_START();
     mdbm_purge(pmdbm_link->pmdbm);
     CAPTURE_END();
-    Py_INCREF(Py_None);
-    return Py_None;
+
+    _RETURN_NONE();
 }
 
 PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args) {
@@ -512,13 +601,7 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args) {
     rv = mdbm_store(pmdbm_link->pmdbm, key, val, (int)flags);
     CAPTURE_END();
 
-    if (rv == -1) {
-        Py_INCREF(Py_False);
-        return Py_False;
-    }
- 
-    Py_INCREF(Py_True);
-    return Py_True;
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
@@ -530,7 +613,7 @@ PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "s", &pkey);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required key and value");
+        PyErr_SetString(MDBMError, "required string(key)");
         return NULL;
     }
 
@@ -543,11 +626,242 @@ PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
     CAPTURE_END();
 
     if (val.dptr == NULL) {
-        Py_INCREF(Py_False);
-        return Py_False;
+        _RETURN_FALSE();
     }
  
     return PyString_FromStringAndSize(val.dptr, val.dsize);
 }
 
+PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args) {
 
+    char *pkey = NULL;
+
+    int rv = -1;
+    datum key;
+
+    rv = PyArg_ParseTuple(args, "s", &pkey);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required string(key)");
+        return NULL;
+    }
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+
+    CAPTURE_START();
+    rv = mdbm_delete(pmdbm_link->pmdbm, key);
+    CAPTURE_END();
+
+    _RETURN_RV_BOOLEN(rv);
+}
+
+
+PyObject *pymdbm_get_hash(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_get_hash(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::get_hash() does not obtain the current MDBM's hash func code");
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_set_hash(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    int hash = -1; 
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &hash);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required key and value");
+        _RETURN_FALSE();
+    }
+    if (hash < MDBM_HASH_CRC32 || hash > MDBM_MAX_HASH) {
+        PyErr_Format(MDBMError, "mdbm::set_hash does not support hash(=%d)", hash);
+        _RETURN_FALSE();
+    }
+
+    CAPTURE_START();
+    rv = mdbm_set_hash(pmdbm_link->pmdbm, hash);
+    CAPTURE_END();
+
+    _RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_get_alignment(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_get_alignment(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::get_alignment() does not obtain the MDBM's record byte-alignment.");
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_get_limit_size(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    uint64_t rv = -1;
+    CAPTURE_START();
+    rv = mdbm_get_limit_size(pmdbm_link->pmdbm);
+    CAPTURE_END();
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_get_version(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    uint32_t rv = -1;
+    CAPTURE_START();
+    rv = mdbm_get_version(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == 0) {
+        PyErr_SetString(MDBMError, "mdbm::get_version() does not obtain the on-disk format version number of an MDBM.");
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_get_size(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    uint64_t rv = -1;
+    CAPTURE_START();
+    rv = mdbm_get_size(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == 0) {
+        PyErr_SetString(MDBMError, "mdbm::get_size() does not obtain the current MDBM's size");
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_get_page_size(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_get_page_size(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::get_page_size() does not obtain the current MDBM's size");
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_lock(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_lock(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::lock() does not obtain the current MDBM's size");
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_unlock(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_unlock(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::unlock() does not obtain the current MDBM's size");
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_first(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    kvpair kv;
+    PyObject *retval;
+    char *pretkey;
+    char *pretval;
+
+    CAPTURE_START();
+    kv = mdbm_first(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (kv.key.dptr == NULL || kv.val.dptr == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretkey = copy_strptr(kv.key.dptr, kv.key.dsize);
+    if (pretkey == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretval = copy_strptr(kv.val.dptr, kv.val.dsize);
+    if (pretval == NULL) {
+        _RETURN_FALSE();
+    }
+
+    retval = PyTuple_New(2);
+    PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
+    PyTuple_SetItem(retval, 1, PyString_FromString(pretval));
+
+    Py_DECREF(pretkey);
+    Py_DECREF(pretval);
+    return retval;
+}
+
+PyObject *pymdbm_next(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    kvpair kv;
+    PyObject *retval;
+    char *pretkey;
+    char *pretval;
+
+    CAPTURE_START();
+    kv = mdbm_next(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (kv.key.dptr == NULL || kv.val.dptr == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretkey = copy_strptr(kv.key.dptr, kv.key.dsize);
+    if (pretkey == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretval = copy_strptr(kv.val.dptr, kv.val.dsize);
+    if (pretval == NULL) {
+        _RETURN_FALSE();
+    }
+
+    retval = PyTuple_New(2);
+    PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
+    PyTuple_SetItem(retval, 1, PyString_FromString(pretval));
+
+    Py_DECREF(pretkey);
+    Py_DECREF(pretval);
+    return retval;
+}
+
+
+
+
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

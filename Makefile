@@ -14,7 +14,7 @@ all: clean build test
 build::
 	@$(PYTHON) setup.py build_ext --inplace -R/usr/local/mdbm/lib64/ -I/usr/local/mdbm/include/
 test::
-	@$(PYTHON) test.py
+	@$(PYTHON) test.py -v
 
 clean::
 	@rm -rf *.out *.bin *.exe *.o *.a *.so test build *core* *.swp *.bak
