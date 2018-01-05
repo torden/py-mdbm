@@ -11,12 +11,6 @@ python:
   - "3.6"
   - "pypy"
   - "pypy3"
-matrix:
-  include:
-  - python: "pypy"
-    env: CMD_PYTHON=`which pypy`
-  - python: "pypy3"
-    env: CMD_PYTHON=`which pypy3`
 before_install:
     - sudo apt-get update -qq
     - sudo apt-get install -y openssl libcppunit-dev libreadline6 libreadline6-dev valgrind realpath libmodule-install-perl
