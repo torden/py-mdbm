@@ -60,3 +60,5 @@ run*.sh
 core
 tags
 build
+*.pyc
+*.pyo
