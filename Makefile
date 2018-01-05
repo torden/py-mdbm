@@ -16,7 +16,6 @@ PY_VER=$(shell $(PYTHON) -c "import sys;t='{v[0]}'.format(v=list(sys.version_inf
 all: clean build test
 
 build::
-	@$(PYTHON) -V
 	@$(PYTHON) setup.py build_ext --inplace 
 test::
 ifeq ($(GOLANGV16_OVER),2)
