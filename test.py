@@ -11,7 +11,7 @@ class TestMDBMMethods(unittest.TestCase):
         flags = flags | mdbm.MDBM_O_CREAT
         flags = flags | mdbm.MDBM_LARGE_OBJECTS
         flags = flags | mdbm.MDBM_ANY_LOCKS
-        mode = 644
+        mode = 0o644
         self.dbm = mdbm.open(self.path, flags, mode, 0, 0)
     def tearDown(self):
         self.dbm.sync()
