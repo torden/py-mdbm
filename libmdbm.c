@@ -78,16 +78,17 @@
 }
 
 #if PY_MAJOR_VERSION >= 3
+    struct module_state {
+        PyObject *error;
+    };
     #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
-#else
-    #define GETSTATE(m) (&_state)
-    static struct module_state _state;
 #endif
 
 PyMethodDef mdbm_methods[] = {
+#if PY_MAJOR_VERSION >= 3
     {"__enter__", mdbm__enter__, METH_NOARGS, NULL},
     {"__exit__",  mdbm__exit__, METH_VARARGS, NULL},
-
+#endif
     {"log_minlevel", (PyCFunction)pymdbm_log_minlevel, METH_VARARGS, 
         "log_minlevel(MDBM_LOG_XXX)"
         "Set the minimum logging level. Lower priority messages are discarded"
@@ -337,7 +338,7 @@ static PyObject *mdbm_getattr(MDBMObj *pmdbm_link, char *name) {
 }
 #endif
 
-/*
+
 #if PY_MAJOR_VERSION >= 3
 static int mdbm_traverse(PyObject *m, visitproc visit, void *arg) {
     Py_VISIT(GETSTATE(m)->error);
@@ -349,7 +350,7 @@ static int mdbm_clear(PyObject *m) {
     return 0;
 }
 #endif
-*/
+
 
 
 #if PY_MAJOR_VERSION >= 3
@@ -375,8 +376,8 @@ static PyTypeObject MDBMType = {
     0,                              /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT,             /*tp_flags*/
     0,                              /*tp_doc*/
-    0,                              /*tp_traverse*/
-    0,                              /*tp_clear*/
+    mdbm_traverse,                  /*tp_traverse*/
+    mdbm_clear,                     /*tp_clear*/
     0,                              /*tp_richcompare*/
     0,                              /*tp_weaklistoffset*/
     0,                              /*tp_iter*/
@@ -628,6 +629,7 @@ PyMODINIT_FUNC initmdbm(void) {
 
 
 // METHODS
+#if PY_MAJOR_VERSION >= 3
 PyObject *mdbm__enter__(PyObject *self, PyObject *args) {
     Py_INCREF(self);
     return self;
@@ -637,6 +639,7 @@ PyObject *mdbm__exit__(PyObject *self, PyObject *args) {
     _Py_IDENTIFIER(close);
     return _PyObject_CallMethodId(self, &PyId_close, NULL);
 }
+#endif
 
 PyObject *pymdbm_open(PyObject *self, PyObject *args) {
 
