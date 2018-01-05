@@ -23,4 +23,4 @@ script:
     - PYTHON=`which python` make
 #    - gdb `which python` core -batch -ex "bt full" \ -ex quit
 after_failure:
-    - gdb -ex r -ex br  --args `which python` test.py -batch
+    - gdb -ex "thread apply all bt" -ex "set pagination 0" -batch --args `which python` test.py 
