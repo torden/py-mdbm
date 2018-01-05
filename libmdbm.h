@@ -15,7 +15,9 @@ PyObject *MDBMError = NULL;
 static int loglevel = -1;
 static int dev_null, org_stdout, org_stderr;
 
+
 PyObject *pymdbm_open(PyObject *self, PyObject *args);
+PyObject *pymdbm_log_minlevel(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_close(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_close_fd(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_sync(register MDBMObj *pmdbm_link, PyObject *unused);

@@ -1,16 +1,16 @@
 language: python
 sudo: required
+env:
+  - CMD_PYTHON=`which python`
 python:
   - "2.6"
   - "2.7"
-#  - "3.3"
-#  - "3.4"
-#  - "3.5"
-#  - "3.5-dev"  # 3.5 development branch
-#  - "3.6"
-#  - "3.6-dev"  # 3.6 development branch
-#  - "3.7-dev"  # 3.7 development branch
-#  - "nightly"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "pypy"
+  - "pypy3"
 before_install:
     - sudo apt-get update -qq
     - sudo apt-get install -y openssl libcppunit-dev libreadline6 libreadline6-dev valgrind realpath libmodule-install-perl
@@ -22,7 +22,7 @@ before_script:
     - ulimit -c unlimited -S 
     - ulimit -s unlimited
 script:
-    - PYTHON=`which python` make
+    - PYTHON=$CMD_PYTHON CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" make
 #    - gdb `which python` core -batch -ex "bt full" \ -ex quit
 after_failure:
-    - gdb -ex r -ex br  --args `which python` test.py -batch
+    - gdb -ex "thread apply all bt" -ex "set pagination 0" -batch --args `which python` test.py 

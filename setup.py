@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 from distutils.core import setup, Extension
 
 setup(name = "py-mdbm",
@@ -11,7 +10,7 @@ setup(name = "py-mdbm",
         sources = ["libmdbm.c"],
         include_dirs = ['/usr/include', '/usr/local/mdbm/include'],
         libraries = ['mdbm'],
-        extra_compile_args=['-march=native', '-Wl,-rpath=/usr/local/mdbm/lib64/', '-lmdbm'],
+        extra_compile_args=['-Wall','-Wno-strict-aliasing', '-march=native'],
         library_dirs = ['/usr/lib64', '/usr/local/mdbm/lib64/'],
     )]
 )

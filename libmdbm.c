@@ -42,11 +42,24 @@
 }
 
 
-#if !defined(PyModule_AddIntMacro) // New in verison 2.0
-#define PyModule_AddIntMacro(module, name)      PyModule_AddIntConstant(module, #name, name);
+// New in version 2.6.
+#if !defined(PyModule_AddIntMacro)
+#define PyModule_AddIntMacro(module, name){ PyModule_AddIntConstant(module, #name, name); }
 #endif
-#if !defined(PyModule_AddStringMacro) // New in version 2.6
-#define PyModule_AddStringMacro(module, name)   PyModule_AddStringConstant(module, #name, name);
+
+// New in version 2.6.
+#if !defined(PyModule_AddStringMacro)
+#define PyModule_AddStringMacro(module, name) { PyModule_AddStringConstant(module, #name, name); }
+#endif
+
+#if PY_MAJOR_VERSION >= 3
+    #define _PYUNICODE PyUnicode_FromFormat
+    #define _PYUNICODEV PyUnicode_FromFormt
+    #define _PYUNICODE_ANDSIZE PyUnicode_FromStringAndSize
+#else
+    #define _PYUNICODE  PyString_FromString
+    #define _PYUNICODEV  PyString_FromFormatV
+    #define _PYUNICODE_ANDSIZE PyString_FromStringAndSize
 #endif
 
 #define _RETURN_FUNC(_arg) {\
@@ -58,13 +71,26 @@
 #define _RETURN_TRUE() { _RETURN_FUNC(Py_True); }
 #define _RETURN_NONE() { _RETURN_FUNC(Py_None); }
 #define _RETURN_RV_BOOLEN(rv) {\
-    if (rv == -1) {\
+    if ((int)rv == -1) {\
          _RETURN_FUNC(Py_False);\
     }\
     _RETURN_FUNC(Py_True);\
 }
 
+#if PY_MAJOR_VERSION >= 3
+    struct module_state {
+        PyObject *error;
+    };
+    #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+#endif
+
 PyMethodDef mdbm_methods[] = {
+    {"log_minlevel", (PyCFunction)pymdbm_log_minlevel, METH_VARARGS, 
+        "log_minlevel(MDBM_LOG_XXX)"
+        "Set the minimum logging level. Lower priority messages are discarded"
+        "Default : MDBM_LOG_OFF"
+    },
+
     {"open", (PyCFunction)pymdbm_open, METH_VARARGS, 
         "open(path, flags, mode, [psize, presize])"
         "Creates and/or opens a database."
@@ -296,8 +322,7 @@ static inline char *copy_strptr(char *dptr, int dsize) {
     return pretval;
 }
 
-
-
+#if PY_MAJOR_VERSION <= 2
 static PyObject *mdbm_getattr(MDBMObj *pmdbm_link, char *name) {
 
     if (pmdbm_link->pmdbm == NULL) {
@@ -307,7 +332,70 @@ static PyObject *mdbm_getattr(MDBMObj *pmdbm_link, char *name) {
     return Py_FindMethod(mdbm_methods, (PyObject *)pmdbm_link, name);
 
 }
+#endif
 
+
+#if PY_MAJOR_VERSION >= 3
+static int mdbm_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+static int mdbm_clear(PyObject *m) {
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+#endif
+
+
+
+#if PY_MAJOR_VERSION >= 3
+static PyTypeObject MDBMType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "mdbm.dbm",
+    sizeof(MDBMObj),
+    0,
+    (destructor)mdbm_dealloc,       /*tp_dealloc*/
+    0,                              /*tp_print*/
+    0,                              /*tp_getattr*/
+    0,                              /*tp_setattr*/
+    0,                              /*tp_reserved*/
+    0,                              /*tp_repr*/
+    0,                              /*tp_as_number*/
+    0,                              /*tp_as_sequence*/
+    0,                              /*tp_as_mapping*/
+    0,                              /*tp_hash*/
+    0,                              /*tp_call*/
+    0,                              /*tp_str*/
+    0,                              /*tp_getattro*/
+    0,                              /*tp_setattro*/
+    0,                              /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,             /*tp_flags*/
+    0,                              /*tp_doc*/
+    mdbm_traverse,                  /*tp_traverse*/
+    mdbm_clear,                     /*tp_clear*/
+    0,                              /*tp_richcompare*/
+    0,                              /*tp_weaklistoffset*/
+    0,                              /*tp_iter*/
+    0,                              /*tp_iternext*/
+    mdbm_methods,                   /*tp_methods*/
+};
+
+static struct PyModuleDef MDBMModule = {
+    PyModuleDef_HEAD_INIT,
+    "mdbm",
+    NULL,
+    -1,
+    mdbm_methods,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
+
+
+
+#else
 static PyTypeObject MDBMType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "mdbm",
@@ -330,48 +418,43 @@ static PyTypeObject MDBMType = {
     0,                              /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT,             /*tp_xxx4*/
 };
+#endif
+
 
 #if PY_MAJOR_VERSION >= 3
-
-PyModuleDef mdbm_mod = {
-    PyModuleDef_HEAD_INIT,
-    mdbmmod_name,
-    mdbmmod_docs,
-    -1,
-    mdbm_methods,
-    NULL,
-    NULL,
-    NULL,
-    NULL
-};
-
-
-
 PyMODINIT_FUNC PyInit_mdbm(void) {
-    return PyModule_Create(&mdbm_mod);
-}
-
 #else
-
 PyMODINIT_FUNC initmdbm(void) {
+#endif
 
     PyObject *m = NULL;
     PyObject *d = NULL;
     PyObject *s = NULL;
 
+#if PY_MAJOR_VERSION <= 2
     MDBMType.ob_type = &PyType_Type; //FIX #3: SIGSEG on python2.6
     m = Py_InitModule3(mdbmmod_name, mdbm_methods, mdbmmod_docs);
     if (m == NULL) {
         return;
     }
 
-    if (MDBMError == NULL) {
-        MDBMError = PyErr_NewException("mdbm.error", NULL, NULL);
+#else
+    if (PyType_Ready(&MDBMType) < 0) {
+        return NULL;
     }
 
-    d = PyModule_GetDict(m);
+    m = PyModule_Create(&MDBMModule);
+    if (m == NULL) {
+        return NULL;
+    }
+#endif
 
-    s = PyString_FromString("The MDBM");
+    d = PyModule_GetDict(m);
+    if (MDBMError == NULL) {
+        MDBMError = PyErr_NewException("mdbm.error", PyExc_IOError, NULL);
+    }
+
+    s = _PYUNICODE("The MDBM");
     if (s != NULL) {
         PyDict_SetItemString(d, "library", s);
         Py_DECREF(s);
@@ -381,6 +464,10 @@ PyMODINIT_FUNC initmdbm(void) {
         PyDict_SetItemString(d, "error", MDBMError);
     }
 
+    if (PyErr_Occurred()) {
+        Py_DECREF(m);
+        m = NULL;
+    }
 
     PyModule_AddIntMacro(m, MDBM_LOG_OFF);
     PyModule_AddIntMacro(m, MDBM_LOG_EMERGENCY);
@@ -530,9 +617,11 @@ PyMODINIT_FUNC initmdbm(void) {
     PyModule_AddIntMacro(m, MDBM_MAX_HASH);
     PyModule_AddIntMacro(m, MDBM_CONFIG_DEFAULT_HASH);
 
-}
-
+#if PY_MAJOR_VERSION >= 3
+    return m;
 #endif
+
+}
 
 
 // METHODS
@@ -568,6 +657,31 @@ PyObject *pymdbm_open(PyObject *self, PyObject *args) {
     }
 
     return (PyObject *)pmdbm_link;
+}
+
+PyObject *pymdbm_log_minlevel(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    int rv = -1;
+    int level = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &level);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required string(key)");
+        return NULL;
+    }
+
+	if (level < MDBM_LOG_OFF || level > MDBM_LOG_DEBUG) {
+        PyErr_Format(MDBMError, "mdbm::log_minlevel does not support level(=%d)", level);
+        return NULL;
+	}
+
+    loglevel = level;
+
+    CAPTURE_START();
+    mdbm_log_minlevel(level);
+    CAPTURE_END();
+
+    _RETURN_NONE();
 }
 
 PyObject *pymdbm_close(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -707,7 +821,7 @@ PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
  
-    return PyString_FromStringAndSize(val.dptr, val.dsize);
+    return _PYUNICODE_ANDSIZE(val.dptr, val.dsize);
 }
 
 PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
@@ -730,7 +844,7 @@ PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
     rv = mdbm_get_page(pmdbm_link->pmdbm, &key);
     CAPTURE_END();
 
-    if (rv == -1) {
+    if (rv == (mdbm_ubig_t)-1) {
         _RETURN_FALSE();
     }
  
@@ -762,7 +876,6 @@ PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args) {
 
     _RETURN_RV_BOOLEN(rv);
 }
-
 
 PyObject *pymdbm_get_hash(register MDBMObj *pmdbm_link, PyObject *unused) {
 
@@ -1002,8 +1115,8 @@ PyObject *pymdbm_first(register MDBMObj *pmdbm_link, PyObject *unused) {
     }
 
     retval = PyTuple_New(2);
-    PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
-    PyTuple_SetItem(retval, 1, PyString_FromString(pretval));
+    PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
+    PyTuple_SetItem(retval, 1, _PYUNICODE(pretval));
 
 	PyMem_Free(pretkey);
 	PyMem_Free(pretval);
@@ -1036,8 +1149,8 @@ PyObject *pymdbm_next(register MDBMObj *pmdbm_link, PyObject *unused) {
     }
 
     retval = PyTuple_New(2);
-    PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
-    PyTuple_SetItem(retval, 1, PyString_FromString(pretval));
+    PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
+    PyTuple_SetItem(retval, 1, _PYUNICODE(pretval));
 
 	PyMem_Free(pretkey);
 	PyMem_Free(pretval);
@@ -1065,7 +1178,7 @@ PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused) {
 
 
     retval = PyTuple_New(1);
-    PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
+    PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
 
 	PyMem_Free(pretkey);
 
@@ -1092,7 +1205,7 @@ PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused) {
 
 
     retval = PyTuple_New(1);
-    PyTuple_SetItem(retval, 0, PyString_FromString(pretkey));
+    PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
 
 	PyMem_Free(pretkey);
 
