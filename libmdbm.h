@@ -16,11 +16,6 @@ static int loglevel = -1;
 static int dev_null, org_stdout, org_stderr;
 
 
-#if PY_MAJOR_VERSION >= 3
-PyObject *mdbm__enter__(PyObject *self, PyObject *args);
-PyObject *mdbm__exit__(PyObject *self, PyObject *args);
-#endif
-
 PyObject *pymdbm_open(PyObject *self, PyObject *args);
 PyObject *pymdbm_log_minlevel(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_close(register MDBMObj *pmdbm_link, PyObject *unused);

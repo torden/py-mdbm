@@ -55,7 +55,7 @@ class TestMDBMMethods(unittest.TestCase):
 
     def test_07_get_hash(self):
         rv = self.dbm.get_hash()
-        self.assertEquals(rv, 5)
+        self.assertEqual(rv, 5)
 
     def test_08_first(self):
         kv = self.dbm.first()
@@ -169,7 +169,7 @@ class TestMDBMMethods(unittest.TestCase):
 
     def test_90_get_version(self):
         rv = self.dbm.get_version()
-        self.assertEquals(rv, 3)
+        self.assertEqual(rv, 3)
 
     def test_90_get_size(self):
         rv = self.dbm.get_size()
