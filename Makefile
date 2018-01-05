@@ -9,6 +9,7 @@ CMD_SED				:=$(shell which sed)
 CMD_VALGRIND		:=$(shell which valgrind)
 
 PYTHON?=`which python`
+MDBM_PATH ?= /usr/local/mdbm/
 
 PY_VER=$(shell $(PYTHON) -c "import sys;t='{v[0]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
 
@@ -16,7 +17,7 @@ all: clean build test
 
 build::
 	@$(PYTHON) -V
-	@$(PYTHON) setup.py build_ext --inplace -L/usr/local/mdbm/lib64/ -I/usr/local/mdbm/include/
+	@$(PYTHON) setup.py build_ext --inplace 
 test::
 ifeq ($(GOLANGV16_OVER),2)
 	@$(CMD_VALGRIND) --tool=memcheck --dsymutil=yes --track-origins=yes --show-leak-kinds=all --trace-children=yes --suppressions=.valgrind-python.supp $(PYTHON) -E -tt test.py -v

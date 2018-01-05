@@ -2,6 +2,7 @@ language: python
 sudo: required
 env:
   - CMD_PYTHON=`which python`
+  - OPT_CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/"
 python:
   - "2.6"
   - "2.7"
@@ -28,7 +29,7 @@ before_script:
     - ulimit -c unlimited -S 
     - ulimit -s unlimited
 script:
-    - PYTHON=$CMD_PYTHON make
+    - PYTHON=$CMD_PYTHON CFLAGS=$OPT_CFLAGS make
 #    - gdb `which python` core -batch -ex "bt full" \ -ex quit
 after_failure:
     - gdb -ex "thread apply all bt" -ex "set pagination 0" -batch --args `which python` test.py 
