@@ -288,7 +288,7 @@ PyMethodDef mdbm_methods[] = {
 	{"lock_smart", (PyCFunction)pymdbm_lock_smart, METH_VARARGS,
 		"lock_smart(key, [MDBM_PARTITIONED_LOCKS|MDBM_RW_LOCKS|MDBM_O_RDWR|])"
 			"Perform either partition, shared or exclusive locking based on the"
-			"locking-related flags supplied to \ref mdbm_open."
+			"locking-related flags supplied to open()."
 			"NOTE:"
 			"\tmdbm::open(MDBM_PARTITIONED_LOCKS) means mdbm::lock_smart() calls mdbm::plock(), database has been corrupted."
 			"\tmdbm::open(MDBM_PARTITIONED_LOCKS) means mdbm::lock_smart() calls mdbm::plock(),"
@@ -308,7 +308,7 @@ PyMethodDef mdbm_methods[] = {
 	{"unlock_smart", (PyCFunction)pymdbm_unlock_smart, METH_VARARGS,
 		"unlock_smart(key, [MDBM_PARTITIONED_LOCKS|MDBM_RW_LOCKS|MDBM_O_RDWR|])"
 			"NOTE:"
-			"\tUnlock an MDBM based on the locking flags supplied to \ref mdbm_open."
+			"\tUnlock an MDBM based on the locking flags supplied to open()."
 			"\tmdbm::open(MDBM_PARTITIONED_LOCKS) means mdbm::lock_smart() calls mdbm::punlock(),otherwise calls mdbm::unlock()"
 	},
 	{"first", (PyCFunction)pymdbm_first, METH_NOARGS, 
@@ -767,6 +767,22 @@ PyObject *pymdbm_open(PyObject *self, PyObject *args) {
     if (pmdbm_link == NULL) {
         return NULL;
     }
+
+	//protect : sigfault
+	if (flags == (flags | MDBM_O_CREAT) && flags == (flags | MDBM_PROTECT)) {
+	    PyErr_SetString(MDBMError, "failed to open the MDBM, not support create flags with MDBM_PROTECT");
+        return NULL;
+	}
+
+	if (flags == (flags | MDBM_O_ASYNC) && flags == (flags | MDBM_O_FSYNC)) {
+	    PyErr_SetString(MDBMError, "failed to open the MDBM, not support mixed sync flags (MDBM_O_FSYNC, MDBM_O_ASYNC)");
+        return NULL;
+	}
+
+	if (flags == (flags | MDBM_O_RDONLY) && flags == (flags | MDBM_O_WRONLY)) {
+	    PyErr_SetString(MDBMError, "failed to open the MDBM, not support mixed access flags (MDBM_O_RDONLY, MDBM_O_WRONLY, MDBM_O_RDWR)");
+        return NULL;
+	}
 
     CAPTURE_START();
     pmdbm_link->pmdbm = mdbm_open(pfn, flags, mode, psize, presize);
