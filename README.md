@@ -70,8 +70,8 @@ the following is list of support api on now.
 
 ### MDBM
 
-- Ubuntu : See the [pre-build packages for ubuntu](https://github.com/torden/go-mdbm/tree/master/pkg)
-- RHEL (CentOS) : See the [documentation for](https://github.com/yahoo/mdbm/blob/master/README.build) build and install
+- Ubuntu : See the [pre-build packages](https://github.com/torden/go-mdbm/tree/master/pkg)
+- RHEL (CentOS) : See the [pre-build packages](https://github.com/torden/go-mdbm/tree/master/pkg)
 
 ### py-mdbm
 
