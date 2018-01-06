@@ -79,6 +79,7 @@ PyObject *pymdbm_count_records(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_count_pages(register MDBMObj *pmdbm_link, PyObject *unused);
 
 PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *args);
 
 
 #endif

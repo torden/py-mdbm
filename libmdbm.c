@@ -392,6 +392,22 @@ PyMethodDef mdbm_methods[] = {
 			"Contains the value of errno that is set during some lock failures."
 			"Under other circumstances, mdbm_get_errno will not return the actual value of the errno variable."
 	},
+	{"protect", (PyCFunction)pymdbm_protect, METH_VARARGS,
+		"protect(([MDBM_PROT_NONE|MDBM_PROT_READ|MDBM_PROT_WRITE|MDBM_PROT_ACCESS|MDBM_PROT_NOACCESS]))"
+			"Sets all database pages to protect permission."
+			"This function is for advanced users only."
+			"Users that want to use the built-in protect feature "
+			"should specify MDBM_PROTECT in their mdbm::open flags."
+			"NOTE:"
+			"\tRHEL is unable to set MDBM_PROT_WRITE without MDBM_PROT_READ, so specifying"
+			"\tMDBM_PROT_WRITE does not protect against reads."
+			"Values for protect mask:"
+			"\tMDBM_PROT_NONE     - no access"
+			"\tMDBM_PROT_READ     - read access"
+			"\tMDBM_PROT_WRITE    - write access"
+			"\tMDBM_PROT_ACCESS   - all access"
+			"\tMDBM_PROT_NOACCESS - no access (same as MDBM_PROT_NONE)"
+	},
 
 	{0,0}
 };
@@ -1668,7 +1684,29 @@ PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args) {
 	_RETURN_RV_BOOLEN(rv);
 }
 
+PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *args) {
 
+	int protect = -1;
+
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &protect);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(key)");
+        return NULL;
+    }
+
+	if (protect < MDBM_PROT_NONE || protect > MDBM_PROT_ACCESS) {
+        PyErr_Format(MDBMError, "mdbm::protect does not support protect(=%d)", protect);
+        return NULL;
+	}
+
+    CAPTURE_START();
+    rv = mdbm_protect(pmdbm_link->pmdbm, protect);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
 
 /*
  * Local variables:
