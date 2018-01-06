@@ -7,12 +7,32 @@ class TestMDBMMethods(unittest.TestCase):
 
     def setUp(self):
         self.path = "/tmp/test_py.mdbm"
+        self.path_prot = "/tmp/test_py_protect.mdbm"
         flags = mdbm.MDBM_O_RDWR
         flags = flags | mdbm.MDBM_O_CREAT
         flags = flags | mdbm.MDBM_LARGE_OBJECTS
         flags = flags | mdbm.MDBM_ANY_LOCKS
-        mode = 0o644
-        self.dbm = mdbm.open(self.path, flags, mode, 0, 0)
+        flags = flags | mdbm.MDBM_O_TRUNC
+        self.mode = 0o644 #means 0644
+        self.dbm = mdbm.open(self.path, flags, self.mode, 0, 0)
+
+        kv1 = str(1)
+        kv2 = str(1)
+        kv3 = str(1)
+        
+        self.dbm.store(kv1, kv1, mdbm.MDBM_INSERT)
+        self.dbm.store(kv2, kv2, mdbm.MDBM_INSERT)
+        self.dbm.store(kv3, kv3, mdbm.MDBM_INSERT)
+
+#        flags_prot = flags | mdbm.MDBM_PROTECT
+#        self.dbm_prot = mdbm.open(self.path_prot, flags_prot, self.mode, 0, 0)
+#
+#        self.dbm_prot.protect(mdbm.MDBM_PROT_NONE)
+#        self.dbm_prot.store(kv1, kv1, mdbm.MDBM_INSERT)
+#        self.dbm_prot.store(kv2, kv2, mdbm.MDBM_INSERT)
+#        self.dbm_prot.store(kv3, kv3, mdbm.MDBM_INSERT)
+
+
     def tearDown(self):
         self.dbm.sync()
         self.dbm.close()
@@ -21,18 +41,35 @@ class TestMDBMMethods(unittest.TestCase):
         pass
 
     def test_99_purge(self):
-        self.dbm.purge()
+        #self.dbm.purge()
+        pass
 
     def test_99_truncate(self):
-        self.dbm.truncate()
+        #self.dbm.truncate()
+        pass
 
-    def test_02_store(self):
+    def test_02_store_fetch(self):
 
         k = str(1)
         v = str(random.randrange(0, 65535))
         rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
         self.assertTrue(rv, "failred to store, \
         rv=%d, key=%s, val=%s" % (rv, k, v))
+
+        k = str(2)
+        v = str(random.randrange(0, 65535))
+        rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
+        self.assertTrue(rv, "failred to store, \
+        rv=%d, key=%s, val=%s" % (rv, k, v))
+
+        k = str(3)
+        v = str(random.randrange(0, 65535))
+        rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
+        self.assertTrue(rv, "failred to store, \
+        rv=%d, key=%s, val=%s" % (rv, k, v))
+
+        rv = self.dbm.fetch(str(1))
+        self.assertTrue(rv, "rv=%s" % rv)
 
     def test_03_sync(self):
         rv = self.dbm.sync()
@@ -48,10 +85,6 @@ class TestMDBMMethods(unittest.TestCase):
     def test_05_preload(self):
         rv = self.dbm.preload()
         self.assertTrue(rv)
-
-    def test_06_fetch(self):
-        rv = self.dbm.fetch(str(1))
-        self.assertTrue(rv, "rv=%s" % rv)
 
     def test_07_get_hash(self):
         rv = self.dbm.get_hash()
@@ -132,6 +165,157 @@ class TestMDBMMethods(unittest.TestCase):
 
         rv = self.dbm.unlock()
         self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_81_get_lockmode(self):
+        rv = self.dbm.lock()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.get_lockmode()
+        self.assertTrue((rv >= 0))
+
+        rv = self.dbm.unlock()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_81_trylock(self):
+        rv = self.dbm.trylock()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.get_lockmode()
+        self.assertTrue((rv >= 0))
+
+        rv = self.dbm.unlock()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_81_lock_shared(self):
+        rv = self.dbm.lock_shared()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.get_lockmode()
+        self.assertTrue((rv >= 0))
+
+        rv = self.dbm.unlock()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_81_trylock_shared(self):
+        rv = self.dbm.trylock_shared()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.get_lockmode()
+        self.assertTrue((rv >= 0))
+
+        rv = self.dbm.unlock()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_81_trylock_shared(self):
+        rv = self.dbm.trylock_shared()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.get_lockmode()
+        self.assertTrue((rv >= 0))
+
+        rv = self.dbm.unlock()
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_81_lock_pages_unlock_pages(self):
+        rv = self.dbm.lock_pages()
+        self.assertTrue((rv >= 0))
+
+        rv = self.dbm.get_lockmode()
+        self.assertTrue((rv >= 0))
+
+        rv = self.dbm.unlock_pages()
+        self.assertTrue((rv >= 0))
+
+    def test_81_plock_punlock(self):
+        k = str(random.randrange(0, 65535))
+
+        rv = self.dbm.plock(k, mdbm.MDBM_O_RDWR)
+        self.assertTrue((rv >= 0))
+
+        rv = self.dbm.get_lockmode()
+        self.assertTrue((rv >= 0))
+
+        v = str(random.randrange(0, 65535))
+        rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
+        self.assertTrue(rv, "failred to store, \
+        rv=%d, key=%s, val=%s" % (rv, k, v))
+
+        rv = self.dbm.punlock(k, mdbm.MDBM_O_RDWR)
+        self.assertTrue((rv >= 0))
+
+    def test_81_tryplock_punlock(self):
+        k = str(random.randrange(0, 65535))
+
+        rv = self.dbm.tryplock(k, mdbm.MDBM_O_RDWR)
+        self.assertTrue((rv >= 0))
+
+        rv = self.dbm.get_lockmode()
+        self.assertTrue((rv >= 0))
+
+        v = str(random.randrange(0, 65535))
+        rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
+        self.assertTrue(rv, "failred to store, \
+        rv=%d, key=%s, val=%s" % (rv, k, v))
+
+        rv = self.dbm.punlock(k, mdbm.MDBM_O_RDWR)
+        self.assertTrue((rv >= 0))
+
+    def test_81_lock_smart_unlock_smart(self):
+        k = str(random.randrange(0, 65535))
+
+        rv = self.dbm.lock_smart(k, mdbm.MDBM_O_RDWR)
+        self.assertTrue((rv >= 0))
+
+        rv = self.dbm.get_lockmode()
+        self.assertTrue((rv >= 0))
+
+        v = str(random.randrange(0, 65535))
+        rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
+        self.assertTrue(rv, "failred to store, \
+        rv=%d, key=%s, val=%s" % (rv, k, v))
+
+        rv = self.dbm.unlock_smart(k, mdbm.MDBM_O_RDWR)
+        self.assertTrue((rv >= 0))
+
+    def test_81_trylock_smart_unlock_smart(self):
+        k = str(random.randrange(0, 65535))
+
+        rv = self.dbm.trylock_smart(k, mdbm.MDBM_O_RDWR)
+        self.assertTrue((rv >= 0))
+
+        rv = self.dbm.get_lockmode()
+        self.assertTrue((rv >= 0))
+
+        v = str(random.randrange(0, 65535))
+        rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
+        self.assertTrue(rv, "failred to store, \
+        rv=%d, key=%s, val=%s" % (rv, k, v))
+
+        rv = self.dbm.unlock_smart(k, mdbm.MDBM_O_RDWR)
+        self.assertTrue((rv >= 0))
+
+#    def test_81_protect(self):
+#        k = str(random.randrange(0, 65535))
+#
+#        rv = self.dbm_prot.protect(mdbm.MDBM_PROT_READ)
+#        self.assertTrue((rv >= 0))
+#
+#        rv = self.dbm_prot.get_lockmode()
+#        self.assertTrue((rv >= 0))
+#
+#        v = str(random.randrange(0, 65535))
+#        rv = self.dbm_prot.store(k, v, mdbm.MDBM_REPLACE)
+#        self.assertTrue(rv, "failred to store, \
+#        rv=%d, key=%s, val=%s" % (rv, k, v))
+#
+#        rv = self.dbm_prot.protect(mdbm.MDBM_PROT_WRITE)
+#        self.assertTrue((rv >= 0))
+#
+#        rv = self.dbm_prot.fetch(str(1))
+#        self.assertTrue(rv, "rv=%s" % rv)
+#
+#        rv = self.dbm_prot.protect(mdbm.MDBM_PROT_NONE)
+#        self.assertTrue((rv >= 0))
 
     def test_82_lock_delete_unlock(self):
         rv = self.dbm.lock()

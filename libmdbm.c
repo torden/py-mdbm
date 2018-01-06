@@ -85,211 +85,331 @@
 #endif
 
 PyMethodDef mdbm_methods[] = {
-    {"log_minlevel", (PyCFunction)pymdbm_log_minlevel, METH_VARARGS, 
-        "log_minlevel(MDBM_LOG_XXX)"
-        "Set the minimum logging level. Lower priority messages are discarded"
-        "Default : MDBM_LOG_OFF"
-    },
+	{"log_minlevel", (PyCFunction)pymdbm_log_minlevel, METH_VARARGS, 
+		"log_minlevel(MDBM_LOG_XXX)"
+			"Set the minimum logging level. Lower priority messages are discarded"
+			"Default : MDBM_LOG_OFF"
+	},
 
-    {"open", (PyCFunction)pymdbm_open, METH_VARARGS, 
-        "open(path, flags, mode, [psize, presize])"
-        "Creates and/or opens a database."
-    },
-    {"close", (PyCFunction)pymdbm_close, METH_NOARGS, 
-        "close()"
-        "Creates and/or opens a database."
-    },
-    {"close_fd", (PyCFunction)pymdbm_close_fd, METH_NOARGS, 
-        "close_fd()"
-        "Closes an MDBM's underlying file descriptor."
-    },
-    {"sync", (PyCFunction)pymdbm_sync, METH_NOARGS, 
-        "sync()"
-        "msync's all pages to disk asynchronously."
-    },
-    {"fsync", (PyCFunction)pymdbm_fsync, METH_NOARGS, 
-        "fsync()"
-        "fsync's an MDBM.  Syncs all pages to disk synchronously."
-    },
-    {"preload", (PyCFunction)pymdbm_preload, METH_NOARGS, 
-        "preload()"
-        "Preload mdbm: Read every 4k bytes to force all pages into memory"
-    },
-    {"compress_tree", (PyCFunction)pymdbm_compress_tree, METH_NOARGS, 
-        "compress_tree()"
-        "Compresses the existing MDBM directory."
-        "Attempts to rebalance the directory and to compress the db to a smaller size."
-    },
-    {"truncate", (PyCFunction)pymdbm_truncate, METH_NOARGS, 
-        "truncate()"
-        "Truncates the MDBM to single empty page"
-    },
-    {"purge", (PyCFunction)pymdbm_purge, METH_NOARGS, 
-        "purge()"
-        "Purges (removes) all entries from an MDBM."
-        "This does not change the MDBM's configuration or general structure."
-    },
-    {"store", (PyCFunction)pymdbm_store, METH_VARARGS, 
-        "store(key, val, [flags])"
-        "Stores the record specified by the key and val parameters."
-    },
-    {"fetch", (PyCFunction)pymdbm_fetch, METH_VARARGS, 
-        "fetch(key)"
-        "Fetches the record specified by the key argument"
-    },
-    {"get_page", (PyCFunction)pymdbm_get_page, METH_VARARGS, 
-        "get_page(key)"
-		"Gets the MDBM page number for a given key."
-		"The key does not actually have to exist."
-    },
-    {"delete", (PyCFunction)pymdbm_delete, METH_VARARGS, 
-        "delete(key)"
-        "Deletes a specific record."
-    },
+	{"open", (PyCFunction)pymdbm_open, METH_VARARGS, 
+		"open(path, flags, mode, [psize, presize])"
+			"Creates and/or opens a database."
+	},
+	{"close", (PyCFunction)pymdbm_close, METH_NOARGS, 
+		"close()"
+			"Creates and/or opens a database."
+	},
+	{"close_fd", (PyCFunction)pymdbm_close_fd, METH_NOARGS, 
+		"close_fd()"
+			"Closes an MDBM's underlying file descriptor."
+	},
+	{"sync", (PyCFunction)pymdbm_sync, METH_NOARGS, 
+		"sync()"
+			"msync's all pages to disk asynchronously."
+	},
+	{"fsync", (PyCFunction)pymdbm_fsync, METH_NOARGS, 
+		"fsync()"
+			"fsync's an MDBM.  Syncs all pages to disk synchronously."
+	},
+	{"preload", (PyCFunction)pymdbm_preload, METH_NOARGS, 
+		"preload()"
+			"Preload mdbm: Read every 4k bytes to force all pages into memory"
+	},
+	{"compress_tree", (PyCFunction)pymdbm_compress_tree, METH_NOARGS, 
+		"compress_tree()"
+			"Compresses the existing MDBM directory."
+			"Attempts to rebalance the directory and to compress the db to a smaller size."
+	},
+	{"truncate", (PyCFunction)pymdbm_truncate, METH_NOARGS, 
+		"truncate()"
+			"Truncates the MDBM to single empty page"
+	},
+	{"purge", (PyCFunction)pymdbm_purge, METH_NOARGS, 
+		"purge()"
+			"Purges (removes) all entries from an MDBM."
+			"This does not change the MDBM's configuration or general structure."
+	},
+	{"store", (PyCFunction)pymdbm_store, METH_VARARGS, 
+		"store(key, val, [flags])"
+			"Stores the record specified by the key and val parameters."
+	},
+	{"fetch", (PyCFunction)pymdbm_fetch, METH_VARARGS, 
+		"fetch(key)"
+			"Fetches the record specified by the key argument"
+	},
+	{"get_page", (PyCFunction)pymdbm_get_page, METH_VARARGS, 
+		"get_page(key)"
+			"Gets the MDBM page number for a given key."
+			"The key does not actually have to exist."
+	},
+	{"delete", (PyCFunction)pymdbm_delete, METH_VARARGS, 
+		"delete(key)"
+			"Deletes a specific record."
+	},
 
-    {"get_hash", (PyCFunction)pymdbm_get_hash, METH_NOARGS, 
-        "get_hash()"
-        "Gets the MDBM's hash function identifier."
-    },
-    {"set_hash", (PyCFunction)pymdbm_set_hash, METH_VARARGS, 
-        "set_hash(key)"
-        "Sets the hashing function for a given MDBM."
-        "The hash function must be set before storing anything to the db "
-        "(this is not enforced, but entries stored before the hash change will become inaccessible if the hash function is changed)."
-        ""
-        "NOTE: setting the hash must be be done at creation time, or when there is no data in an MDBM."
-        "Changing the hash function when there is existing data"
-        "will result in not being able access that data in the future."
-    },
-    {"get_alignment", (PyCFunction)pymdbm_get_alignment, METH_NOARGS, 
-        "get_alignment()"
-        "Gets the MDBM's record byte-alignment."
-        "return Alignment mask."
-        "\t0 - 8-bit alignment     (mdbm.MDBM_ALIGN_8_BITS)"
-        "\t1 - 16-bit alignment    (mdbm.MDBM_ALIGN_16_BITS)"
-        "\t3 - 32-bit alignment    (mdbm.MDBM_ALIGN_32_BITS)"
-        "\t7 - 64-bit alignment    (mdbm.MDBM_ALIGN_64_BITS)"
-    },
-    {"get_limit_size", (PyCFunction)pymdbm_get_limit_size, METH_NOARGS, 
-        "get_limit_size()"
-        "Gets the MDBM's size limit."
-        "Returns the limit set for the size of the db using the limit_size_v3 routine."
-        "return database size limit"
-        "\t0 No limit is set"
-        "\tTotal number of bytes for maximum database size, including header and directory"
-    },
-    {"get_version", (PyCFunction)pymdbm_get_version, METH_NOARGS, 
-        "get_version()"
-        "Gets the on-disk format version number of an MDBM."
-        "return On-disk file format version number"
-        "\t2 - MDBM V2"
-        "\t3 - MDBM V3"
-    },
-    {"get_size", (PyCFunction)pymdbm_get_size, METH_NOARGS, 
-        "get_size()"
-        "Gets the current MDBM's size."
-        "return Size of database in bytes."
-    },
-    {"get_page_size", (PyCFunction)pymdbm_get_page_size, METH_NOARGS, 
-        "get_page_size()"
-        "Get the MDBM's page size."
-        "return Number of bytes in a database page"
-    },
-    {"lock", (PyCFunction)pymdbm_lock, METH_NOARGS, 
-        "lock()"
-        "Locks the database for exclusive access by the caller."
-        "The lock is nestable, so a caller already holding the lock may call lock() again "
-        "as long as an equal number of calls to unlock() are made to release the lock."
-    },
-    {"unlock", (PyCFunction)pymdbm_unlock, METH_NOARGS, 
-        "unlock()"
-        "Locks the database for exclusive access by the caller."
-        "The lock is nestable, so a caller already holding the lock may call lock() again "
-        "as long as an equal number of calls to unlock() are made to release the lock."
-    },
-    {"first", (PyCFunction)pymdbm_first, METH_NOARGS, 
-        "first()"
-        "Returns the first key/value pair from the database."
-        "The order that records are returned is not specified."
-    },
-    {"next", (PyCFunction)pymdbm_next, METH_NOARGS, 
-        "next()"
-        "Returns the next key/value pair from the database."
-        "The order that records are returned is not specified."
-    },
-    {"firstkey", (PyCFunction)pymdbm_firstkey, METH_NOARGS, 
-        "firstkey()"
-        "Returns the first key from the database."
-        "The order that records are returned is not specified."
-    },
-    {"nextkey", (PyCFunction)pymdbm_nextkey, METH_NOARGS, 
-        "nextkey()"
-        "Returns the next key pair from the database."
-        "The order that records are returned is not specified."
-    },
-    {"islocked", (PyCFunction)pymdbm_islocked, METH_NOARGS, 
-        "islocked()"
- 		"returns whether or not mdbm is locked by another process or thread."
-    },
+	{"get_hash", (PyCFunction)pymdbm_get_hash, METH_NOARGS, 
+		"get_hash()"
+			"Gets the MDBM's hash function identifier."
+	},
+	{"set_hash", (PyCFunction)pymdbm_set_hash, METH_VARARGS, 
+		"set_hash(key)"
+			"Sets the hashing function for a given MDBM."
+			"The hash function must be set before storing anything to the db "
+			"(this is not enforced, but entries stored before the hash change will become inaccessible if the hash function is changed)."
+			""
+			"NOTE:"
+			"\tsetting the hash must be be done at creation time, or when there is no data in an MDBM."
+			"\tChanging the hash function when there is existing data"
+			"\twill result in not being able access that data in the future."
+	},
+	{"get_alignment", (PyCFunction)pymdbm_get_alignment, METH_NOARGS, 
+		"get_alignment()"
+			"Gets the MDBM's record byte-alignment."
+			"return Alignment mask."
+			"\t0 - 8-bit alignment     (mdbm.MDBM_ALIGN_8_BITS)"
+			"\t1 - 16-bit alignment    (mdbm.MDBM_ALIGN_16_BITS)"
+			"\t3 - 32-bit alignment    (mdbm.MDBM_ALIGN_32_BITS)"
+			"\t7 - 64-bit alignment    (mdbm.MDBM_ALIGN_64_BITS)"
+	},
+	{"get_limit_size", (PyCFunction)pymdbm_get_limit_size, METH_NOARGS, 
+		"get_limit_size()"
+			"Gets the MDBM's size limit."
+			"Returns the limit set for the size of the db using the limit_size_v3 routine."
+			"return database size limit"
+			"\t0 No limit is set"
+			"\tTotal number of bytes for maximum database size, including header and directory"
+	},
+	{"get_version", (PyCFunction)pymdbm_get_version, METH_NOARGS, 
+		"get_version()"
+			"Gets the on-disk format version number of an MDBM."
+			"return On-disk file format version number"
+			"\t2 - MDBM V2"
+			"\t3 - MDBM V3"
+	},
+	{"get_size", (PyCFunction)pymdbm_get_size, METH_NOARGS, 
+		"get_size()"
+			"Gets the current MDBM's size."
+			"return Size of database in bytes."
+	},
+	{"get_page_size", (PyCFunction)pymdbm_get_page_size, METH_NOARGS, 
+		"get_page_size()"
+			"Get the MDBM's page size."
+			"return Number of bytes in a database page"
+	},
+
+	{"get_lockmode", (PyCFunction)pymdbm_get_lockmode, METH_NOARGS,
+		"get_lockmode()"
+			"Gets the MDBM's lock mode."
+			"\t0                      - Exclusive locking"
+			"\tMDBM_OPEN_NOLOCK       - No locking"
+			"\tMDBM_PARTITIONED_LOCKS - Partitioned locking"
+			"\tMDBM_RW_LOCKS          - Shared (read-write) locking"
+	},
+	{"lock", (PyCFunction)pymdbm_lock, METH_NOARGS, 
+		"lock()"
+			"Locks the database for exclusive access by the caller."
+			"The lock is nestable, so a caller already holding the lock may call lock() again "
+			"as long as an equal number of calls to unlock() are made to release the lock."
+	},
+	{"unlock", (PyCFunction)pymdbm_unlock, METH_NOARGS, 
+		"unlock()"
+			"Locks the database for exclusive access by the caller."
+			"The lock is nestable, so a caller already holding the lock may call lock() again "
+			"as long as an equal number of calls to unlock() are made to release the lock."
+	},
+
+
+	{"trylock", (PyCFunction)pymdbm_trylock, METH_NOARGS,
+		"trylock()"
+			"Attempts to exclusively lock an MDBM."
+	},
+	{"lock_shared", (PyCFunction)pymdbm_lock_shared, METH_NOARGS,
+		"lock_shared()"
+			"Locks the database for shared access by readers, excluding access to writers."
+			"This is multiple-readers, one writer (MROW) locking."
+			"The database must be opened with the MDBM_RW_LOCKS flag to enable shared locks."
+			"Use unlock() to release a shared lock."
+			""
+			"Write access (ex. store() and delete()) must not be done in the context of a shared lock."
+			"Write access must be done in the context of an exclusive lock (lock() and \ref unlock())."
+			""
+			"The lock is nestable, "
+			"so a caller already holding the lock may call lock_shared() "
+			"again as long as an equal number of calls to unlock() are made to release the lock."
+	},
+	{"trylock_shared", (PyCFunction)pymdbm_trylock_shared, METH_NOARGS,
+		"trylock_shared()"
+			"Locks the database for shared access by readers, excluding access to writers."
+			"This is the non-blocking version of lock_shared()"
+			""
+			"This is MROW locking. The database must be opened with the MDBM_RW_LOCKS flag to enable shared locks."
+			""
+			"Write access (ex. store() and delete()) must not be done in the context of a shared lock."
+			"Write access must be done in the context of an exclusive lock (lock() and unlock())."
+	},
+	{"lock_pages", (PyCFunction)pymdbm_lock_pages, METH_NOARGS,
+		"lock_pages"
+			"Locks MDBM data pages into memory."
+			"When running MDBM as root, lock_pages() will expand the amount of RAM "
+			"that can be locked to infinity using setrlimit(RLIMIT_MEMLOCK)."
+			"When not running as root, lock_pages() will expand the amount of RAM "
+			"that can be locked up to the maximum allowed (retrieved using getrlimit(MEMLOCK),"
+			"and normally a very small amount), and if the MDBM is larger than the amount of RAM that can be locked,"
+			"a warning will be logged but lock_pages() will return 0 for success."
+	},
+	{"unlock_pages", (PyCFunction)pymdbm_unlock_pages, METH_NOARGS,
+		"unlock_pages"
+			"Releases MDBM data pages from always staying in memory"
+	},
+
+	{"plock", (PyCFunction)pymdbm_plock, METH_VARARGS,
+		"plock(key, [flags]) #flags Ignored. Reserved for future use"
+			"Locks a specific partition in the database for exclusive access by the caller."
+			"The lock is nestable, so a caller already holding "
+			"the lock may call plock() again as long as an equal number of calls to punlock()"
+			"are made to release the lock."
+	},
+
+	{"punlock", (PyCFunction)pymdbm_punlock, METH_VARARGS,
+		"punlock(key, [flags]) #flags Ignored. Reserved for future use"
+			"Unlocks a specific partition in the database, releasing exclusive access by the caller."
+			"If the caller has called plock() multiple times in a row,an equal number of unlock calls are required."
+			"See plock() for usage."
+	},
+
+	{"tryplock", (PyCFunction)pymdbm_tryplock, METH_VARARGS,
+		"tryplock(key, [flags]) #flags Ignored. Reserved for future use"
+			"Tries to locks a specific partition in the database for exclusive access by the caller."
+			"The lock is nestable, so a caller already holding the lock may call plock() "
+			"again as long as an equal number of calls to punlock() are made to release the lock."
+			"See plock() for usage."
+	},
+
+	{"lock_smart", (PyCFunction)pymdbm_lock_smart, METH_VARARGS,
+		"lock_smart(key, [MDBM_PARTITIONED_LOCKS|MDBM_RW_LOCKS|MDBM_O_RDWR|])"
+			"Perform either partition, shared or exclusive locking based on the"
+			"locking-related flags supplied to \ref mdbm_open."
+			"NOTE:"
+			"\tmdbm::open(MDBM_PARTITIONED_LOCKS) means mdbm::lock_smart() calls mdbm::plock(), database has been corrupted."
+			"\tmdbm::open(MDBM_PARTITIONED_LOCKS) means mdbm::lock_smart() calls mdbm::plock(),"
+			"\tmdbm::open(MDBM_RW_LOCKS) means mdbm::lock_smart() calls mdbm::lock_shared() for reads, and"
+			"\tmdbm::open() for all other locking flags or for writes, mdbm::lock_smart() will call mdbm_lock."
+	},
+
+	{"trylock_smart", (PyCFunction)pymdbm_trylock_smart, METH_VARARGS,
+		"trylock_smart(key, [MDBM_PARTITIONED_LOCKS|MDBM_RW_LOCKS|MDBM_O_RDWR|])"
+			"Attempts to lock an MDBM based on the locking flags supplied to open()."
+			"NOTE:"
+			"\tmdbm::open(MDBM_PARTITIONED_LOCKS) means mdbm::trylock_smart() calls mdbm::tryplock(),"
+			"\tmdbm::open(MDBM_RW_LOCKS) means mdbm::trylock_smart() calls mdbm::trylock_shared() for reads, and"
+			"\tmdbm::pen() for all other locking flags or for writes, mdbm::trylock_smart() will call mdbm::trylock()."
+	},
+
+	{"unlock_smart", (PyCFunction)pymdbm_unlock_smart, METH_VARARGS,
+		"unlock_smart(key, [MDBM_PARTITIONED_LOCKS|MDBM_RW_LOCKS|MDBM_O_RDWR|])"
+			"NOTE:"
+			"\tUnlock an MDBM based on the locking flags supplied to \ref mdbm_open."
+			"\tmdbm::open(MDBM_PARTITIONED_LOCKS) means mdbm::lock_smart() calls mdbm::punlock(),otherwise calls mdbm::unlock()"
+	},
+	{"first", (PyCFunction)pymdbm_first, METH_NOARGS, 
+		"first()"
+			"Returns the first key/value pair from the database."
+			"The order that records are returned is not specified."
+	},
+	{"next", (PyCFunction)pymdbm_next, METH_NOARGS, 
+		"next()"
+			"Returns the next key/value pair from the database."
+			"The order that records are returned is not specified."
+	},
+	{"firstkey", (PyCFunction)pymdbm_firstkey, METH_NOARGS, 
+		"firstkey()"
+			"Returns the first key from the database."
+			"The order that records are returned is not specified."
+	},
+	{"nextkey", (PyCFunction)pymdbm_nextkey, METH_NOARGS, 
+		"nextkey()"
+			"Returns the next key pair from the database."
+			"The order that records are returned is not specified."
+	},
+	{"islocked", (PyCFunction)pymdbm_islocked, METH_NOARGS, 
+		"islocked()"
+			"returns whether or not mdbm is locked by another process or thread."
+	},
 	{"isowned", (PyCFunction)pymdbm_isowned, METH_NOARGS, 
-        "isowned()"
-		"Returns whether or not MDBM is currently locked (owned) by the calling process."
-		"em Owned MDBMs have multiple nested locks in place."
-    },
+		"isowned()"
+			"Returns whether or not MDBM is currently locked (owned) by the calling process."
+			"em Owned MDBMs have multiple nested locks in place."
+	},
 	{"lock_reset", (PyCFunction)pymdbm_lock_reset, METH_VARARGS, 
-        "lock_reset(mdbm_file_path)"
-		"Resets the global lock ownership state of a database."
-		"*USE THIS FUNCTION WITH EXTREME CAUTION!*"
-		"The global lock ownership state of an MDBM is visible to other"
-		"processes and is reset system-wide.  Resetting a lock state while other"
-		"threads/processes are accessing this database might cause those operations to fail."
-    },
+		"lock_reset(mdbm_file_path)"
+			"Resets the global lock ownership state of a database."
+			"*USE THIS FUNCTION WITH EXTREME CAUTION!*"
+			"The global lock ownership state of an MDBM is visible to other"
+			"processes and is reset system-wide.  Resetting a lock state while other"
+			"threads/processes are accessing this database might cause those operations to fail."
+	},
 	{"delete_lockfiles", (PyCFunction)pymdbm_delete_lockfiles, METH_VARARGS, 
-        "delete_lockfiles(mdbm_file_path)"
-		"Removes all lockfiles associated with an MDBM file."
-		"USE THIS FUNCTION WITH EXTREME CAUTION!"
-		"NOTE: This is only intended to clean-up lockfiles when removing an MDBM file."
-		"This function can only be used when all processes that access"
-		"the MDBM whose locks are being deleted are not running."
-		"Calling it on an MDBM still in use will cause corruption and undefined behavior."
-		"Deleting lockfiles resets lock ownership and locking mode (exclusive/partition/shared)."
-    },
+		"delete_lockfiles(mdbm_file_path)"
+			"Removes all lockfiles associated with an MDBM file."
+			"USE THIS FUNCTION WITH EXTREME CAUTION!"
+			"NOTE: This is only intended to clean-up lockfiles when removing an MDBM file."
+			"This function can only be used when all processes that access"
+			"the MDBM whose locks are being deleted are not running."
+			"Calling it on an MDBM still in use will cause corruption and undefined behavior."
+			"Deleting lockfiles resets lock ownership and locking mode (exclusive/partition/shared)."
+	},
 	{"check", (PyCFunction)pymdbm_check, METH_VARARGS, 
-        "check(level, verbose)"
-		"Checks an MDBM's integrity, and displays information on standard output."
-		"\tlevel : between 0 and 10"
-		"\tverbose : True or False"
-    },
+		"check(level, verbose)"
+			"Checks an MDBM's integrity, and displays info. on standard output."
+			"\tlevel : between 0 and 10"
+			"\tverbose : True or False"
+	},
 	{"chk_page", (PyCFunction)pymdbm_chk_page, METH_VARARGS, 
-        "chk_all_page(page_num)"
-		"Checks the specified page for errors."
-		"It will print errors found on the page, "
-		"including bad key size, bad val size, and bad offsets of various fields."
-		"Ref : See get_page()"
-    },
+		"chk_all_page(page_num)"
+			"Checks the specified page for errors."
+			"It will print errors found on the page, "
+			"including bad key size, bad val size, and bad offsets of various fields."
+			"Ref : See get_page()"
+	},
 	{"chk_all_page", (PyCFunction)pymdbm_chk_all_page, METH_VARARGS, 
-        "chk_all_page()"
-		"Checks the database for errors."
-		"It will report same as mdbm_chk_page for all pages in the database."
-		"See chk_page() to determine if errors detected in the database."
-    },
+		"chk_all_page()"
+			"Checks the database for errors."
+			"It will report same as mdbm_chk_page for all pages in the database."
+			"See chk_page() to determine if errors detected in the database."
+	},
 	{"count_records", (PyCFunction)pymdbm_count_records, METH_VARARGS, 
-        "count_records()"
-		"Counts the number of records in an MDBM."
-    },
+		"count_records()"
+			"Counts the number of records in an MDBM."
+	},
 	{"count_pages", (PyCFunction)pymdbm_count_pages, METH_VARARGS, 
-        "count_pages()"
-		"Counts the number of pages used by an MDBM."
-		"returns Number of pages: Count of all directory+data+LargeObject pages used by an MDBM."
-    },
+		"count_pages()"
+			"Counts the number of pages used by an MDBM."
+			"returns Number of pages: Count of all directory+data+LargeObject pages used by an MDBM."
+	},
 	{"get_errno", (PyCFunction)pymdbm_get_errno, METH_VARARGS, 
-        "get_errno()"
-		"Returns the value of internally saved errno."
-		"Contains the value of errno that is set during some lock failures."
-		"Under other circumstances, mdbm_get_errno will not return the actual value of the errno variable."
-    },
+		"get_errno()"
+			"Returns the value of internally saved errno."
+			"Contains the value of errno that is set during some lock failures."
+			"Under other circumstances, mdbm_get_errno will not return the actual value of the errno variable."
+	},
+	{"protect", (PyCFunction)pymdbm_protect, METH_VARARGS,
+		"protect(([MDBM_PROT_NONE|MDBM_PROT_READ|MDBM_PROT_WRITE|MDBM_PROT_ACCESS|MDBM_PROT_NOACCESS]))"
+			"Sets all database pages to protect permission."
+			"This function is for advanced users only."
+			"Users that want to use the built-in protect feature "
+			"should specify MDBM_PROTECT in their mdbm::open flags."
+			"NOTE:"
+			"\tRHEL is unable to set MDBM_PROT_WRITE without MDBM_PROT_READ, so specifying"
+			"\tMDBM_PROT_WRITE does not protect against reads."
+			"Values for protect mask:"
+			"\tMDBM_PROT_NONE     - no access"
+			"\tMDBM_PROT_READ     - read access"
+			"\tMDBM_PROT_WRITE    - write access"
+			"\tMDBM_PROT_ACCESS   - all access"
+			"\tMDBM_PROT_NOACCESS - no access (same as MDBM_PROT_NONE)"
+	},
 
-    {0,0}
+	{0,0}
 };
 
 char mdbmmod_docs[] = "The MDBM module.";
@@ -851,8 +971,6 @@ PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
     return PyLong_FromLong((long)rv);
 }
 
-
-
 PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args) {
 
     char *pkey = NULL;
@@ -979,6 +1097,21 @@ PyObject *pymdbm_get_page_size(register MDBMObj *pmdbm_link, PyObject *unused) {
     return PyLong_FromLong((long)rv);
 }
 
+PyObject *pymdbm_get_lockmode(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    uint32_t rv = -1;
+    CAPTURE_START();
+    rv = mdbm_get_lockmode(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::get_lockmode() does not obtain the current MDBM's lock info.");
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+
 PyObject *pymdbm_lock(register MDBMObj *pmdbm_link, PyObject *unused) {
 
     int rv = -1;
@@ -986,7 +1119,7 @@ PyObject *pymdbm_lock(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_lock(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::lock() does not obtain the current MDBM's size");
+        PyErr_SetString(MDBMError, "mdbm::lock() does not obtain the current MDBM's lock info.");
         _RETURN_FALSE();
     }
  
@@ -1000,7 +1133,77 @@ PyObject *pymdbm_unlock(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_unlock(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::unlock() does not obtain the current MDBM's size");
+        PyErr_SetString(MDBMError, "mdbm::unlock() does not obtain the current MDBM's lock info.");
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_trylock(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_trylock(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::trylock() does not obtain the current MDBM's lock info.");
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_lock_shared(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_lock_shared(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::lock_shared() does not obtain the current MDBM's lock info.");
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_trylock_shared(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_trylock_shared(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::trylock_shared() does not obtain the current MDBM's lock info.");
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_lock_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_lock_pages(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::lock_pages() does not obtain the current MDBM's lock info.");
+        _RETURN_FALSE();
+    }
+ 
+    return PyLong_FromLong((long)rv);
+}
+
+PyObject *pymdbm_unlock_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    CAPTURE_START();
+    rv = mdbm_unlock_pages(pmdbm_link->pmdbm);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::unlock_pages() does not obtain the current MDBM's lock info.");
         _RETURN_FALSE();
     }
  
@@ -1301,6 +1504,209 @@ PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused) {
     return PyLong_FromLong((long)rv);
 }
 
+PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	char *pkey = NULL;
+	int flags = 0;
+
+    datum key;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "s|i", &pkey, &flags);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(key)");
+        return NULL;
+    }
+
+	if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
+        PyErr_Format(MDBMError, "mdbm::plock does not support flags(=%d)", flags);
+        return NULL;
+	}
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+
+    CAPTURE_START();
+    rv = mdbm_plock(pmdbm_link->pmdbm, &key, flags);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	char *pkey = NULL;
+	int flags = 0;
+
+    datum key;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "s|i", &pkey, &flags);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(key)");
+        return NULL;
+    }
+
+	if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
+        PyErr_Format(MDBMError, "mdbm::punlock does not support flags(=%d)", flags);
+        return NULL;
+	}
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+
+    CAPTURE_START();
+    rv = mdbm_punlock(pmdbm_link->pmdbm, &key, flags);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	char *pkey = NULL;
+	int flags = 0;
+
+    datum key;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "s|i", &pkey, &flags);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(key)");
+        return NULL;
+    }
+
+	if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
+        PyErr_Format(MDBMError, "mdbm::tryplock does not support flags(=%d)", flags);
+        return NULL;
+	}
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+
+    CAPTURE_START();
+    rv = mdbm_tryplock(pmdbm_link->pmdbm, &key, flags);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	char *pkey = NULL;
+	int flags = 0;
+
+    datum key;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "s|i", &pkey, &flags);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(key)");
+        return NULL;
+    }
+
+	if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
+        PyErr_Format(MDBMError, "mdbm::lock_smart does not support flags(=%d)", flags);
+        return NULL;
+	}
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+
+    CAPTURE_START();
+    rv = mdbm_lock_smart(pmdbm_link->pmdbm, &key, flags);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	char *pkey = NULL;
+	int flags = 0;
+
+    datum key;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "s|i", &pkey, &flags);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(key)");
+        return NULL;
+    }
+
+	if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
+        PyErr_Format(MDBMError, "mdbm::trylock_smart does not support flags(=%d)", flags);
+        return NULL;
+	}
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+
+    CAPTURE_START();
+    rv = mdbm_trylock_smart(pmdbm_link->pmdbm, &key, flags);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	char *pkey = NULL;
+	int flags = 0;
+
+    datum key;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "s|i", &pkey, &flags);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(key)");
+        return NULL;
+    }
+
+	if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
+        PyErr_Format(MDBMError, "mdbm::unlock_smart does not support flags(=%d)", flags);
+        return NULL;
+	}
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+
+    CAPTURE_START();
+    rv = mdbm_unlock_smart(pmdbm_link->pmdbm, &key, flags);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	int protect = -1;
+
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &protect);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(key)");
+        return NULL;
+    }
+
+	if (protect < MDBM_PROT_NONE || protect > MDBM_PROT_ACCESS) {
+        PyErr_Format(MDBMError, "mdbm::protect does not support protect(=%d)", protect);
+        return NULL;
+	}
+
+    CAPTURE_START();
+    rv = mdbm_protect(pmdbm_link->pmdbm, protect);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
 
 /*
  * Local variables:
