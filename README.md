@@ -19,7 +19,7 @@ the following is list of support api on now.
 
 |Group|API|
 |---|---|
-|[File Management](http://yahoo.github.io/mdbm/api/group__FileManagementGroup.html)|mdbm_open, mdbm_close, mdbm_sync, mdbm_fsync, mdbm_close_fd, *~~ mdbm_replace_db, mdbm_replace_file, mdbm_dup_handle,  mdbm_pre_split, ~~mdbm_fcopy~~*|
+|[File Management](http://yahoo.github.io/mdbm/api/group__FileManagementGroup.html)|mdbm_open, mdbm_close, mdbm_sync, mdbm_fsync, mdbm_close_fd, *~~mdbm_replace_db, mdbm_replace_file, mdbm_dup_handle,  mdbm_pre_split, mdbm_fcopy~~*|
 |[Configuration](http://yahoo.github.io/mdbm/api/group__ConfigurationGroup.html)|mdbm_get_version, mdbm_get_size, mdbm_get_page_size, mdbm_get_limit_size, mdbm_get_hash, *~~mdbm_get_magic_number, mdbm_setspillsize, mdbm_get_alignment, mdbm_set_alignment, mdbm_limit_size_v3, mdbm_limit_dir_size, mdbm_set_window_size~~*|
 |[Record Access](http://yahoo.github.io/mdbm/api/group__RecordAccessGroup.html)|mdbm_fetch, mdbm_delete, mdbm_store, *~~mdbm_fetch_r~~, ~~mdbm_fetch_buf~~, ~~mdbm_fetch_dup_r~~, ~~mdbm_fetch_str~~, ~~mdbm_fetch_info~~, ~~mdbm_delete_r~~, ~~mdbm_delete_str~~, ~~mdbm_store_r~~, ~~mdbm_store_str~~*|
 |[Record Iteration](http://yahoo.github.io/mdbm/api/group__RecordIterationGroup.html)|mdbm_first, mdbm_next, mdbm_firstkey, mdbm_nextkey, *~~mdbm_first_r~~, ~~mdbm_next_r~~, ~~mdbm_firstkey_r~~, ~~mdbm_nextkey_r~~, ~~mdbm_iterate~~*|
