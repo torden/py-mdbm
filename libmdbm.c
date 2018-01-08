@@ -23,24 +23,29 @@
 #define MDBM_LOG_ABORT          LOG_EMERG
 #define MDBM_LOG_FATAL          LOG_ALERT
 
+
+static int loglevel = -1;
+static int dev_null;
+static int org_stdout;
+static int org_stderr;
+
 #define CAPTURE_START() {\
-    dev_null = open("/dev/null", O_WRONLY);\
-    org_stdout = dup(STDOUT_FILENO);\
-    org_stderr = dup(STDERR_FILENO);\
     if (loglevel == -1) {\
+    	dev_null = open("/dev/null", O_WRONLY);\
+    	org_stdout = dup(STDOUT_FILENO);\
+    	org_stderr = dup(STDERR_FILENO);\
         dup2(dev_null, STDOUT_FILENO);\
         dup2(dev_null, STDERR_FILENO);\
     }\
 }
 
 #define CAPTURE_END() {\
-    close(dev_null);\
     if (loglevel == -1) {\
         dup2(org_stdout, STDOUT_FILENO);\
         dup2(org_stderr, STDERR_FILENO);\
+    	close(dev_null);\
     }\
 }
-
 
 // New in version 2.6.
 #if !defined(PyModule_AddIntMacro)
@@ -572,6 +577,7 @@ PyMODINIT_FUNC initmdbm(void) {
     d = PyModule_GetDict(m);
     if (MDBMError == NULL) {
         MDBMError = PyErr_NewException("mdbm.error", PyExc_IOError, NULL);
+		Py_INCREF(MDBMError);
     }
 
     s = _PYUNICODE("The MDBM");
@@ -932,6 +938,7 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args) {
     _RETURN_RV_BOOLEN(rv);
 }
 
+
 PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
 
     char *pkey = NULL;
@@ -984,7 +991,7 @@ PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args) {
@@ -1022,7 +1029,7 @@ PyObject *pymdbm_get_hash(register MDBMObj *pmdbm_link, PyObject *unused) {
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_set_hash(register MDBMObj *pmdbm_link, PyObject *args) {
@@ -1058,7 +1065,7 @@ PyObject *pymdbm_get_alignment(register MDBMObj *pmdbm_link, PyObject *unused) {
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_get_limit_size(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1068,7 +1075,7 @@ PyObject *pymdbm_get_limit_size(register MDBMObj *pmdbm_link, PyObject *unused) 
     rv = mdbm_get_limit_size(pmdbm_link->pmdbm);
     CAPTURE_END();
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_get_version(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1082,7 +1089,7 @@ PyObject *pymdbm_get_version(register MDBMObj *pmdbm_link, PyObject *unused) {
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_get_size(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1096,7 +1103,7 @@ PyObject *pymdbm_get_size(register MDBMObj *pmdbm_link, PyObject *unused) {
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_get_page_size(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1110,7 +1117,7 @@ PyObject *pymdbm_get_page_size(register MDBMObj *pmdbm_link, PyObject *unused) {
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_get_lockmode(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1124,7 +1131,7 @@ PyObject *pymdbm_get_lockmode(register MDBMObj *pmdbm_link, PyObject *unused) {
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 
@@ -1139,7 +1146,7 @@ PyObject *pymdbm_lock(register MDBMObj *pmdbm_link, PyObject *unused) {
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_unlock(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1153,7 +1160,7 @@ PyObject *pymdbm_unlock(register MDBMObj *pmdbm_link, PyObject *unused) {
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_trylock(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1167,7 +1174,7 @@ PyObject *pymdbm_trylock(register MDBMObj *pmdbm_link, PyObject *unused) {
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_lock_shared(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1181,7 +1188,7 @@ PyObject *pymdbm_lock_shared(register MDBMObj *pmdbm_link, PyObject *unused) {
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_trylock_shared(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1195,7 +1202,7 @@ PyObject *pymdbm_trylock_shared(register MDBMObj *pmdbm_link, PyObject *unused) 
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_lock_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1209,7 +1216,7 @@ PyObject *pymdbm_lock_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_unlock_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1223,7 +1230,7 @@ PyObject *pymdbm_unlock_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
         _RETURN_FALSE();
     }
  
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_islocked(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1241,7 +1248,6 @@ PyObject *pymdbm_islocked(register MDBMObj *pmdbm_link, PyObject *unused) {
 			break;
 		default:
         	PyErr_SetString(MDBMError, "mdbm::islocked() does not obtain the current MDBM's lock.");
-        	_RETURN_NONE();
 			break;
     }
 
@@ -1263,7 +1269,6 @@ PyObject *pymdbm_isowned(register MDBMObj *pmdbm_link, PyObject *unused) {
 			break;
 		default:
         	PyErr_SetString(MDBMError, "mdbm::islocked() does not obtain the current MDBM's lock owner.");
-        	_RETURN_NONE();
 			break;
     }
 
@@ -1337,8 +1342,8 @@ PyObject *pymdbm_first(register MDBMObj *pmdbm_link, PyObject *unused) {
     PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
     PyTuple_SetItem(retval, 1, _PYUNICODE(pretval));
 
-	PyMem_Free(pretkey);
-	PyMem_Free(pretval);
+	//PyMem_Free(pretkey);
+	//PyMem_Free(pretval);
 
     return retval;
 }
@@ -1370,10 +1375,9 @@ PyObject *pymdbm_next(register MDBMObj *pmdbm_link, PyObject *unused) {
     retval = PyTuple_New(2);
     PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
     PyTuple_SetItem(retval, 1, _PYUNICODE(pretval));
-
-	PyMem_Free(pretkey);
-	PyMem_Free(pretval);
-
+	
+	//PyMem_Free(pretkey);
+	//PyMem_Free(pretval);
     return retval;
 }
 
@@ -1399,7 +1403,8 @@ PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused) {
     retval = PyTuple_New(1);
     PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
 
-	PyMem_Free(pretkey);
+	//PyMem_Free(pretkey);
+	//Py_DECREF(retval);
 
     return retval;
 }
@@ -1425,8 +1430,8 @@ PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused) {
 
     retval = PyTuple_New(1);
     PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
-
-	PyMem_Free(pretkey);
+	//PyMem_Free(pretkey);
+	//Py_DECREF(retval);
 
     return retval;
 }
@@ -1497,7 +1502,7 @@ PyObject *pymdbm_count_records(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_count_records(pmdbm_link->pmdbm);
     CAPTURE_END();
 
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_count_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1507,7 +1512,7 @@ PyObject *pymdbm_count_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_count_pages(pmdbm_link->pmdbm);
     CAPTURE_END();
 
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1517,7 +1522,7 @@ PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_get_errno(pmdbm_link->pmdbm);
     CAPTURE_END();
 
-    return PyLong_FromLong((long)rv);
+    return Py_BuildValue("i", rv);
 }
 
 PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args) {
