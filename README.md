@@ -86,11 +86,63 @@ git clone https://github.com/torden/py-mdbm
 ```shell
 cd py-mdbm
 pip install -r requirements.txt
-PYTHON=/app/python/bin/python make
+CMD_PYTHON=/app/python/bin/python make
 ```
-### Example
+
+## Example
 
 
+## Benchmark
+
+The following is result of Py-mdbm vs AnyDBM benchmarks for simple data storing and random fetching in them.
+
+### Spec
+
+#### Host
+
+|Type|Spec|
+|---|---|
+|CPU|I7|
+|RAM|32G DDR4|
+|HDD|Nvme|
+
+#### VM
+
+|Type|Spec|
+|---|---|
+|Machine|VM(VirtualBox)|
+|OS|Ubuntu 17.10 (Artful Aardvark)|
+|CPU|2 vCore|
+|RAM|8G|
+|AnyDBM|Berkeley DB (Hash, version 9, native byte-order)|
+|Mdbm|893f7a8 on 26 Jul, MDBM V3|
+
+### Command
+
+```
+make benchmark
+```
+
+### Output
+
+```
+platform linux2 -- Python 2.7.14, pytest-3.1.3, py-1.4.34, pluggy-0.4.0
+benchmark: 3.1.1 (defaults: timer=time.time disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+
+------------------------------------------------------------------------------------ benchmark: 2 tests -----------------------------------------------------------------------------------
+Name (time in ms)               Min                Max               Mean            StdDev             Median               IQR            Outliers      OPS            Rounds  Iterations
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+test_mdbm_store_10000       15.6021 (1.0)      20.7560 (1.0)      16.6336 (1.0)      0.8858 (1.0)      16.3540 (1.0)      0.7806 (1.0)          13;4  60.1192 (1.0)          60           1
+test_anydbm_store_10000     47.2810 (3.03)     59.7410 (2.88)     49.5850 (2.98)     2.8609 (3.23)     48.9625 (2.99)     1.1770 (1.51)          2;2  20.1674 (0.34)         20           1
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------- benchmark: 2 tests --------------------------------------------------------------------------------------
+Name (time in ms)                 Min                 Max                Mean             StdDev              Median                IQR            Outliers     OPS            Rounds  Iterations
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+test_mdbm_store_100000       162.7200 (1.0)      186.0912 (1.0)      171.2356 (1.0)       8.1884 (1.0)      168.6914 (1.0)       7.4978 (1.0)           2;1  5.8399 (1.0)           6           1
+test_anydbm_store_100000     777.6020 (4.78)     875.8821 (4.71)     825.2219 (4.82)     38.2175 (4.67)     828.3558 (4.91)     57.7620 (7.70)          2;0  1.2118 (0.21)          5           1
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+```
 
 ## Link
 
