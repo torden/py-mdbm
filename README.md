@@ -25,7 +25,7 @@ the following is list of support api on now.
 |[Record Iteration](http://yahoo.github.io/mdbm/api/group__RecordIterationGroup.html)|mdbm_first, mdbm_next, mdbm_firstkey, mdbm_nextkey, *~~mdbm_first_r~~, ~~mdbm_next_r~~, ~~mdbm_firstkey_r~~, ~~mdbm_nextkey_r~~, ~~mdbm_iterate~~*|
 |[Locking](http://yahoo.github.io/mdbm/api/group__LockingGroup.html)|mdbm_islocked, mdbm_isowned, mdbm_lock, mdbm_unlock, mdbm_lock_reset, mdbm_delete_lockfiles,  mdbm_get_lockmode, mdbm_trylock, mdbm_plock, mdbm_punlock, mdbm_tryplock, mdbm_lock_shared, mdbm_trylock_shared, mdbm_lock_smart, mdbm_trylock_smart, mdbm_unlock_smart|
 |[Data Management](http://yahoo.github.io/mdbm/api/group__DataManagementGroup.html)|mdbm_compress_tree, mdbm_truncate, mdbm_purge,  *~~mdbm_prune, mdbm_set_cleanfunc, mdbm_clean~~*|
-|[Data Integrity](http://yahoo.github.io/mdbm/api/group__DataIntegrityGroup.html)|mdbm_check, mdbm_chk_all_page, mdbm_chk_page, *~~mdbm_protect, mdbm_chk_error~~*|
+|[Data Integrity](http://yahoo.github.io/mdbm/api/group__DataIntegrityGroup.html)|mdbm_check, mdbm_chk_all_page, mdbm_chk_page, mdbm_protect, *~~mdbm_chk_error~~*|
 |[Data Display](http://yahoo.github.io/mdbm/api/group__DataDisplayGroup.html)|*~~mdbm_dump_all_page~~, ~~mdbm_dump_page~~*|
 |[Statistics](http://yahoo.github.io/mdbm/api/group__StatisticsGroup.html)|mdbm_count_records, mdbm_count_pages, *~~mdbm_get_stat_counter, mdbm_get_stat_time, mdbm_reset_stat_operations, mdbm_enable_stat_operations, mdbm_set_stat_time_func, mdbm_get_stat_name, mdbm_set_stats_func, mdbm_get_stats, mdbm_get_db_info, mdbm_chunk_iterate, mdbm_get_db_stats, mdbm_get_window_stats~~*|
 |[Cache and Backing Store](http://yahoo.github.io/mdbm/api/group__CacheAndBackingStoreGroup.html)|*~~mdbm_set_cachemode, mdbm_get_cachemode, mdbm_get_cachemode_name, mdbm_set_backingstore~~*|
@@ -86,11 +86,67 @@ git clone https://github.com/torden/py-mdbm
 ```shell
 cd py-mdbm
 pip install -r requirements.txt
-PYTHON=/app/python/bin/python make
+CMD_PYTHON=/app/python/bin/python make
 ```
-### Example
+
+## Example
 
 
+## Benchmark
+
+The following is result of Py-mdbm vs AnyDBM benchmarks for simple data storing and random fetching in them.
+
+### Spec
+
+#### Host
+
+|Type|Spec|
+|---|---|
+|CPU|I7|
+|RAM|32G DDR4|
+|HDD|Nvme|
+
+#### VM
+
+|Type|Spec|
+|---|---|
+|Machine|VM(VirtualBox)|
+|OS|Ubuntu 17.10 (Artful Aardvark)|
+|CPU|2 vCore|
+|RAM|8G|
+|AnyDBM|Berkeley DB (Hash, version 9, native byte-order)|
+|Mdbm|893f7a8 on 26 Jul, MDBM V3|
+
+### Command
+
+```
+make benchmark
+```
+
+### Output
+
+```
+platform linux2 -- Python 2.7.14, pytest-3.1.3, py-1.4.34, pluggy-0.4.0
+benchmark: 3.1.1 (defaults: timer=time.time disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+plugins: benchmark-3.1.1
+
+--------------------------------------------------------------------------------------- benchmark: 3 tests --------------------------------------------------------------------------------------
+Name (time in ms)                     Min                Max               Mean            StdDev             Median               IQR            Outliers      OPS            Rounds  Iterations
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+test_mdbm_store_10000             15.8899 (1.0)      18.4619 (1.0)      16.8803 (1.0)      0.4849 (1.0)      16.8875 (1.0)      0.6490 (1.0)          17;1  59.2408 (1.0)          58           1
+test_anydbm_store_10000           47.3471 (2.98)     50.1540 (2.72)     49.0219 (2.90)     0.7042 (1.45)     49.1990 (2.91)     0.8085 (1.25)          5;1  20.3991 (0.34)         20           1
+test_anydbm_cache_store_10000     48.4822 (3.05)     50.9388 (2.76)     49.6121 (2.94)     0.7146 (1.47)     49.5861 (2.94)     0.8906 (1.37)          6;0  20.1564 (0.34)         21           1
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------- benchmark: 3 tests ----------------------------------------------------------------------------------------
+Name (time in ms)                       Min                 Max                Mean            StdDev              Median               IQR            Outliers     OPS            Rounds  Iterations
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+test_mdbm_store_100000             167.6152 (1.0)      170.7151 (1.0)      168.8910 (1.0)      1.0652 (1.0)      168.6075 (1.0)      1.0552 (1.0)           2;0  5.9210 (1.0)           6           1
+test_anydbm_cache_store_100000     749.7072 (4.47)     766.8512 (4.49)     757.7901 (4.49)     6.4937 (6.10)     758.7452 (4.50)     8.8423 (8.38)          2;0  1.3196 (0.22)          5           1
+test_anydbm_store_100000           762.3141 (4.55)     765.2879 (4.48)     763.1542 (4.52)     1.2175 (1.14)     762.8109 (4.52)     1.0809 (1.02)          1;1  1.3104 (0.22)          5           1
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+```
 
 ## Link
 
