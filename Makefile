@@ -16,7 +16,7 @@ CMD_VALGRIND		:=$(shell which valgrind)
 
 PY_VER=$(shell $(CMD_PYTHON) -c "import sys;t='{v[0]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
 
-all: clean build test benchmark
+all: clean init build test benchmark
 
 init::
 	@$(CMD_ECHO)  -e "\033[1;40;32mInstall Packages.\033[01;m\x1b[0m"
