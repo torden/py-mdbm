@@ -29,7 +29,7 @@ setup(name = "py-mdbm",
         "Operating System :: POSIX :: Linux"
     ],
     ext_modules = [Extension("mdbm",
-        sources = ["libmdbm.c"],
+        sources = ["src/libmdbm.c"],
         include_dirs = ['/usr/include', '/usr/local/mdbm/include'],
         libraries = ['mdbm'],
         extra_compile_args=['-Wall','-Wno-strict-aliasing', '-march=native'],
