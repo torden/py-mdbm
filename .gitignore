@@ -63,4 +63,4 @@ build
 *.pyc
 *.pyo
 __pycache__
-.ropeproject
+.*

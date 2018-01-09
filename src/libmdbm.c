@@ -25,25 +25,26 @@
 
 
 static int loglevel = -1;
+static int capture = 0;
 static int dev_null;
-static int org_stdout;
 static int org_stderr;
 
 #define CAPTURE_START() {\
     if (loglevel == -1) {\
-    	dev_null = open("/dev/null", O_WRONLY);\
-    	org_stdout = dup(STDOUT_FILENO);\
-    	org_stderr = dup(STDERR_FILENO);\
-        dup2(dev_null, STDOUT_FILENO);\
-        dup2(dev_null, STDERR_FILENO);\
+		fflush(stderr);\
+    	dev_null = open("/dev/null", O_RDWR);\
+    	org_stderr = dup(fileno(stderr));\
+        dup2(dev_null, fileno(stderr));\
+		capture = 1;\
     }\
 }
 
 #define CAPTURE_END() {\
-    if (loglevel == -1) {\
-        dup2(org_stdout, STDOUT_FILENO);\
-        dup2(org_stderr, STDERR_FILENO);\
-    	close(dev_null);\
+    if (capture == 1) {\
+		fflush(stderr);\
+        dup2(org_stderr, fileno(stderr));\
+		close(dev_null);\
+		capture = 0;\
     }\
 }
 
@@ -477,7 +478,7 @@ static int mdbm_clear(PyObject *m) {
 #if PY_MAJOR_VERSION >= 3
 static PyTypeObject MDBMType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "mdbm.dbm",
+    "mdbm",
     sizeof(MDBMObj),
     0,
     (destructor)mdbm_dealloc,       /*tp_dealloc*/
