@@ -91,6 +91,220 @@ CMD_PYTHON=/app/python/bin/python make
 
 ## Example
 
+See the [Source Code](https://github.com/torden/py-mdbm/tree/master/example) for more details
+
+### Creating and populating a database
+
+```python
+import mdbm
+import random
+
+print("[*] Creating and populating a database")
+
+path = "/tmp/test1.mdbm"
+flags = mdbm.MDBM_O_RDWR
+flags = flags | mdbm.MDBM_O_CREAT
+flags = flags | mdbm.MDBM_LARGE_OBJECTS
+flags = flags | mdbm.MDBM_ANY_LOCKS
+flags = flags | mdbm.MDBM_O_TRUNC
+mode = 0o644  # means 0644
+
+dbm = mdbm.open(path, flags, mode)
+for i in range(0, 65535):
+    k = str(i)
+    v = str(random.randrange(0, 65535))
+
+    rv = dbm.store(k, v, mdbm.MDBM_INSERT)
+    if not rv:
+        print("[-] failed to data store to ", path)
+        break
+
+print("[*] count of records : %d" % dbm.count_records())
+
+dbm.close()
+
+print("done")
+```
+
+### Fetching records in-place
+
+```python
+import mdbm
+import random
+
+print("[*] Fetching records in-place")
+
+path = "/tmp/test1.mdbm"
+flags = mdbm.MDBM_O_RDWR
+mode = 0o644  # means 0644
+
+dbm = mdbm.open(path, flags, mode)
+dbm.preload()
+
+print("|-------|-------|")
+print("|  key  |  val  |")
+print("|-------|-------|")
+
+for i in range(0, 10):
+
+    k = str(random.randrange(0, 65534))
+    orgval = dbm.fetch(k)
+    if not orgval:
+        print("[-] failed to fetch value of %s in mdbm" % k)
+        break
+
+    print("|%07s|%07s|" % (k, orgval))
+
+print("|-------|-------|")
+print("[*] count of records : %d" % dbm.count_records())
+
+dbm.close()
+
+print("done")
+```
+
+### Fetching and updating records in-place
+
+```python
+import mdbm
+import random
+
+print("[*] Fetching and updating records in-place")
+
+path = "/tmp/test1.mdbm"
+flags = mdbm.MDBM_O_RDWR
+mode = 0o644  # means 0644
+
+dbm = mdbm.open(path, flags, mode)
+for i in range(0, 65535):
+    k = str(i)
+    v = str(random.randrange(0, 65535))
+
+    orgval = dbm.fetch(k)
+    if not orgval:
+        print("[-] failed to fetch value of %s in mdbm" % k)
+        break
+
+    print("[=] key(%s) : replace val(%s) to '%s' : " % (k, orgval, v)),
+
+    rv = dbm.store(k, v, mdbm.MDBM_REPLACE)
+    if not rv:
+        print("FAIL")
+        break
+    print("DONE")
+
+print("[*] count of records : %d" % dbm.count_records())
+
+dbm.close()
+
+print("done")
+```
+
+### Deleting records in-place
+
+```python
+import mdbm
+import random
+
+print("[*] Deleting records in-place")
+
+path = "/tmp/test1.mdbm"
+flags = mdbm.MDBM_O_RDWR
+mode = 0o644  # means 0644
+
+dbm = mdbm.open(path, flags, mode)
+
+for i in range(0, 10):
+
+    k = str(random.randrange(0, 65534))
+
+    rv = dbm.delete(k)
+    if not rv:
+        print("[-] failed to delete an record, key=%s" % k)
+
+    v = dbm.fetch(k)
+    if v:
+        print("[-] failed to delete an record, key=%s, val=%s" % (k,v))
+        break
+
+print("[*] count of records : %d" % dbm.count_records())
+
+dbm.close()
+
+print("done")
+```
+
+### Iterating over all records
+
+```python
+import mdbm
+import random
+
+print("[*] Iterating over all records")
+
+path = "/tmp/test1.mdbm"
+flags = mdbm.MDBM_O_RDWR
+mode = 0o644  # means 0644
+
+dbm = mdbm.open(path, flags, mode)
+
+print("|-------|-------|")
+print("|  key  |  val  |")
+print("|-------|-------|")
+
+kv = dbm.first()
+
+print("|%07s|%07s|" % kv)
+
+while kv:
+
+    print("|%07s|%07s|" % kv)
+
+    kv = dbm.next()
+
+print("|-------|-------|")
+print("[*] count of records : %d" % dbm.count_records())
+
+dbm.close()
+
+print("done")
+```
+
+### Iterating over all keys
+
+```python
+import mdbm
+import random
+
+print("[*] Iterating over all records")
+
+path = "/tmp/test1.mdbm"
+flags = mdbm.MDBM_O_RDWR
+mode = 0o644  # means 0644
+
+dbm = mdbm.open(path, flags, mode)
+
+print("|-------|")
+print("|  key  |")
+print("|-------|")
+
+k = dbm.firstkey()
+
+print("|%07s|" % k)
+
+while k:
+
+    print("|%07s|" % k)
+
+    k = dbm.nextkey()
+
+print("|-------|")
+print("[*] count of records : %d" % dbm.count_records())
+
+dbm.close()
+
+print("done")
+```
 
 ## Benchmark
 
