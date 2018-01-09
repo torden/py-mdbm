@@ -12,7 +12,7 @@ CMD_MV          	:=$(shell which mv)
 CMD_AWK				:=$(shell which awk)
 CMD_SED				:=$(shell which sed)
 CMD_VALGRIND		:=$(shell which valgrind)
-
+CMD_PANDOC			:=$(shell which pandoc)
 
 PY_VER=$(shell $(CMD_PYTHON) -c "import sys;t='{v[0]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
 
@@ -42,7 +42,8 @@ endif
 
 clean::
 	@$(CMD_ECHO)  -e "\033[1;40;32mRemoving Crumbs.\033[01;m\x1b[0m"
-	@rm -rf *.out *.bin *.exe *.o *.a *.so test build *core* *.swp *.bak
+	@$(CMD_PYTHON) setup.py clean
+	@rm -rf *.out *.bin *.exe *.o *.a *.so test build *core* *.swp *.bak .benchmarks .cache __py*__
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 benchmark::
@@ -53,5 +54,7 @@ benchmark::
 	@$(CMD_PYTEST) tests/test_benchmark.py -m random_fetch_loop_100000
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
+readme::
+	@$(CMD_PANDOC) -f markdown -t plain README.md > README.txt
 
-.PHONY: clean build test all benchmark init
+.PHONY: clean build test all benchmark init readme

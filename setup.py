@@ -4,7 +4,8 @@ from distutils.core import setup, Extension
 
 setup(name = "py-mdbm",
     version = "0.1",
-    author="Troden",
+    author="torden",
+    author_email="torden@myself.com",
     description="Just! Python interface for Y! MDBM, Python MDBM Wapper",
     license="MIT",
     keywords="database nosql key-value",
@@ -25,7 +26,6 @@ setup(name = "py-mdbm",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: Implementation :: PyPy",
-        "Programming Language :: Python :: Implementation :: PyPy3",
         "Operating System :: POSIX :: Linux"
     ],
     ext_modules = [Extension("mdbm",
