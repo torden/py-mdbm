@@ -46,8 +46,10 @@ clean::
 
 benchmark::
 	@$(CMD_ECHO)  -e "\033[1;40;32mBenchmark Testing.\033[01;m\x1b[0m"
-	@$(CMD_PYTEST) test_benchmark.py -m loop_10000
-	@$(CMD_PYTEST) test_benchmark.py -m loop_100000
+	@$(CMD_PYTEST) test_benchmark.py -m store_loop_10000
+	@$(CMD_PYTEST) test_benchmark.py -m store_loop_100000
+	@$(CMD_PYTEST) test_benchmark.py -m random_fetch_loop_10000
+	@$(CMD_PYTEST) test_benchmark.py -m random_fetch_loop_100000
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 
