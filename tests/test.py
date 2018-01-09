@@ -13,7 +13,7 @@ class TestMDBMMethods(unittest.TestCase):
         flags = flags | mdbm.MDBM_LARGE_OBJECTS
         flags = flags | mdbm.MDBM_ANY_LOCKS
         flags = flags | mdbm.MDBM_O_TRUNC
-        self.mode = 0o644 #means 0644
+        self.mode = 0o644  # means 0644
         self.dbm = mdbm.open(self.path, flags, self.mode, 0, 0)
 
         self.flags = flags
@@ -21,7 +21,7 @@ class TestMDBMMethods(unittest.TestCase):
         kv1 = str(1)
         kv2 = str(1)
         kv3 = str(1)
-        
+
         self.dbm.store(kv1, kv1, mdbm.MDBM_INSERT)
         self.dbm.store(kv2, kv2, mdbm.MDBM_INSERT)
         self.dbm.store(kv3, kv3, mdbm.MDBM_INSERT)
@@ -34,11 +34,11 @@ class TestMDBMMethods(unittest.TestCase):
         pass
 
     def test_99_purge(self):
-        #self.dbm.purge()
+        # self.dbm.purge()
         pass
 
     def test_99_truncate(self):
-        #self.dbm.truncate()
+        # self.dbm.truncate()
         pass
 
     def test_02_store_fetch(self):
@@ -199,16 +199,6 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.unlock()
         self.assertTrue(rv, "rv=%s" % rv)
 
-    def test_81_trylock_shared(self):
-        rv = self.dbm.trylock_shared()
-        self.assertTrue(rv, "rv=%s" % rv)
-
-        rv = self.dbm.get_lockmode()
-        self.assertTrue((rv >= 0))
-
-        rv = self.dbm.unlock()
-        self.assertTrue(rv, "rv=%s" % rv)
-
     def test_81_lock_pages_unlock_pages(self):
         rv = self.dbm.lock_pages()
         self.assertTrue((rv >= 0))
@@ -289,7 +279,8 @@ class TestMDBMMethods(unittest.TestCase):
 
     def test_81_protect(self):
 
-        self.dbm_prot = mdbm.open(self.path, mdbm.MDBM_O_RDWR | mdbm.MDBM_PROTECT, self.mode, 0, 0)
+        flags = mdbm.MDBM_O_RDWR | mdbm.MDBM_PROTECT
+        self.dbm_prot = mdbm.open(self.path, flags, self.mode, 0, 0)
 
         k = str(random.randrange(0, 65535))
 
@@ -377,6 +368,7 @@ class TestMDBMMethods(unittest.TestCase):
 
     def test_999_misc(self):
         pass
+
 
 if __name__ == '__main__':
     unittest.main()
