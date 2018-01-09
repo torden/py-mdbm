@@ -96,7 +96,7 @@ PyMethodDef mdbm_methods[] = {
 			"Default : MDBM_LOG_OFF"
 	},
 
-	{"open", (PyCFunction)pymdbm_open, METH_VARARGS, 
+	{"open", (PyCFunction)pymdbm_open, METH_VARARGS | METH_KEYWORDS, 
 		"open(path, flags, mode, [psize, presize])"
 			"Creates and/or opens a database."
 	},
@@ -134,7 +134,7 @@ PyMethodDef mdbm_methods[] = {
 			"Purges (removes) all entries from an MDBM."
 			"This does not change the MDBM's configuration or general structure."
 	},
-	{"store", (PyCFunction)pymdbm_store, METH_VARARGS, 
+	{"store", (PyCFunction)pymdbm_store, METH_VARARGS | METH_KEYWORDS, 
 		"store(key, val, [flags])"
 			"Stores the record specified by the key and val parameters."
 	},
@@ -267,7 +267,7 @@ PyMethodDef mdbm_methods[] = {
 			"Releases MDBM data pages from always staying in memory"
 	},
 
-	{"plock", (PyCFunction)pymdbm_plock, METH_VARARGS,
+	{"plock", (PyCFunction)pymdbm_plock, METH_VARARGS | METH_KEYWORDS,
 		"plock(key, [flags]) #flags Ignored. Reserved for future use"
 			"Locks a specific partition in the database for exclusive access by the caller."
 			"The lock is nestable, so a caller already holding "
@@ -275,14 +275,14 @@ PyMethodDef mdbm_methods[] = {
 			"are made to release the lock."
 	},
 
-	{"punlock", (PyCFunction)pymdbm_punlock, METH_VARARGS,
+	{"punlock", (PyCFunction)pymdbm_punlock, METH_VARARGS | METH_KEYWORDS,
 		"punlock(key, [flags]) #flags Ignored. Reserved for future use"
 			"Unlocks a specific partition in the database, releasing exclusive access by the caller."
 			"If the caller has called plock() multiple times in a row,an equal number of unlock calls are required."
 			"See plock() for usage."
 	},
 
-	{"tryplock", (PyCFunction)pymdbm_tryplock, METH_VARARGS,
+	{"tryplock", (PyCFunction)pymdbm_tryplock, METH_VARARGS | METH_KEYWORDS,
 		"tryplock(key, [flags]) #flags Ignored. Reserved for future use"
 			"Tries to locks a specific partition in the database for exclusive access by the caller."
 			"The lock is nestable, so a caller already holding the lock may call plock() "
@@ -290,7 +290,7 @@ PyMethodDef mdbm_methods[] = {
 			"See plock() for usage."
 	},
 
-	{"lock_smart", (PyCFunction)pymdbm_lock_smart, METH_VARARGS,
+	{"lock_smart", (PyCFunction)pymdbm_lock_smart, METH_VARARGS | METH_KEYWORDS,
 		"lock_smart(key, [MDBM_PARTITIONED_LOCKS|MDBM_RW_LOCKS|MDBM_O_RDWR|])"
 			"Perform either partition, shared or exclusive locking based on the"
 			"locking-related flags supplied to open()."
@@ -301,7 +301,7 @@ PyMethodDef mdbm_methods[] = {
 			"\tmdbm::open() for all other locking flags or for writes, mdbm::lock_smart() will call mdbm_lock."
 	},
 
-	{"trylock_smart", (PyCFunction)pymdbm_trylock_smart, METH_VARARGS,
+	{"trylock_smart", (PyCFunction)pymdbm_trylock_smart, METH_VARARGS | METH_KEYWORDS,
 		"trylock_smart(key, [MDBM_PARTITIONED_LOCKS|MDBM_RW_LOCKS|MDBM_O_RDWR|])"
 			"Attempts to lock an MDBM based on the locking flags supplied to open()."
 			"NOTE:"
@@ -310,7 +310,7 @@ PyMethodDef mdbm_methods[] = {
 			"\tmdbm::pen() for all other locking flags or for writes, mdbm::trylock_smart() will call mdbm::trylock()."
 	},
 
-	{"unlock_smart", (PyCFunction)pymdbm_unlock_smart, METH_VARARGS,
+	{"unlock_smart", (PyCFunction)pymdbm_unlock_smart, METH_VARARGS | METH_KEYWORDS,
 		"unlock_smart(key, [MDBM_PARTITIONED_LOCKS|MDBM_RW_LOCKS|MDBM_O_RDWR|])"
 			"NOTE:"
 			"\tUnlock an MDBM based on the locking flags supplied to open()."
@@ -363,7 +363,7 @@ PyMethodDef mdbm_methods[] = {
 			"Calling it on an MDBM still in use will cause corruption and undefined behavior."
 			"Deleting lockfiles resets lock ownership and locking mode (exclusive/partition/shared)."
 	},
-	{"check", (PyCFunction)pymdbm_check, METH_VARARGS, 
+	{"check", (PyCFunction)pymdbm_check, METH_VARARGS | METH_KEYWORDS , 
 		"check(level, verbose)"
 			"Checks an MDBM's integrity, and displays info. on standard output."
 			"\tlevel : between 0 and 10"
@@ -541,7 +541,8 @@ static PyTypeObject MDBMType = {
     0,                              /*tp_getattro*/
     0,                              /*tp_setattro*/
     0,                              /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,             /*tp_xxx4*/
+    Py_TPFLAGS_DEFAULT,             /*tp_flags*/
+    "https://github.com/torden/py-mdbm", /*tp_docs*/
 };
 #endif
 
@@ -751,7 +752,7 @@ PyMODINIT_FUNC initmdbm(void) {
 
 
 // METHODS
-PyObject *pymdbm_open(PyObject *self, PyObject *args) {
+PyObject *pymdbm_open(PyObject *self, PyObject *args, PyObject *kwds) {
 
     const char *pfn = NULL;
     int flags = 0;
@@ -761,7 +762,9 @@ PyObject *pymdbm_open(PyObject *self, PyObject *args) {
 
     int rv = -1;
 
-    rv = PyArg_ParseTuple(args, "sii|ii", &pfn, &flags, &mode, &psize, &presize);
+
+    static char *pkwlist[] = {"path", "flags", "mode", "psize", "presize", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "sii|ii", pkwlist, &pfn, &flags, &mode, &psize, &presize);
     if (!rv) {
         PyErr_SetString(MDBMError, "required filepath and flags and mode");
         return NULL;
@@ -910,7 +913,7 @@ PyObject *pymdbm_purge(register MDBMObj *pmdbm_link, PyObject *unused) {
     _RETURN_NONE();
 }
 
-PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args) {
+PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
     char *pkey = NULL;
     char *pval = NULL;
@@ -919,7 +922,8 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args) {
     int rv = -1;
     datum key, val;
 
-    rv = PyArg_ParseTuple(args, "ss|i", &pkey, &pval, &flags);
+    static char *pkwlist[] = {"key", "val", "flags", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "ss|i", pkwlist, &pkey, &pval, &flags);
     if (!rv) {
         PyErr_SetString(MDBMError, "required key and value");
         return NULL;
@@ -964,7 +968,8 @@ PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
  
-    return _PYUNICODE_ANDSIZE(val.dptr, val.dsize);
+    //return _PYUNICODE_ANDSIZE(val.dptr, val.dsize);
+    return Py_BuildValue("(s)", _PYUNICODE_ANDSIZE(val.dptr, val.dsize));
 }
 
 PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
@@ -1342,8 +1347,8 @@ PyObject *pymdbm_first(register MDBMObj *pmdbm_link, PyObject *unused) {
     PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
     PyTuple_SetItem(retval, 1, _PYUNICODE(pretval));
 
-	//PyMem_Free(pretkey);
-	//PyMem_Free(pretval);
+	PyMem_Free(pretkey);
+	PyMem_Free(pretval);
 
     return retval;
 }
@@ -1376,8 +1381,8 @@ PyObject *pymdbm_next(register MDBMObj *pmdbm_link, PyObject *unused) {
     PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
     PyTuple_SetItem(retval, 1, _PYUNICODE(pretval));
 	
-	//PyMem_Free(pretkey);
-	//PyMem_Free(pretval);
+	PyMem_Free(pretkey);
+	PyMem_Free(pretval);
     return retval;
 }
 
@@ -1403,7 +1408,7 @@ PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused) {
     retval = PyTuple_New(1);
     PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
 
-	//PyMem_Free(pretkey);
+	PyMem_Free(pretkey);
 	//Py_DECREF(retval);
 
     return retval;
@@ -1430,22 +1435,23 @@ PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused) {
 
     retval = PyTuple_New(1);
     PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
-	//PyMem_Free(pretkey);
+	PyMem_Free(pretkey);
 	//Py_DECREF(retval);
 
     return retval;
 }
 
-PyObject *pymdbm_check(register MDBMObj *pmdbm_link, PyObject *args) {
+PyObject *pymdbm_check(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
 	int level = -1;
 	int verbose = -1;
 
     int rv = -1;
 
-    rv = PyArg_ParseTuple(args, "ii", &level, &verbose);
+    static char *pkwlist[] = {"level", "verbose", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "i|i", pkwlist, &level, &verbose);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required level(10 >= level >= 0), verbose(True | False)");
+        PyErr_SetString(MDBMError, "required level(10 >= level >= 0), [verbose(True | False)]");
         return NULL;
     }
 
@@ -1525,7 +1531,7 @@ PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused) {
     return Py_BuildValue("i", rv);
 }
 
-PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args) {
+PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
 	char *pkey = NULL;
 	int flags = 0;
@@ -1533,7 +1539,8 @@ PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args) {
     datum key;
     int rv = -1;
 
-    rv = PyArg_ParseTuple(args, "s|i", &pkey, &flags);
+    static char *pkwlist[] = {"key", "flags", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &key, &flags);
     if (!rv) {
         PyErr_SetString(MDBMError, "required str(key)");
         return NULL;
@@ -1555,7 +1562,7 @@ PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args) {
 	_RETURN_RV_BOOLEN(rv);
 }
 
-PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args) {
+PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
 	char *pkey = NULL;
 	int flags = 0;
@@ -1563,7 +1570,8 @@ PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args) {
     datum key;
     int rv = -1;
 
-    rv = PyArg_ParseTuple(args, "s|i", &pkey, &flags);
+   static char *pkwlist[] = {"key", "flags", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &key, &flags); 
     if (!rv) {
         PyErr_SetString(MDBMError, "required str(key)");
         return NULL;
@@ -1585,7 +1593,7 @@ PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args) {
 	_RETURN_RV_BOOLEN(rv);
 }
 
-PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args) {
+PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
 	char *pkey = NULL;
 	int flags = 0;
@@ -1593,7 +1601,8 @@ PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args) {
     datum key;
     int rv = -1;
 
-    rv = PyArg_ParseTuple(args, "s|i", &pkey, &flags);
+    static char *pkwlist[] = {"key", "flags", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &key, &flags);
     if (!rv) {
         PyErr_SetString(MDBMError, "required str(key)");
         return NULL;
@@ -1615,7 +1624,7 @@ PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args) {
 	_RETURN_RV_BOOLEN(rv);
 }
 
-PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args) {
+PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
 	char *pkey = NULL;
 	int flags = 0;
@@ -1623,7 +1632,8 @@ PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args) {
     datum key;
     int rv = -1;
 
-    rv = PyArg_ParseTuple(args, "s|i", &pkey, &flags);
+    static char *pkwlist[] = {"key", "flags", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &key, &flags);
     if (!rv) {
         PyErr_SetString(MDBMError, "required str(key)");
         return NULL;
@@ -1645,7 +1655,7 @@ PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args) {
 	_RETURN_RV_BOOLEN(rv);
 }
 
-PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args) {
+PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
 	char *pkey = NULL;
 	int flags = 0;
@@ -1653,7 +1663,8 @@ PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args) {
     datum key;
     int rv = -1;
 
-    rv = PyArg_ParseTuple(args, "s|i", &pkey, &flags);
+    static char *pkwlist[] = {"key", "flags", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &key, &flags); 
     if (!rv) {
         PyErr_SetString(MDBMError, "required str(key)");
         return NULL;
@@ -1675,7 +1686,7 @@ PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args) {
 	_RETURN_RV_BOOLEN(rv);
 }
 
-PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args) {
+PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
 	char *pkey = NULL;
 	int flags = 0;
@@ -1683,7 +1694,9 @@ PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args) {
     datum key;
     int rv = -1;
 
-    rv = PyArg_ParseTuple(args, "s|i", &pkey, &flags);
+    
+    static char *pkwlist[] = {"key", "flags", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &key, &flags);
     if (!rv) {
         PyErr_SetString(MDBMError, "required str(key)");
         return NULL;
