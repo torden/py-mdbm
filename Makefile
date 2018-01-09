@@ -25,17 +25,18 @@ init::
 
 build::
 	@$(CMD_ECHO)  -e "\033[1;40;32mBuild Source.\033[01;m\x1b[0m"
-	@$(CMD_PYTHON) setup.py build_ext --inplace 
+	@$(CMD_PYTHON) setup.py build_ext
+	@$(CMD_PYTHON) setup.py install
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 test::
 ifeq ($(GOLANGV16_OVER),2)
 	@$(CMD_ECHO)  -e "\033[1;40;32mTesting Memory Leak and Unit-test.\033[01;m\x1b[0m"
-	@$(CMD_VALGRIND) --tool=memcheck --dsymutil=yes --track-origins=yes --show-leak-kinds=all --trace-children=yes --suppressions=.valgrind-python.supp $(CMD_PYTHON) -E -tt test.py -v
+	@$(CMD_VALGRIND) --tool=memcheck --dsymutil=yes --track-origins=yes --show-leak-kinds=all --trace-children=yes --suppressions=.valgrind-python.supp $(CMD_PYTHON) -E -tt tests/test.py -v
 else
 	@$(CMD_ECHO)  -e "\033[1;40;32mUnit-Testing.\033[01;m\x1b[0m"
 #	@$(CMD_VALGRIND) --tool=memcheck --suppressions=.valgrind-python3.supp $(PYTHON) -E test.py -v
-	@$(CMD_PYTHON) -E test.py -v
+	@$(CMD_PYTHON) -E tests/test.py -v
 endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
@@ -46,10 +47,10 @@ clean::
 
 benchmark::
 	@$(CMD_ECHO)  -e "\033[1;40;32mBenchmark Testing.\033[01;m\x1b[0m"
-	@$(CMD_PYTEST) test_benchmark.py -m store_loop_10000
-	@$(CMD_PYTEST) test_benchmark.py -m store_loop_100000
-	@$(CMD_PYTEST) test_benchmark.py -m random_fetch_loop_10000
-	@$(CMD_PYTEST) test_benchmark.py -m random_fetch_loop_100000
+	@$(CMD_PYTEST) tests/test_benchmark.py -m store_loop_10000
+	@$(CMD_PYTEST) tests/test_benchmark.py -m store_loop_100000
+	@$(CMD_PYTEST) tests/test_benchmark.py -m random_fetch_loop_10000
+	@$(CMD_PYTEST) tests/test_benchmark.py -m random_fetch_loop_100000
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 

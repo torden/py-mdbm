@@ -968,8 +968,8 @@ PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
  
-    //return _PYUNICODE_ANDSIZE(val.dptr, val.dsize);
-    return Py_BuildValue("(s)", _PYUNICODE_ANDSIZE(val.dptr, val.dsize));
+    return _PYUNICODE_ANDSIZE(val.dptr, val.dsize);
+    //return Py_BuildValue("(u)", _PYUNICODE_ANDSIZE(val.dptr, val.dsize));
 }
 
 PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
@@ -1540,7 +1540,7 @@ PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &key, &flags);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags);
     if (!rv) {
         PyErr_SetString(MDBMError, "required str(key)");
         return NULL;
@@ -1570,8 +1570,8 @@ PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     datum key;
     int rv = -1;
 
-   static char *pkwlist[] = {"key", "flags", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &key, &flags); 
+    static char *pkwlist[] = {"key", "flags", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags); 
     if (!rv) {
         PyErr_SetString(MDBMError, "required str(key)");
         return NULL;
@@ -1602,7 +1602,7 @@ PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args, PyObject
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &key, &flags);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags);
     if (!rv) {
         PyErr_SetString(MDBMError, "required str(key)");
         return NULL;
@@ -1633,7 +1633,7 @@ PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObje
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &key, &flags);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags);
     if (!rv) {
         PyErr_SetString(MDBMError, "required str(key)");
         return NULL;
@@ -1664,7 +1664,7 @@ PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyO
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &key, &flags); 
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags); 
     if (!rv) {
         PyErr_SetString(MDBMError, "required str(key)");
         return NULL;
@@ -1696,7 +1696,7 @@ PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyOb
 
     
     static char *pkwlist[] = {"key", "flags", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &key, &flags);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags);
     if (!rv) {
         PyErr_SetString(MDBMError, "required str(key)");
         return NULL;
