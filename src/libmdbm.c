@@ -24,32 +24,26 @@
 #define MDBM_LOG_FATAL          LOG_ALERT
 
 
-static int loglevel = 0;
+static int loglevel = -1;
 static int capture = 0;
 static int dev_null;
-static int org_stdout;
 static int org_stderr;
 
 #define CAPTURE_START() {\
     if (loglevel == -1) {\
-		fflush(stdout);\
 		fflush(stderr);\
-    	dev_null = open("/dev/null", O_WRONLY);\
-    	org_stdout = dup(STDOUT_FILENO);\
-    	org_stderr = dup(STDERR_FILENO);\
-        dup2(dev_null, STDOUT_FILENO);\
-        dup2(dev_null, STDERR_FILENO);\
+    	dev_null = open("/dev/null", O_RDWR);\
+    	org_stderr = dup(fileno(stderr));\
+        dup2(dev_null, fileno(stderr));\
 		capture = 1;\
     }\
 }
 
 #define CAPTURE_END() {\
     if (capture == 1) {\
-		fflush(stdout);\
 		fflush(stderr);\
-    	close(dev_null);\
-        dup2(org_stdout, STDOUT_FILENO);\
-        dup2(org_stderr, STDERR_FILENO);\
+        dup2(org_stderr, fileno(stderr));\
+		close(dev_null);\
 		capture = 0;\
     }\
 }
