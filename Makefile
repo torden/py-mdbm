@@ -43,7 +43,7 @@ endif
 clean::
 	@$(CMD_ECHO)  -e "\033[1;40;32mRemoving Crumbs.\033[01;m\x1b[0m"
 	@$(CMD_PYTHON) setup.py clean
-	@rm -rf *.out *.bin *.exe *.o *.a *.so test build *core* *.swp *.bak .benchmarks .cache __py*__
+	@rm -rf *.out *.bin *.exe *.o *.a *.so test build dist *core* *.swp *.bak .benchmarks .cache __py*__
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 benchmark::
