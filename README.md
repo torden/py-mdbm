@@ -72,7 +72,13 @@ the following is list of support api on now.
 - Ubuntu : See the [pre-build packages](https://github.com/torden/go-mdbm/tree/master/pkg)
 - RHEL (CentOS) : See the [pre-build packages](https://github.com/torden/go-mdbm/tree/master/pkg)
 
-### py-mdbm
+### py-mdbm (use pip)
+
+```shell
+pip install py-mdbm
+```
+
+### py-mdbm (use source)
 
 #### Download
 
@@ -87,7 +93,7 @@ cd py-mdbm
 CMD_PYTHON=/app/python/bin/python make
 ```
 
-#### Check
+### Check
 
 ```shell
 $ python
