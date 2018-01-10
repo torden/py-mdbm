@@ -85,7 +85,10 @@ PyObject *pymdbm_count_records(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_count_pages(register MDBMObj *pmdbm_link, PyObject *unused);
 
 PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused);
-PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *unused);
+
+PyObject *pymdbm_replace_db(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_replace_file(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 
 #if PY_MAJOR_VERSION >= 3
 PyObject *pymdbm__enter(register MDBMObj *pmdbm_link, PyObject *unused);
