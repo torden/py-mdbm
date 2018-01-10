@@ -26,7 +26,7 @@ init::
 build::
 	@$(CMD_ECHO)  -e "\033[1;40;32mBuild Source.\033[01;m\x1b[0m"
 	@$(CMD_PYTHON) setup.py build_ext
-	@$(CMD_PYTHON) setup.py install
+	@$(CMD_SUDO) $(CMD_PYTHON) setup.py install
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 dev::

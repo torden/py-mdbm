@@ -1086,6 +1086,8 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     rv = mdbm_store(pmdbm_link->pmdbm, key, val, (int)flags);
     CAPTURE_END();
 
+fprintf(stdout, "rv=%d, flags=%d, flags | MDBM_INSERT = %d\n", rv, flags, (flags|MDBM_INSERT));
+
 /*
 	if (rv == 1 && flags == (flags | MDBM_INSERT)) { //the key already exists
         PyErr_Format(MDBMError, "the key(=%s) already exists", pkey);
