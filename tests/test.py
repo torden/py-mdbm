@@ -24,7 +24,7 @@ class TestMDBMMethods(unittest.TestCase):
 
         self.dbm.store(kv1, kv1, mdbm.MDBM_REPLACE)
         self.dbm.store(kv2, kv2, mdbm.MDBM_REPLACE)
-	self.dbm.store(kv3, kv3, mdbm.MDBM_REPLACE)
+        self.dbm.store(kv3, kv3, mdbm.MDBM_REPLACE)
 
     def tearDown(self):
         self.dbm.sync()
