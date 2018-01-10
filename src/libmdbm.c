@@ -23,8 +23,8 @@
 #define MDBM_LOG_ABORT          LOG_EMERG
 #define MDBM_LOG_FATAL          LOG_ALERT
 
-
 static int loglevel = -1;
+/* -- conflict
 static int capture = 0;
 static int dev_null;
 static int org_stderr;
@@ -47,6 +47,9 @@ static int org_stderr;
 		capture = 0;\
     }\
 }
+*/
+#define CAPTURE_START()
+#define CAPTURE_END()
 
 // New in version 2.6.
 #if !defined(PyModule_AddIntMacro)
@@ -91,12 +94,25 @@ static int org_stderr;
 #endif
 
 PyMethodDef mdbm_methods[] = {
+#if PY_MAJOR_VERSION >= 3
+	{"__enter__", (PyCFunction)pymdbm__enter, METH_NOARGS, 
+		"__enter__"
+			"For context manager."
+	},
+	{"__exit__", (PyCFunction)pymdbm__exit, METH_VARARGS, 
+		"__exit__"
+			"For context manager."
+	},
+#endif
 	{"log_minlevel", (PyCFunction)pymdbm_log_minlevel, METH_VARARGS, 
 		"log_minlevel(MDBM_LOG_XXX)"
 			"Set the minimum logging level. Lower priority messages are discarded"
 			"Default : MDBM_LOG_OFF"
 	},
-
+	{"init_iter", (PyCFunction)pymdbm_init_iter, METH_NOARGS, 
+		"init_iter()"
+			"Returns Initialized an MDBM iterator."
+	},
 	{"open", (PyCFunction)pymdbm_open, METH_VARARGS | METH_KEYWORDS, 
 		"open(path, flags, mode, [psize, presize])"
 			"Creates and/or opens a database."
@@ -143,6 +159,19 @@ PyMethodDef mdbm_methods[] = {
 		"fetch(key)"
 			"Fetches the record specified by the key argument"
 	},
+	{"fetch_r", (PyCFunction)pymdbm_fetch_r, METH_VARARGS | METH_KEYWORDS, 
+		"fetch(key, [iter{m_pageno,m_next}])"
+            "A record can be updated in-place by fetching the value"
+	},
+    {"fetch_dup_r", (PyCFunction)pymdbm_fetch_dup_r, METH_VARARGS | METH_KEYWORDS, 
+        "fetch_dup_r(key, iter{m_pageno,m_next})"
+            "Fetches the next value for a key inserted via store() with the MDBM_INSERT_DUP flag set."
+            "The order of values returned by iterating via this function is not guaranteed to be the same order as the values were inserted."
+            ""
+            "As with any db iteration, record insertion and deletion during iteration may cause the iteration to skip and/or repeat records."
+            "Calling this function with an iterator initialized via init_iter() will cause this function to return the first value for the given key."
+	},
+
 	{"get_page", (PyCFunction)pymdbm_get_page, METH_VARARGS, 
 		"get_page(key)"
 			"Gets the MDBM page number for a given key."
@@ -152,8 +181,16 @@ PyMethodDef mdbm_methods[] = {
 		"delete(key)"
 			"Deletes a specific record."
 	},
+    {"delete_r", (PyCFunction)pymdbm_delete, METH_VARARGS, 
+        "delete(iter{m_pageno,m_next})"
+            "=param[in,out] iter MDBM iterator pointing to item to be deleted"
+            "Deletes the record currently addressed by the iter argument."
+            "After deletion, the key and/or value returned by the iterating function is no longer valid."
+            "Calling next_r() on the iterator will return the key/value"
+            "for the entry following the entry that was deleted."
+    },
 
-	{"get_hash", (PyCFunction)pymdbm_get_hash, METH_NOARGS, 
+    {"get_hash", (PyCFunction)pymdbm_get_hash, METH_NOARGS, 
 		"get_hash()"
 			"Gets the MDBM's hash function identifier."
 	},
@@ -794,6 +831,9 @@ PyObject *pymdbm_open(PyObject *self, PyObject *args, PyObject *kwds) {
         return NULL;
 	}
 
+    mdbm_log_minlevel(-1);
+    MDBM_ITER_INIT(&(*pmdbm_link).iter);
+
     CAPTURE_START();
     pmdbm_link->pmdbm = mdbm_open(pfn, flags, mode, psize, presize);
     CAPTURE_END();
@@ -943,7 +983,6 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     _RETURN_RV_BOOLEN(rv);
 }
 
-
 PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
 
     char *pkey = NULL;
@@ -970,7 +1009,213 @@ PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
     }
  
     return _PYUNICODE_ANDSIZE(val.dptr, val.dsize);
-    //return Py_BuildValue("(u)", _PYUNICODE_ANDSIZE(val.dptr, val.dsize));
+}
+
+PyObject *pymdbm_init_iter(register MDBMObj *pmdbm_link, PyObject *unsed) {
+
+    int rv = -1;
+    PyObject *pretiter = NULL;
+    MDBM_ITER iter;
+
+
+    MDBM_ITER_INIT(&iter);
+
+    pretiter = PyDict_New();
+    rv = PyDict_SetItemString(pretiter, "m_pageno", Py_BuildValue("i", iter.m_pageno));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (iter.m_pageno)");
+        _RETURN_FALSE();
+    }
+    rv = PyDict_SetItemString(pretiter, "m_next", Py_BuildValue("i", iter.m_next));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (iter.m_next)");
+        _RETURN_FALSE();
+    }
+
+    Py_INCREF(pretiter);
+    return pretiter;
+}
+
+PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
+
+    char *pkey = NULL;
+
+    int rv = -1;
+    datum key, val;
+    PyObject *previter = NULL;
+    PyObject *previter_pageno = NULL;
+    PyObject *previter_next = NULL;
+    MDBM_ITER arg_iter;
+
+    PyObject *pretdic = NULL;
+    PyObject *pretiter = NULL;
+
+    static char *pkwlist[] = {"key", "iter", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|O", pkwlist, &pkey, &previter);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(key)");
+        return NULL;
+    }
+
+    MDBM_ITER_INIT(&arg_iter);
+
+
+    if(previter != NULL && PyDict_Size(previter) > 0 && PyDict_Check(previter) > 0) {
+
+        previter_pageno = PyDict_GetItemString(previter, "m_pageno");
+        if (previter_pageno == NULL) {
+            PyErr_SetString(MDBMError, "required iter must have a m_pageno field");
+            return NULL;
+        }
+
+        previter_next = PyDict_GetItemString(previter, "m_next");
+        if (previter_next == NULL) {
+            PyErr_SetString(MDBMError, "required iter must have a m_next field");
+            return NULL;
+        }
+
+    	Py_DECREF(previter_pageno);
+	    Py_DECREF(previter_next);
+
+        arg_iter.m_pageno = (mdbm_ubig_t) PyLong_AsLong(previter_pageno);
+        arg_iter.m_next = (int) PyLong_AsLong(previter_next);
+    }
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+
+    CAPTURE_START();
+    rv = mdbm_fetch_r(pmdbm_link->pmdbm, &key, &val, &arg_iter);
+    CAPTURE_END();
+    if (rv == -1) {
+        _RETURN_FALSE();
+    }
+
+    if (val.dptr == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretiter = PyDict_New();
+    rv = PyDict_SetItemString(pretiter, "m_pageno", Py_BuildValue("i", arg_iter.m_pageno));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (m_pageno)");
+        _RETURN_FALSE();
+    }
+    rv = PyDict_SetItemString(pretiter, "m_next", Py_BuildValue("i", arg_iter.m_next));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (m_next)");
+        _RETURN_FALSE();
+    }
+
+    pretdic = PyDict_New();
+    rv = PyDict_SetItemString(pretdic, "iter",  pretiter);
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (iter)");
+        _RETURN_FALSE();
+    }
+
+    rv = PyDict_SetItemString(pretdic, "val", _PYUNICODE_ANDSIZE(val.dptr, val.dsize));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (val)");
+        _RETURN_FALSE();
+    }
+
+	Py_DECREF(pretiter);
+    Py_INCREF(pretdic);
+
+    return pretdic;
+}
+
+PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
+
+    char *pkey = NULL;
+
+    int rv = -1;
+    datum key, val;
+    PyObject *previter = NULL;
+    PyObject *previter_pageno = NULL;
+    PyObject *previter_next = NULL;
+    MDBM_ITER arg_iter;
+
+    PyObject *pretdic = NULL;
+    PyObject *pretiter = NULL;
+
+    static char *pkwlist[] = {"key", "iter", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "sO", pkwlist, &pkey, &previter);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(key) and dict(iter{m_pageno,mnext})");
+        return NULL;
+    }
+
+    MDBM_ITER_INIT(&arg_iter);
+
+    if(previter != NULL && PyDict_Size(previter) > 0 && PyDict_Check(previter) > 0) {
+
+        previter_pageno = PyDict_GetItemString(previter, "m_pageno");
+        if (previter_pageno == NULL) {
+            PyErr_SetString(MDBMError, "required iter must have a m_pageno field");
+            return NULL;
+        }
+
+        previter_next = PyDict_GetItemString(previter, "m_next");
+        if (previter_next == NULL) {
+            PyErr_SetString(MDBMError, "required iter must have a m_next field");
+            return NULL;
+        }
+
+    	Py_DECREF(previter_pageno);
+	    Py_DECREF(previter_next);
+
+        arg_iter.m_pageno = (mdbm_ubig_t) PyLong_AsLong(previter_pageno);
+        arg_iter.m_next = (int) PyLong_AsLong(previter_next);
+    }
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+
+    CAPTURE_START();
+    rv = mdbm_fetch_dup_r(pmdbm_link->pmdbm, &key, &val, &arg_iter);
+    CAPTURE_END();
+
+    if (rv == -1) {
+        _RETURN_FALSE();
+    }
+
+    if (val.dptr == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretiter = PyDict_New();
+    rv = PyDict_SetItemString(pretiter, "m_pageno", Py_BuildValue("i", arg_iter.m_pageno));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (m_pageno)");
+        _RETURN_FALSE();
+    }
+    rv = PyDict_SetItemString(pretiter, "m_next", Py_BuildValue("i", arg_iter.m_next));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (m_next)");
+        _RETURN_FALSE();
+    }
+
+    pretdic = PyDict_New();
+    rv = PyDict_SetItemString(pretdic, "iter",  pretiter);
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (iter)");
+        _RETURN_FALSE();
+    }
+
+    rv = PyDict_SetItemString(pretdic, "val", _PYUNICODE_ANDSIZE(val.dptr, val.dsize));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (val)");
+        _RETURN_FALSE();
+    }
+
+	Py_DECREF(pretiter);
+    Py_INCREF(pretdic);
+
+    return pretdic;
 }
 
 PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
@@ -1019,6 +1264,54 @@ PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args) {
 
     CAPTURE_START();
     rv = mdbm_delete(pmdbm_link->pmdbm, key);
+    CAPTURE_END();
+
+    _RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_delete_r(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    int rv = -1;
+    PyObject *previter = NULL;
+    PyObject *previter_pageno = NULL;
+    PyObject *previter_next = NULL;
+    MDBM_ITER arg_iter;
+
+    rv = PyArg_ParseTuple(args, "O", &previter);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required dic(iter{m_pageno,m_next})");
+        return NULL;
+    }
+
+    MDBM_ITER_INIT(&arg_iter);
+
+    if(previter != NULL && PyDict_Size(previter) > 0 && PyDict_Check(previter) > 0) {
+
+        previter_pageno = PyDict_GetItemString(previter, "m_pageno");
+        if (previter_pageno == NULL) {
+            PyErr_SetString(MDBMError, "required iter must have a m_pageno field");
+            return NULL;
+        }
+
+        previter_next = PyDict_GetItemString(previter, "m_next");
+        if (previter_next == NULL) {
+            PyErr_SetString(MDBMError, "required iter must have a m_next field");
+            return NULL;
+        }
+
+    	Py_DECREF(previter_pageno);
+	    Py_DECREF(previter_next);
+
+        arg_iter.m_pageno = (mdbm_ubig_t) PyLong_AsLong(previter_pageno);
+        arg_iter.m_next = (int) PyLong_AsLong(previter_next);
+    } else {
+        PyErr_SetString(MDBMError, "failed to read to dic(iter{m_pageno,m_next})");
+        return NULL;
+    }
+
+
+    CAPTURE_START();
+    rv = mdbm_delete_r(pmdbm_link->pmdbm, &arg_iter);
     CAPTURE_END();
 
     _RETURN_RV_BOOLEN(rv);
@@ -1132,7 +1425,7 @@ PyObject *pymdbm_get_lockmode(register MDBMObj *pmdbm_link, PyObject *unused) {
     CAPTURE_START();
     rv = mdbm_get_lockmode(pmdbm_link->pmdbm);
     CAPTURE_END();
-    if (rv == -1) {
+    if (rv == (uint32_t)-1) {
         PyErr_SetString(MDBMError, "mdbm::get_lockmode() does not obtain the current MDBM's lock info.");
         _RETURN_FALSE();
     }
@@ -1742,6 +2035,39 @@ PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *args) {
 
 	_RETURN_RV_BOOLEN(rv);
 }
+
+
+#if PY_MAJOR_VERSION >= 3
+// - for context manager
+PyObject *pymdbm__enter(register MDBMObj *pmdbm_link, PyObject *unused) {
+    Py_INCREF(pmdbm_link);
+    return (PyObject*)pmdbm_link;
+}
+
+PyObject *pymdbm__exit(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    PyObject* exc_type, *exc_value, *exc_tb;
+
+     if (!PyArg_ParseTuple(args, "OOO", &exc_type, &exc_value, &exc_tb)) {
+        _RETURN_NONE();
+    }
+
+    if (exc_type == Py_None && exc_value == Py_None && exc_tb == Py_None) {
+        PyObject_CallMethod((PyObject*)pmdbm_link, (char *)"sync", "");
+        PyObject_CallMethod((PyObject*)pmdbm_link, (char *)"close", "");
+    } else {
+        // - debug
+        //PyErr_Format(MDBMError, "mdbm::__exit__ does not work");
+        _RETURN_NONE();
+    }
+
+    Py_INCREF(Py_False);
+    return Py_False;
+}
+
+#endif
+
+
 
 /*
  * Local variables:

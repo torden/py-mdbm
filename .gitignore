@@ -51,6 +51,7 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+MANIFEST
 run*.sh
 .*.swp
 *.swp
