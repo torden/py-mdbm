@@ -20,7 +20,7 @@ the following is list of support api on now.
 |---|---|
 |[File Management](http://yahoo.github.io/mdbm/api/group__FileManagementGroup.html)|mdbm_open, mdbm_close, mdbm_sync, mdbm_fsync, mdbm_close_fd, *~~mdbm_replace_db, mdbm_replace_file, mdbm_dup_handle,  mdbm_pre_split, mdbm_fcopy~~*|
 |[Configuration](http://yahoo.github.io/mdbm/api/group__ConfigurationGroup.html)|mdbm_get_version, mdbm_get_size, mdbm_get_page_size, mdbm_get_limit_size, mdbm_get_hash, *~~mdbm_get_magic_number, mdbm_setspillsize, mdbm_get_alignment, mdbm_set_alignment, mdbm_limit_size_v3, mdbm_limit_dir_size, mdbm_set_window_size~~*|
-|[Record Access](http://yahoo.github.io/mdbm/api/group__RecordAccessGroup.html)|mdbm_fetch, mdbm_delete, mdbm_store, *~~mdbm_fetch_r~~, ~~mdbm_fetch_buf~~, ~~mdbm_fetch_dup_r~~, ~~mdbm_fetch_str~~, ~~mdbm_fetch_info~~, ~~mdbm_delete_r~~, ~~mdbm_delete_str~~, ~~mdbm_store_r~~, ~~mdbm_store_str~~*|
+|[Record Access](http://yahoo.github.io/mdbm/api/group__RecordAccessGroup.html)|mdbm_fetch, mdbm_delete, mdbm_store, mdbm_fetch_r, mdbm_fetch_dup_r, *~~mdbm_fetch_buf~~, ~~mdbm_fetch_str~~, ~~mdbm_fetch_info~~, ~~mdbm_delete_r~~, ~~mdbm_delete_str~~, ~~mdbm_store_r~~, ~~mdbm_store_str~~*|
 |[Record Iteration](http://yahoo.github.io/mdbm/api/group__RecordIterationGroup.html)|mdbm_first, mdbm_next, mdbm_firstkey, mdbm_nextkey, *~~mdbm_first_r~~, ~~mdbm_next_r~~, ~~mdbm_firstkey_r~~, ~~mdbm_nextkey_r~~, ~~mdbm_iterate~~*|
 |[Locking](http://yahoo.github.io/mdbm/api/group__LockingGroup.html)|mdbm_islocked, mdbm_isowned, mdbm_lock, mdbm_unlock, mdbm_lock_reset, mdbm_delete_lockfiles,  mdbm_get_lockmode, mdbm_trylock, mdbm_plock, mdbm_punlock, mdbm_tryplock, mdbm_lock_shared, mdbm_trylock_shared, mdbm_lock_smart, mdbm_trylock_smart, mdbm_unlock_smart|
 |[Data Management](http://yahoo.github.io/mdbm/api/group__DataManagementGroup.html)|mdbm_compress_tree, mdbm_truncate, mdbm_purge,  *~~mdbm_prune, mdbm_set_cleanfunc, mdbm_clean~~*|
@@ -84,7 +84,6 @@ git clone https://github.com/torden/py-mdbm
 
 ```shell
 cd py-mdbm
-pip install -r requirements.txt
 CMD_PYTHON=/app/python/bin/python make
 ```
 
@@ -93,6 +92,8 @@ CMD_PYTHON=/app/python/bin/python make
 See the [Source Code](https://github.com/torden/py-mdbm/tree/master/example) for more details
 
 ### Creating and populating a database
+
+#### Python 2 or higher
 
 ```python
 import mdbm
@@ -124,6 +125,38 @@ dbm.close()
 
 print("done")
 ```
+
+#### Python 3 or higher
+
+```python
+import mdbm
+import random
+
+print("[*] Creating and populating a database")
+
+path = "/tmp/test1.mdbm"
+flags = mdbm.MDBM_O_RDWR
+flags = flags | mdbm.MDBM_O_CREAT
+flags = flags | mdbm.MDBM_LARGE_OBJECTS
+flags = flags | mdbm.MDBM_ANY_LOCKS
+flags = flags | mdbm.MDBM_O_TRUNC
+mode = 0o644  # means 0644
+
+with mdbm.open(path, flags, mode) as dbm:
+    for i in range(0, 65535):
+        k = str(i)
+        v = str(random.randrange(0, 65535))
+
+        rv = dbm.store(k, v, mdbm.MDBM_INSERT)
+        if not rv:
+            print("[-] failed to data store to ", path)
+            break
+
+    print("[*] count of records : %d" % dbm.count_records())
+
+print("done")
+```
+
 
 ### Fetching records in-place
 
@@ -301,6 +334,57 @@ print("|-------|")
 print("[*] count of records : %d" % dbm.count_records())
 
 dbm.close()
+
+print("done")
+```
+
+### Iteration over all value by key
+
+```python
+import mdbm
+import random
+
+print("[*] Creating and populating a database")
+
+path = "/tmp/test_py_dup.mdbm"
+flags = mdbm.MDBM_O_RDWR
+flags = flags | mdbm.MDBM_O_CREAT
+flags = flags | mdbm.MDBM_LARGE_OBJECTS
+flags = flags | mdbm.MDBM_ANY_LOCKS
+flags = flags | mdbm.MDBM_O_TRUNC
+mode = 0o644  # means 0644
+
+with mdbm.open(path, flags, mode) as dbm:
+
+    for k in range(0, 100):
+        key = str(k)
+
+        for i in range(1, 12):
+            val = str(123 * i)
+
+            rv = dbm.store(key, val, mdbm.MDBM_INSERT_DUP)
+            if not rv:
+                print("[-] failed to data store to ", path)
+                break
+
+print("[*] Loop through DB, looking at records with the same key.")
+with mdbm.open(path, mdbm.MDBM_O_RDONLY, mode) as dbm:
+
+    print("[*] count of records : %d" % dbm.count_records())
+    print("|-------|-------|")
+    print("|  key  |  val  |")
+    print("|-------|-------|")
+
+    k = str(random.randrange(0, 99))
+
+    empty_iter = dbm.init_iter()
+    info = dbm.fetch_dup_r(k, empty_iter)
+    while info:
+
+        print("|%07s|%07s|" % (k, info['val']))
+        info = dbm.fetch_dup_r(k, info['iter'])
+
+print("|-------|-------|")
 
 print("done")
 ```

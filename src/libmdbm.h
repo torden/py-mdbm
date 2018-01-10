@@ -9,7 +9,13 @@
 typedef struct {
     PyObject_HEAD
     MDBM *pmdbm;
+    MDBM_ITER iter;
 } MDBMObj;
+
+typedef struct {
+    PyObject_HEAD
+    MDBM_ITER *piter;
+} MDBMIter;
 
 PyObject *MDBMError = NULL;
 PyObject *pymdbm_open(PyObject *self, PyObject *args, PyObject *kwds);
@@ -28,6 +34,9 @@ PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args);
 
+PyObject *pymdbm_init_iter(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
+PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 
 PyObject *pymdbm_get_hash(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_set_hash(register MDBMObj *pmdbm_link, PyObject *args);
@@ -76,6 +85,11 @@ PyObject *pymdbm_count_pages(register MDBMObj *pmdbm_link, PyObject *unused);
 
 PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *args);
+
+#if PY_MAJOR_VERSION >= 3
+PyObject *pymdbm__enter(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm__exit(register MDBMObj *pmdbm_link, PyObject *args);
+#endif
 
 
 #endif
