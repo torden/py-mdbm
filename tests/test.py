@@ -1,6 +1,7 @@
 import random
 import unittest
 import mdbm
+import os
 
 
 class TestMDBMMethods(unittest.TestCase):
@@ -17,14 +18,13 @@ class TestMDBMMethods(unittest.TestCase):
         self.dbm = mdbm.open(self.path, flags, self.mode, 0, 0)
 
         self.flags = flags
-
         kv1 = str(1)
-        kv2 = str(1)
-        kv3 = str(1)
+        kv2 = str(2)
+        kv3 = str(3)
 
-        self.dbm.store(kv1, kv1, mdbm.MDBM_INSERT)
-        self.dbm.store(kv2, kv2, mdbm.MDBM_INSERT)
-        self.dbm.store(kv3, kv3, mdbm.MDBM_INSERT)
+        self.dbm.store(kv1, kv1, mdbm.MDBM_REPLACE)
+        self.dbm.store(kv2, kv2, mdbm.MDBM_REPLACE)
+        self.dbm.store(kv3, kv3, mdbm.MDBM_REPLACE)
 
     def tearDown(self):
         self.dbm.sync()
@@ -44,19 +44,19 @@ class TestMDBMMethods(unittest.TestCase):
     def test_02_store_fetch(self):
 
         k = str(1)
-        v = str(random.randrange(0, 65535))
+        v = str(random.randint(0, 65535))
         rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
         self.assertTrue(rv, "failred to store, \
         rv=%d, key=%s, val=%s" % (rv, k, v))
 
         k = str(2)
-        v = str(random.randrange(0, 65535))
+        v = str(random.randint(0, 65535))
         rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
         self.assertTrue(rv, "failred to store, \
         rv=%d, key=%s, val=%s" % (rv, k, v))
 
         k = str(3)
-        v = str(random.randrange(0, 65535))
+        v = str(random.randint(0, 65535))
         rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
         self.assertTrue(rv, "failred to store, \
         rv=%d, key=%s, val=%s" % (rv, k, v))
@@ -150,8 +150,8 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.lock()
         self.assertTrue(rv, "rv=%s" % rv)
 
-        k = str(random.randrange(0, 65535))
-        v = str(random.randrange(0, 65535))
+        k = str(random.randint(0, 65535))
+        v = str(random.randint(0, 65535))
         rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
         self.assertTrue(rv, "failred to store, \
         rv=%d, key=%s, val=%s" % (rv, k, v))
@@ -210,7 +210,7 @@ class TestMDBMMethods(unittest.TestCase):
         self.assertTrue((rv >= 0))
 
     def test_81_plock_punlock(self):
-        k = str(random.randrange(0, 65535))
+        k = str(random.randint(0, 65535))
 
         rv = self.dbm.plock(k, mdbm.MDBM_O_RDWR)
         self.assertTrue((rv >= 0))
@@ -218,7 +218,7 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.get_lockmode()
         self.assertTrue((rv >= 0))
 
-        v = str(random.randrange(0, 65535))
+        v = str(random.randint(0, 65535))
         rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
         self.assertTrue(rv, "failred to store, \
         rv=%d, key=%s, val=%s" % (rv, k, v))
@@ -227,7 +227,7 @@ class TestMDBMMethods(unittest.TestCase):
         self.assertTrue((rv >= 0))
 
     def test_81_tryplock_punlock(self):
-        k = str(random.randrange(0, 65535))
+        k = str(random.randint(0, 65535))
 
         rv = self.dbm.tryplock(k, mdbm.MDBM_O_RDWR)
         self.assertTrue((rv >= 0))
@@ -235,7 +235,7 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.get_lockmode()
         self.assertTrue((rv >= 0))
 
-        v = str(random.randrange(0, 65535))
+        v = str(random.randint(0, 65535))
         rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
         self.assertTrue(rv, "failred to store, \
         rv=%d, key=%s, val=%s" % (rv, k, v))
@@ -244,7 +244,7 @@ class TestMDBMMethods(unittest.TestCase):
         self.assertTrue((rv >= 0))
 
     def test_81_lock_smart_unlock_smart(self):
-        k = str(random.randrange(0, 65535))
+        k = str(random.randint(0, 65535))
 
         rv = self.dbm.lock_smart(k, mdbm.MDBM_O_RDWR)
         self.assertTrue((rv >= 0))
@@ -252,7 +252,7 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.get_lockmode()
         self.assertTrue((rv >= 0))
 
-        v = str(random.randrange(0, 65535))
+        v = str(random.randint(0, 65535))
         rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
         self.assertTrue(rv, "failred to store, \
         rv=%d, key=%s, val=%s" % (rv, k, v))
@@ -261,7 +261,7 @@ class TestMDBMMethods(unittest.TestCase):
         self.assertTrue((rv >= 0))
 
     def test_81_trylock_smart_unlock_smart(self):
-        k = str(random.randrange(0, 65535))
+        k = str(random.randint(0, 65535))
 
         rv = self.dbm.trylock_smart(k, mdbm.MDBM_O_RDWR)
         self.assertTrue((rv >= 0))
@@ -269,7 +269,7 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.get_lockmode()
         self.assertTrue((rv >= 0))
 
-        v = str(random.randrange(0, 65535))
+        v = str(random.randint(0, 65535))
         rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
         self.assertTrue(rv, "failred to store, \
         rv=%d, key=%s, val=%s" % (rv, k, v))
@@ -282,7 +282,7 @@ class TestMDBMMethods(unittest.TestCase):
         flags = mdbm.MDBM_O_RDWR | mdbm.MDBM_PROTECT
         self.dbm_prot = mdbm.open(self.path, flags, self.mode, 0, 0)
 
-        k = str(random.randrange(0, 65535))
+        k = str(random.randint(0, 65535))
 
         rv = self.dbm_prot.protect(mdbm.MDBM_PROT_READ)
         self.assertTrue((rv >= 0))
@@ -290,7 +290,7 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm_prot.get_lockmode()
         self.assertTrue((rv >= 0))
 
-        v = str(random.randrange(0, 65535))
+        v = str(random.randint(0, 65535))
         rv = self.dbm_prot.store(k, v, mdbm.MDBM_REPLACE)
         self.assertTrue(rv, "failred to store, \
         rv=%d, key=%s, val=%s" % (rv, k, v))
