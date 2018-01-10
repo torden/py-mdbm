@@ -109,7 +109,10 @@ PyMethodDef mdbm_methods[] = {
 			"Set the minimum logging level. Lower priority messages are discarded"
 			"Default : MDBM_LOG_OFF"
 	},
-
+	{"init_iter", (PyCFunction)pymdbm_init_iter, METH_NOARGS, 
+		"init_iter()"
+			"Returns Initialized an MDBM iterator."
+	},
 	{"open", (PyCFunction)pymdbm_open, METH_VARARGS | METH_KEYWORDS, 
 		"open(path, flags, mode, [psize, presize])"
 			"Creates and/or opens a database."
@@ -156,10 +159,6 @@ PyMethodDef mdbm_methods[] = {
 		"fetch(key)"
 			"Fetches the record specified by the key argument"
 	},
-	{"init_iter", (PyCFunction)pymdbm_init_iter, METH_NOARGS, 
-		"init_iter()"
-			"Returns Initialized an MDBM iterator."
-	},
 	{"fetch_r", (PyCFunction)pymdbm_fetch_r, METH_VARARGS | METH_KEYWORDS, 
 		"fetch(key, [iter{m_pageno,m_next}])"
             "A record can be updated in-place by fetching the value"
@@ -182,8 +181,16 @@ PyMethodDef mdbm_methods[] = {
 		"delete(key)"
 			"Deletes a specific record."
 	},
+    {"delete_r", (PyCFunction)pymdbm_delete, METH_VARARGS, 
+        "delete(iter{m_pageno,m_next})"
+            "=param[in,out] iter MDBM iterator pointing to item to be deleted"
+            "Deletes the record currently addressed by the iter argument."
+            "After deletion, the key and/or value returned by the iterating function is no longer valid."
+            "Calling next_r() on the iterator will return the key/value"
+            "for the entry following the entry that was deleted."
+    },
 
-	{"get_hash", (PyCFunction)pymdbm_get_hash, METH_NOARGS, 
+    {"get_hash", (PyCFunction)pymdbm_get_hash, METH_NOARGS, 
 		"get_hash()"
 			"Gets the MDBM's hash function identifier."
 	},
@@ -1052,6 +1059,7 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
 
     MDBM_ITER_INIT(&arg_iter);
 
+
     if(previter != NULL && PyDict_Size(previter) > 0 && PyDict_Check(previter) > 0) {
 
         previter_pageno = PyDict_GetItemString(previter, "m_pageno");
@@ -1065,6 +1073,9 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
             PyErr_SetString(MDBMError, "required iter must have a m_next field");
             return NULL;
         }
+
+    	Py_DECREF(previter_pageno);
+	    Py_DECREF(previter_next);
 
         arg_iter.m_pageno = (mdbm_ubig_t) PyLong_AsLong(previter_pageno);
         arg_iter.m_next = (int) PyLong_AsLong(previter_next);
@@ -1152,6 +1163,9 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
             PyErr_SetString(MDBMError, "required iter must have a m_next field");
             return NULL;
         }
+
+    	Py_DECREF(previter_pageno);
+	    Py_DECREF(previter_next);
 
         arg_iter.m_pageno = (mdbm_ubig_t) PyLong_AsLong(previter_pageno);
         arg_iter.m_next = (int) PyLong_AsLong(previter_next);
@@ -1250,6 +1264,54 @@ PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args) {
 
     CAPTURE_START();
     rv = mdbm_delete(pmdbm_link->pmdbm, key);
+    CAPTURE_END();
+
+    _RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_delete_r(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    int rv = -1;
+    PyObject *previter = NULL;
+    PyObject *previter_pageno = NULL;
+    PyObject *previter_next = NULL;
+    MDBM_ITER arg_iter;
+
+    rv = PyArg_ParseTuple(args, "O", &previter);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required dic(iter{m_pageno,m_next})");
+        return NULL;
+    }
+
+    MDBM_ITER_INIT(&arg_iter);
+
+    if(previter != NULL && PyDict_Size(previter) > 0 && PyDict_Check(previter) > 0) {
+
+        previter_pageno = PyDict_GetItemString(previter, "m_pageno");
+        if (previter_pageno == NULL) {
+            PyErr_SetString(MDBMError, "required iter must have a m_pageno field");
+            return NULL;
+        }
+
+        previter_next = PyDict_GetItemString(previter, "m_next");
+        if (previter_next == NULL) {
+            PyErr_SetString(MDBMError, "required iter must have a m_next field");
+            return NULL;
+        }
+
+    	Py_DECREF(previter_pageno);
+	    Py_DECREF(previter_next);
+
+        arg_iter.m_pageno = (mdbm_ubig_t) PyLong_AsLong(previter_pageno);
+        arg_iter.m_next = (int) PyLong_AsLong(previter_next);
+    } else {
+        PyErr_SetString(MDBMError, "failed to read to dic(iter{m_pageno,m_next})");
+        return NULL;
+    }
+
+
+    CAPTURE_START();
+    rv = mdbm_delete_r(pmdbm_link->pmdbm, &arg_iter);
     CAPTURE_END();
 
     _RETURN_RV_BOOLEN(rv);

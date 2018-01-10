@@ -33,6 +33,7 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
 PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_delete_r(register MDBMObj *pmdbm_link, PyObject *args);
 
 PyObject *pymdbm_init_iter(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
