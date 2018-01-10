@@ -6,7 +6,7 @@
 - MDBM is a high-performance, memory-mapped hash database similar to the homegrown libhash.
 - The records stored in a mdbm database may have keys and values of arbitrary and variable lengths.
 
-|Build Stats|PHP-mdbm ver.|Y! mdbm ver.|
+|Build Stats|Py-mdbm ver.|Y! mdbm ver.|
 |:-:|:-:|:-:|
 |[![Build Status](https://travis-ci.org/torden/py-mdbm.svg?branch=master)](https://travis-ci.org/torden/py-mdbm)|[![GitHub version](https://badge.fury.io/gh/torden%2Fpy-mdbm.svg)](https://badge.fury.io/gh/torden%2Fpy-mdbm)|[![GitHub version](https://badge.fury.io/gh/yahoo%2Fmdbm.svg)](https://badge.fury.io/gh/yahoo%2Fmdbm)|
 
@@ -87,9 +87,19 @@ cd py-mdbm
 CMD_PYTHON=/app/python/bin/python make
 ```
 
+#### Check
+
+```shell
+$ python
+>>> import mdbm
+>>> help(mdbm)
+```
+
+
 ## Example
 
 See the [Source Code](https://github.com/torden/py-mdbm/tree/master/example) for more details
+
 
 ### Creating and populating a database
 

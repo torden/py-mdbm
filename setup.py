@@ -3,7 +3,7 @@
 from distutils.core import setup, Extension
 
 setup(name = "py-mdbm",
-    version = "0.1",
+    version = "0.0.1",
     author="torden",
     author_email="torden@myself.com",
     description="Just! Python interface for Y! MDBM, Python MDBM Wapper",
