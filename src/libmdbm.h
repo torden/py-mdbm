@@ -18,6 +18,7 @@ typedef struct {
 } MDBMIter;
 
 PyObject *MDBMError = NULL;
+PyObject *pymdbm_init_iter(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_open(PyObject *self, PyObject *args, PyObject *kwds);
 PyObject *pymdbm_log_minlevel(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_close(register MDBMObj *pmdbm_link, PyObject *unused);
@@ -30,15 +31,14 @@ PyObject *pymdbm_truncate(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_purge(register MDBMObj *pmdbm_link, PyObject *unused);
 
 PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
+PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args);
-PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
+PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_delete_r(register MDBMObj *pmdbm_link, PyObject *args);
 
-PyObject *pymdbm_init_iter(register MDBMObj *pmdbm_link, PyObject *unused);
-PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
-PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
-
+PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_get_hash(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_set_hash(register MDBMObj *pmdbm_link, PyObject *args);
 

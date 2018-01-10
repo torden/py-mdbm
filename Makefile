@@ -29,6 +29,17 @@ build::
 	@$(CMD_PYTHON) setup.py install
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
+dev::
+	@$(CMD_ECHO)  -e "\033[1;40;32mBuild Source.\033[01;m\x1b[0m"
+	@$(CMD_PYTHON) setup.py clean
+	@$(CMD_PYTHON) setup.py build_ext --inplace
+	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
+
+sdist::
+	@$(CMD_ECHO)  -e "\033[1;40;32mDist install to pypi.\033[01;m\x1b[0m"
+	@$(CMD_PYTHON) setup.py sdist upload -r pypi
+	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
+
 test::
 ifeq ($(GOLANGV16_OVER),2)
 	@$(CMD_ECHO)  -e "\033[1;40;32mTesting Memory Leak and Unit-test.\033[01;m\x1b[0m"
@@ -56,4 +67,4 @@ benchmark::
 readme::
 	@$(CMD_PANDOC) -f markdown -t plain README.md > README.txt
 
-.PHONY: clean build test all benchmark init readme
+.PHONY: clean build sdit test all benchmark init readme dev

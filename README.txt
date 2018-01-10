@@ -12,7 +12,7 @@ PY-MDBM
 -   The records stored in a mdbm database may have keys and values of
     arbitrary and variable lengths.
 
-    Build Stats      PHP-mdbm ver.       Y! mdbm ver.
+    Build Stats       Py-mdbm ver.       Y! mdbm ver.
   ---------------- ------------------ ------------------
    [Build Status]   [GitHub version]   [GitHub version]
 
@@ -49,12 +49,9 @@ the following is list of support api on now.
                                     mdbm_store, mdbm_fetch_r,
                                     mdbm_fetch_dup_r,
                                     _~~mdbm_fetch_buf~~,
-                                    ~~mdbm_fetch_str~~,
                                     ~~mdbm_fetch_info~~,
                                     ~~mdbm_delete_r~~,
-                                    ~~mdbm_delete_str~~,
-                                    ~~mdbm_store_r~~,
-                                    ~~mdbm_store_str~~_
+                                    ~~mdbm_store_r~~_
 
   Record Iteration                  mdbm_first, mdbm_next,
                                     mdbm_firstkey, mdbm_nextkey,
@@ -191,7 +188,11 @@ MDBM
 -   Ubuntu : See the pre-build packages
 -   RHEL (CentOS) : See the pre-build packages
 
-py-mdbm
+py-mdbm (use pip)
+
+    pip install py-mdbm
+
+py-mdbm (use source)
 
 Download
 
@@ -201,6 +202,12 @@ Build and Test
 
     cd py-mdbm
     CMD_PYTHON=/app/python/bin/python make
+
+Check
+
+    $ python
+    >>> import mdbm
+    >>> help(mdbm)
 
 
 Example
@@ -436,6 +443,55 @@ Iterating over all keys
     print("[*] count of records : %d" % dbm.count_records())
 
     dbm.close()
+
+    print("done")
+
+Iteration over all value by key
+
+    import mdbm
+    import random
+
+    print("[*] Creating and populating a database")
+
+    path = "/tmp/test_py_dup.mdbm"
+    flags = mdbm.MDBM_O_RDWR
+    flags = flags | mdbm.MDBM_O_CREAT
+    flags = flags | mdbm.MDBM_LARGE_OBJECTS
+    flags = flags | mdbm.MDBM_ANY_LOCKS
+    flags = flags | mdbm.MDBM_O_TRUNC
+    mode = 0o644  # means 0644
+
+    with mdbm.open(path, flags, mode) as dbm:
+
+        for k in range(0, 100):
+            key = str(k)
+
+            for i in range(1, 12):
+                val = str(123 * i)
+
+                rv = dbm.store(key, val, mdbm.MDBM_INSERT_DUP)
+                if not rv:
+                    print("[-] failed to data store to ", path)
+                    break
+
+    print("[*] Loop through DB, looking at records with the same key.")
+    with mdbm.open(path, mdbm.MDBM_O_RDONLY, mode) as dbm:
+
+        print("[*] count of records : %d" % dbm.count_records())
+        print("|-------|-------|")
+        print("|  key  |  val  |")
+        print("|-------|-------|")
+
+        k = str(random.randrange(0, 99))
+
+        empty_iter = dbm.init_iter()
+        info = dbm.fetch_dup_r(k, empty_iter)
+        while info:
+
+            print("|%07s|%07s|" % (k, info['val']))
+            info = dbm.fetch_dup_r(k, info['iter'])
+
+    print("|-------|-------|")
 
     print("done")
 
