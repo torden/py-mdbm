@@ -470,7 +470,37 @@ PyMethodDef mdbm_methods[] = {
 			"\tMDBM_PROT_ACCESS   - all access"
 			"\tMDBM_PROT_NOACCESS - no access (same as MDBM_PROT_NONE)"
 	},
+	{"replace_db", (PyCFunction)pymdbm_replace_db, METH_VARARGS, 
+		"replace_db(new_file_path)"
 
+			"Atomically replaces the database currently in oldfile db with the new database in newfile."
+			"The old database is locked while the new database is renamed from newfile to oldfile "
+			"and the old database is marked as having been replaced."
+			"This causes all processes that have the old database open to reopen the new database on their next access."
+			"Only database files of the same version may be specified for oldfile and new file."
+			"For example, mix and matching of v2 and v3 with oldfile and newfile is not allowed."
+			"NOTE : This function will delete the old file; and rename the new file."
+
+	},
+	{"replace_file", (PyCFunction)pymdbm_replace_file, METH_VARARGS | METH_KEYWORDS, 
+		"replace_file(oldfile, newfile)"
+			"Atomically replaces an old database in oldfile with a new database in newfile."
+			"oldfile is deleted, and newfile is renamed to oldfile."
+			""
+			"The old database is locked (if the MDBM were opened with locking) while the"
+			"new database is renamed from newfile to oldfile, and the old database"
+			"is marked as having been replaced."
+			"The marked old database causes all processes that have "
+			"the old database open to reopen using the new database on their next access."
+			""
+			"Only database files of the same version may be specified for oldfile and newfile."
+			"For example, mixing and matching of v2 and v3 for oldfile and newfile is not allowed."
+			""
+			"mdbm_replace_file may be used if the MDBM is opened with locking "
+			"or without locking (using mdbm_open flag MDBM_OPEN_NOLOCK),"
+			"and without per-access locking, if all accesses are read (fetches) accesses across all programs that open that MDBM."
+			"If there are any write (store/delete) accesses, you must open the MDBM with locking, and you must lock around all operations (fetch, store, delete, iterate)."
+	},
 	{0,0}
 };
 
@@ -2092,6 +2122,45 @@ PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *args) {
 
 	_RETURN_RV_BOOLEN(rv);
 }
+
+PyObject *pymdbm_replace_db(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	char *pnewfile = NULL;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "s", &pnewfile);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(new_file_path)");
+        return NULL;
+    }
+
+    CAPTURE_START();
+    rv = mdbm_replace_db(pmdbm_link->pmdbm, pnewfile);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
+PyObject *pymdbm_replace_file(register MDBMObj *unused, PyObject *args, PyObject *kwds) {
+
+	char *poldfile = NULL;
+	char *pnewfile = NULL;
+    int rv = -1;
+
+    static char *pkwlist[] = {"oldfile", "newfile", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "ss", pkwlist, &poldfile, &pnewfile);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(oldfile) and str(newfile)");
+        return NULL;
+    }
+
+    CAPTURE_START();
+    rv = mdbm_replace_file(poldfile, pnewfile);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
 
 
 #if PY_MAJOR_VERSION >= 3
