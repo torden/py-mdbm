@@ -39,6 +39,7 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
 PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_delete_r(register MDBMObj *pmdbm_link, PyObject *args);
 
+PyObject *pymdbm_get_magic_number(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_get_hash(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_set_hash(register MDBMObj *pmdbm_link, PyObject *args);
@@ -100,6 +101,7 @@ PyObject *pymdbm_replace_db(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_replace_file(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 
 PyObject *pymdbm_get_hash_value(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
+PyObject *pymdbm_pre_split(register MDBMObj *pmdbm_link, PyObject *args);
 
 #if PY_MAJOR_VERSION >= 3
 PyObject *pymdbm__enter(register MDBMObj *pmdbm_link, PyObject *unused);

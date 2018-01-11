@@ -207,6 +207,10 @@ PyMethodDef mdbm_methods[] = {
             "Calling this function with an iterator initialized via init_iter() will cause this function to return the first value for the given key."
 	},
 
+	{"get_magic_number", (PyCFunction)pymdbm_get_magic_number, METH_NOARGS, 
+		"get_magic_number()"
+			"Gets the magic number from an MDBM."
+	},
 	{"get_page", (PyCFunction)pymdbm_get_page, METH_VARARGS, 
 		"get_page(key)"
 			"Gets the MDBM page number for a given key."
@@ -593,6 +597,15 @@ PyMethodDef mdbm_methods[] = {
             "\t- MDBM_HASH_JENKINS - Jenkins string"
             "\t- MDBM_HASH_HSIEH   - Hsieh SuperFast"
     },
+	{"pre_split", (PyCFunction)pymdbm_pre_split, METH_VARARGS,
+		"pre_split(N)"
+			"Forces a db to split, creating N pages."
+			"Must be called before any data is inserted."
+			"If N is not a multiple of 2, it will be rounded up."
+			"The N Target number of pages post split."
+			"If N is not larger than the initial size (ex., 0),"
+			"a split will not be done and a success status is returned."
+	}, 
 	{0,0}
 };
 
@@ -891,6 +904,9 @@ PyMODINIT_FUNC initmdbm(void) {
     PyModule_AddIntMacro(m, MDBM_ALIGN_16_BITS);
     PyModule_AddIntMacro(m, MDBM_ALIGN_32_BITS);
     PyModule_AddIntMacro(m, MDBM_ALIGN_64_BITS);
+	PyModule_AddIntMacro(m, _MDBM_MAGIC);
+	PyModule_AddIntMacro(m, _MDBM_MAGIC_NEW);
+	PyModule_AddIntMacro(m, _MDBM_MAGIC_NEW2);
     PyModule_AddIntMacro(m, MDBM_MAGIC);
     PyModule_AddIntMacro(m, MDBM_FETCH_FLAG_DIRTY);
     PyModule_AddIntMacro(m, MDBM_INSERT);
@@ -1045,21 +1061,25 @@ PyObject *pymdbm_open(PyObject *self, PyObject *args, PyObject *kwds) {
 
     pmdbm_link = PyObject_New(MDBMObj, &MDBMType);
     if (pmdbm_link == NULL) {
+        PyErr_SetString(MDBMError, "failed to create a mdbm link");
         return NULL;
     }
 
 	//protect : sigfault
 	if (flags == (flags | MDBM_O_CREAT) && flags == (flags | MDBM_PROTECT)) {
+        Py_DECREF(pmdbm_link);
 	    PyErr_SetString(MDBMError, "failed to open the MDBM, not support create flags with MDBM_PROTECT");
         return NULL;
 	}
 
 	if (flags == (flags | MDBM_O_ASYNC) && flags == (flags | MDBM_O_FSYNC)) {
+        Py_DECREF(pmdbm_link);
 	    PyErr_SetString(MDBMError, "failed to open the MDBM, not support mixed sync flags (MDBM_O_FSYNC, MDBM_O_ASYNC)");
         return NULL;
 	}
 
 	if (flags == (flags | MDBM_O_RDONLY) && flags == (flags | MDBM_O_WRONLY)) {
+        Py_DECREF(pmdbm_link);
 	    PyErr_SetString(MDBMError, "failed to open the MDBM, not support mixed access flags (MDBM_O_RDONLY, MDBM_O_WRONLY, MDBM_O_RDWR)");
         return NULL;
 	}
@@ -1446,6 +1466,40 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
 
     return pretdic;
 }
+
+PyObject *pymdbm_get_magic_number(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+	int rv = -1;
+	uint32_t magic = 0;
+
+    CAPTURE_START();
+    rv = mdbm_get_magic_number(pmdbm_link->pmdbm, &magic);
+    CAPTURE_END();
+
+	switch(rv) {
+
+	case -3:
+		PyErr_SetString(MDBMError, "mdbm::get_magic_number() cannot read all of the magic number");
+        _RETURN_FALSE();
+		break;
+ 
+	case -2:
+		PyErr_SetString(MDBMError, "mdbm::get_magic_number() cannot read data, db is truncated (empty)");
+        _RETURN_FALSE();
+		break;
+
+	case -1:
+		PyErr_SetString(MDBMError, "mdbm::get_magic_number() cannot read db");
+        _RETURN_FALSE();
+		break;
+
+	default:
+		break;
+	}
+
+    return Py_BuildValue("l", magic);
+}
+
 
 PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
 
@@ -2647,6 +2701,24 @@ PyObject *pymdbm_get_hash_value(register MDBMObj *unused, PyObject *args, PyObje
     }
 
     return Py_BuildValue("l", hashval);
+}
+
+PyObject *pymdbm_pre_split(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	mdbm_ubig_t split_size = 0;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &split_size);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required int(N)");
+        return NULL;
+    }
+
+    CAPTURE_START();
+    rv = mdbm_pre_split(pmdbm_link->pmdbm, split_size);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
 }
 
 #if PY_MAJOR_VERSION >= 3

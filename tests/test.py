@@ -8,6 +8,7 @@ class TestMDBMMethods(unittest.TestCase):
 
     def setUp(self):
         self.path = "/tmp/test_py.mdbm"
+        self.path_split = "/tmp/test_py_split.mdbm"
         self.path_prot = "/tmp/test_py_protect.mdbm"
         flags = mdbm.MDBM_O_RDWR
         flags = flags | mdbm.MDBM_O_CREAT
@@ -461,6 +462,18 @@ class TestMDBMMethods(unittest.TestCase):
 
     def test_99_limit_dir_size(self):
         rv = self.dbm.limit_dir_size(1024)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_99_get_magic_number(self):
+        rv = self.dbm.get_magic_number()
+        # print(mdbm._MDBM_MAGIC) # v2
+        # print(mdbm._MDBM_MAGIC_NEW) # v2 with large objects
+        # print(mdbm._MDBM_MAGIC_NEW2) # v3
+        self.assertEqual(rv, mdbm.MDBM_MAGIC)
+
+    def test_99_pre_split(self):
+        dbm2 = mdbm.open(self.path_split, self.flags, self.mode)
+        rv = dbm2.pre_split(512)
         self.assertTrue(rv, "rv=%s" % rv)
 
 
