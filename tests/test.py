@@ -450,6 +450,20 @@ class TestMDBMMethods(unittest.TestCase):
         rv = mdbm.get_hash_value("I hope this will be helpful for you", mdbm.MDBM_HASH_HSIEH)
         self.assertEqual(rv, 4291882138)
 
+
+    def test_99_alignment(self):
+        rv = self.dbm.get_alignment()
+        self.assertEqual(rv, mdbm.MDBM_ALIGN_8_BITS)
+
+    def test_99_setsplillsize(self):
+        rv = self.dbm.setspillsize(1024)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_99_limit_dir_size(self):
+        rv = self.dbm.limit_dir_size(1024)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+
     def test_999_misc(self):
         pass
 

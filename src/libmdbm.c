@@ -1087,20 +1087,16 @@ PyObject *pymdbm_dup_handle(register MDBMObj *pmdbm_link, PyObject *args) {
     if (pmdbm_dup_link == NULL) {
         return NULL;
     }
-fprintf(stdout, "here1\n");
 
     CAPTURE_START();
     pmdbm_dup_link->pmdbm = mdbm_dup_handle(pmdbm_link->pmdbm, 0); //flags Reserved for future use
     CAPTURE_END();
 
-fprintf(stdout, "here2\n");
     if (pmdbm_dup_link->pmdbm == NULL) {
 	    PyErr_Format(MDBMError, "failed to returns the duplicated an existing database handle (errno=%d, errmsg=%s)", errno, strerror(errno));
         Py_DECREF(pmdbm_dup_link);
         return NULL;
     }
-
-fprintf(stdout, "here3\n");
 
     return (PyObject *)pmdbm_dup_link;
 }
@@ -1593,7 +1589,7 @@ PyObject *pymdbm_setspillsize(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
  
-    return Py_BuildValue("i", rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 
@@ -1667,7 +1663,7 @@ PyObject *pymdbm_limit_dir_size(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
  
-    return Py_BuildValue("i", rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_get_version(register MDBMObj *pmdbm_link, PyObject *unused) {
