@@ -790,8 +790,6 @@ PyObject *pymdbm_get_cachemode_name(register MDBMObj *unused, PyObject *args) {
         _RETURN_FALSE();
     }
 
-	Py_DECREF(pretval);
-
 	return _PYUNICODE_ANDSIZE(pretval, retval_len);
 }
 
