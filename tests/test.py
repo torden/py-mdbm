@@ -476,6 +476,28 @@ class TestMDBMMethods(unittest.TestCase):
         rv = dbm2.pre_split(512)
         self.assertTrue(rv, "rv=%s" % rv)
 
+    def test_99_set_cachemode(self):
+        self.dbm = mdbm.open(self.path, self.flags, self.mode, 0, 0) # needs pure!
+
+        rv = self.dbm.set_cachemode(mdbm.MDBM_CACHEMODE_NONE)
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.get_cachemode()
+        self.assertEqual(rv, mdbm.MDBM_CACHEMODE_NONE)
+
+        rv = self.dbm.set_cachemode(mdbm.MDBM_CACHEMODE_LFU)
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.get_cachemode()
+        self.assertEqual(rv, mdbm.MDBM_CACHEMODE_LFU)
+
+        rv = self.dbm.set_cachemode(mdbm.MDBM_CACHEMODE_LRU)
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.get_cachemode()
+        self.assertEqual(rv, mdbm.MDBM_CACHEMODE_LRU)
+
+        rv = self.dbm.set_cachemode(mdbm.MDBM_CACHEMODE_GDSF) 
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.get_cachemode()
+        self.assertEqual(rv, mdbm.MDBM_CACHEMODE_GDSF)
 
     def test_999_misc(self):
         pass
