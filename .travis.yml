@@ -23,6 +23,5 @@ before_script:
     - ulimit -s unlimited
 script:
     - CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" make
-#    - gdb `which python` core -batch -ex "bt full" \ -ex quit
 after_failure:
-    - gdb -ex "thread apply all bt" -ex "set pagination 0" -batch --args `which python` test.py 
+    - CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" gdb -ex "thread apply all bt" -ex "set pagination 0" -batch --args `which python` tests/test.py 
