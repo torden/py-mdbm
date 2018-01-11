@@ -483,6 +483,8 @@ class TestMDBMMethods(unittest.TestCase):
         self.assertTrue(rv, "rv=%s" % rv)
         rv = self.dbm.get_cachemode()
         self.assertEqual(rv, mdbm.MDBM_CACHEMODE_NONE)
+        rv = self.dbm.get_cachemode_name(mdbm.MDBM_CACHEMODE_NONE)
+        print(rv)
 
         rv = self.dbm.set_cachemode(mdbm.MDBM_CACHEMODE_LFU)
         self.assertTrue(rv, "rv=%s" % rv)
