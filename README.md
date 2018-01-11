@@ -27,7 +27,7 @@ the following is list of support api on now.
 |[Data Integrity](http://yahoo.github.io/mdbm/api/group__DataIntegrityGroup.html)|mdbm_check, mdbm_chk_all_page, mdbm_chk_page, mdbm_protect, *~~mdbm_chk_error~~*|
 |[Data Display](http://yahoo.github.io/mdbm/api/group__DataDisplayGroup.html)|mdbm_dump_all_page, mdbm_dump_page|
 |[Statistics](http://yahoo.github.io/mdbm/api/group__StatisticsGroup.html)|mdbm_count_records, mdbm_count_pages, *~~mdbm_get_stat_counter, mdbm_get_stat_time, mdbm_reset_stat_operations, mdbm_enable_stat_operations, mdbm_set_stat_time_func, mdbm_get_stat_name, mdbm_set_stats_func, mdbm_get_stats, mdbm_get_db_info, mdbm_chunk_iterate, mdbm_get_db_stats, mdbm_get_window_stats~~*|
-|[Cache and Backing Store](http://yahoo.github.io/mdbm/api/group__CacheAndBackingStoreGroup.html)|mdbm_set_cachemode, mdbm_get_cachemode, mdbm_get_cachemode_name, *~~mdbm_set_backingstore~~*|
+|[Cache and Backing Store](http://yahoo.github.io/mdbm/api/group__CacheAndBackingStoreGroup.html)|mdbm_set_cachemode, mdbm_get_cachemode, *~~mdbm_get_cachemode_name, mdbm_set_backingstore~~*|
 |[Import and Export](http://yahoo.github.io/mdbm/api/group__ImportExportGroup.html)|*~~mdbm_cdbdump_to_file, mdbm_cdbdump_trailer_and_close, mdbm_cdbdump_add_record, mdbm_dbdump_to_file, mdbm_dbdump_trailer_and_close, mdbm_dbdump_add_record, mdbm_dbdump_export_header, mdbm_dbdump_import_header, mdbm_dbdump_import, mdbm_cdbdump_import~~*|
 |[Miscellaneous](http://yahoo.github.io/mdbm/api/group__MiscellaneousGroup.html)|mdbm_preload, mdbm_get_errno,  mdbm_get_page, mdbm_lock_pages, mdbm_unlock_pages, mdbm_get_hash_value|
 
