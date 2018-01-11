@@ -761,7 +761,7 @@ PyObject *pymdbm_get_cachemode(register MDBMObj *pmdbm_link, PyObject *unused) {
     return Py_BuildValue("i", rv);
 }
 
-PyObject *pymdbm_get_cachemode_name(register MDBMObj *unsed, PyObject *args) {
+PyObject *pymdbm_get_cachemode_name(register MDBMObj *unused, PyObject *args) {
 
 	int rv = -1;
     int cachemode = -1;
@@ -776,7 +776,8 @@ PyObject *pymdbm_get_cachemode_name(register MDBMObj *unsed, PyObject *args) {
     CAPTURE_START();
     cachename = mdbm_get_cachemode_name(cachemode);
     CAPTURE_END();
-    if (rv == -1) {
+
+    if (cachename == NULL) {
         PyErr_Format(MDBMError, "mdbm::get_cachemode_name() does not set name of cachemode(=%d)", cachemode);
         _RETURN_FALSE();
     }

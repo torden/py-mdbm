@@ -214,7 +214,7 @@ PyMethodDef mdbm_methods[] = {
 			"\t- MDBM_CACHEMODE_GDSF - greedy dual-size frequency"
 	},
 
-	{"get_cachemode_name", (PyCFunction)pymdbm_get_cachemode, METH_VARARGS, 
+	{"get_cachemode_name", (PyCFunction)pymdbm_get_cachemode_name, METH_VARARGS, 
 		"get_cachemode_name(cachemode)"
 			"Returns the cache mode as a string. See set_cachemode()"
 	},

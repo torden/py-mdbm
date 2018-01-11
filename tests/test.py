@@ -413,6 +413,16 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.get_page_size()
         self.assertTrue(rv, "rv=%s" % rv)
 
+    def test_90_get_cachemode_name(self):
+        rv = mdbm.get_cachemode_name(mdbm.MDBM_CACHEMODE_NONE)
+        self.assertEqual(rv, "none")
+        rv = mdbm.get_cachemode_name(mdbm.MDBM_CACHEMODE_LFU)
+        self.assertEqual(rv, "LFU")
+        rv = mdbm.get_cachemode_name(mdbm.MDBM_CACHEMODE_LRU)
+        self.assertEqual(rv, "LRU")
+        rv = mdbm.get_cachemode_name(mdbm.MDBM_CACHEMODE_GDSF)
+        self.assertEqual(rv, "GDSF")
+
     def test_98_lock_reset(self):
         rv = self.dbm.lock()
         self.assertTrue(rv, "rv=%s" % rv)
@@ -476,15 +486,13 @@ class TestMDBMMethods(unittest.TestCase):
         rv = dbm2.pre_split(512)
         self.assertTrue(rv, "rv=%s" % rv)
 
-    def test_99_set_cachemode(self):
+    def test_99_set_cachemode_get_cachemode(self):
         self.dbm = mdbm.open(self.path, self.flags, self.mode, 0, 0) # needs pure!
 
         rv = self.dbm.set_cachemode(mdbm.MDBM_CACHEMODE_NONE)
         self.assertTrue(rv, "rv=%s" % rv)
         rv = self.dbm.get_cachemode()
         self.assertEqual(rv, mdbm.MDBM_CACHEMODE_NONE)
-        rv = self.dbm.get_cachemode_name(mdbm.MDBM_CACHEMODE_NONE)
-        print(rv)
 
         rv = self.dbm.set_cachemode(mdbm.MDBM_CACHEMODE_LFU)
         self.assertTrue(rv, "rv=%s" % rv)
