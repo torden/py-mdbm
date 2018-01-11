@@ -15,16 +15,24 @@ mode = 0o644  # means 0644
 
 with mdbm.open(path, flags, mode) as dbm:
 
+    print("|-------|-------|")
+    print("|  key  |  val  |")
+    print("|-------|-------|")
+
     for k in range(0, 100):
         key = str(k)
 
         for i in range(1, 12):
-            val = str(123 * i)
+            val = str(random.randrange(0, 65535))
 
             rv = dbm.store(key, val, mdbm.MDBM_INSERT_DUP)
             if not rv:
                 print("[-] failed to data store to ", path)
                 break
+
+            print("|%07s|%07s|" % (k, val))
+
+    print("|-------|-------|")
 
 print("[*] Loop through DB, looking at records with the same key.")
 with mdbm.open(path, mdbm.MDBM_O_RDONLY, mode) as dbm:

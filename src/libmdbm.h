@@ -20,6 +20,7 @@ typedef struct {
 PyObject *MDBMError = NULL;
 PyObject *pymdbm_init_iter(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_open(PyObject *self, PyObject *args, PyObject *kwds);
+PyObject *pymdbm_dup_handle(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_log_minlevel(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_close(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_close_fd(register MDBMObj *pmdbm_link, PyObject *unused);
@@ -42,8 +43,11 @@ PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_get_hash(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_set_hash(register MDBMObj *pmdbm_link, PyObject *args);
 
+PyObject *pymdbm_setspillsize(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_get_alignment(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_set_alignment(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_get_limit_size(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_limit_dir_size(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_get_version(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_get_size(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_get_page_size(register MDBMObj *pmdbm_link, PyObject *unused);
@@ -76,6 +80,11 @@ PyObject *pymdbm_next(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused);
 
+PyObject *pymdbm_first_r(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_next_r(register MDBMObj *pmdbm_link, PyObject *args);
+
+PyObject *pymdbm_firstkey_r(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_nextkey_r(register MDBMObj *pmdbm_link, PyObject *args);
 
 PyObject *pymdbm_check(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 PyObject *pymdbm_chk_page(register MDBMObj *pmdbm_link, PyObject *args);
@@ -89,6 +98,8 @@ PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *unused);
 
 PyObject *pymdbm_replace_db(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_replace_file(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
+
+PyObject *pymdbm_get_hash_value(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 
 #if PY_MAJOR_VERSION >= 3
 PyObject *pymdbm__enter(register MDBMObj *pmdbm_link, PyObject *unused);

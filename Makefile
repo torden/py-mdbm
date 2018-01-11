@@ -41,7 +41,7 @@ sdist::
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 test::
-ifeq ($(GOLANGV16_OVER),2)
+ifeq ($(PY_VER),2)
 	@$(CMD_ECHO)  -e "\033[1;40;32mTesting Memory Leak and Unit-test.\033[01;m\x1b[0m"
 	@$(CMD_VALGRIND) --tool=memcheck --dsymutil=yes --track-origins=yes --show-leak-kinds=all --trace-children=yes --suppressions=tests/.valgrind-python.supp $(CMD_PYTHON) -E -tt tests/test.py -v
 else
@@ -67,4 +67,10 @@ benchmark::
 readme::
 	@$(CMD_PANDOC) -f markdown -t plain README.md > README.txt
 
-.PHONY: clean build sdit test all benchmark init readme dev
+setenv::
+	@$(CMD_ECHO) -e "\033[1;40;32mSet Debug mode enviroment..\033[01;m"
+	@$(CMD_SUDO) sysctl -e -q -w kernel.core_pattern="/tmp/%e.core.%u" kernel.suid_dumpable=1 fs.suid_dumpable=1
+	@$(CMD_SUDO) sysctl -q -w kernel.core_uses_pid=1;
+	@$(CMD_ECHO) -e "\033[1;40;36mComplete\033[01;m"
+
+.PHONY: clean build sdit test all benchmark init readme dev setenv
