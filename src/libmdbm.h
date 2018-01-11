@@ -90,6 +90,7 @@ PyObject *pymdbm_next_r(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_firstkey_r(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_nextkey_r(register MDBMObj *pmdbm_link, PyObject *args);
 
+PyObject *pymdbm_clean(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_check(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 PyObject *pymdbm_chk_page(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_chk_all_page(register MDBMObj *pmdbm_link, PyObject *unused);
@@ -105,6 +106,9 @@ PyObject *pymdbm_replace_file(register MDBMObj *pmdbm_link, PyObject *args, PyOb
 
 PyObject *pymdbm_get_hash_value(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 PyObject *pymdbm_pre_split(register MDBMObj *pmdbm_link, PyObject *args);
+
+PyObject *pymdbm_dump_all_page(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_dump_page(register MDBMObj *pmdbm_link, PyObject *args);
 
 #if PY_MAJOR_VERSION >= 3
 PyObject *pymdbm__enter(register MDBMObj *pmdbm_link, PyObject *unused);
@@ -556,11 +560,27 @@ PyMethodDef mdbm_methods[] = {
 			"Calling it on an MDBM still in use will cause corruption and undefined behavior."
 			"Deleting lockfiles resets lock ownership and locking mode (exclusive/partition/shared)."
 	},
+	{"clean", (PyCFunction)pymdbm_clean, METH_VARARGS, 
+		"check(pagenum)"
+			"Mark entries clean/re-usable in the database for the specified page."
+			"If pagenum is -1, then clean all pages."
+			"It relies on the user provided callback function set via set_cleanfunc(NOT SUPPROT) to determine"
+			"re-usability/cleanliness of an entry. To be clean means an entry can be re-used to store new data."
+			""
+			"NOTE: V3 API"
+			""
+			"pagenum:"
+			"\tpagenum Page number to start cleaning. If < 0, then clean all pages in the database."
+	},
 	{"check", (PyCFunction)pymdbm_check, METH_VARARGS | METH_KEYWORDS , 
 		"check(level, verbose)"
 			"Checks an MDBM's integrity, and displays info. on standard output."
-			"\tlevel : between 0 and 10"
-			"\tverbose : True or False"
+			"level : "
+			"\tMDBM_CHECK_HEADER    < Check MDBM header for integrity"
+			"\tMDBM_CHECK_CHUNKS    < Check MDBM header and chunks (page structure)"
+			"\tMDBM_CHECK_DIRECTORY < Check MDBM header, chunks, and directory"
+			"\tMDBM_CHECK_ALL       < Check MDBM header, chunks, directory, and data"
+			"verbose : True or False"
 	},
 	{"chk_page", (PyCFunction)pymdbm_chk_page, METH_VARARGS, 
 		"chk_all_page(page_num)"
@@ -664,6 +684,16 @@ PyMethodDef mdbm_methods[] = {
 			"If N is not larger than the initial size (ex., 0),"
 			"a split will not be done and a success status is returned."
 	}, 
+	{"dump_all_page", (PyCFunction)pymdbm_dump_all_page, METH_NOARGS,
+		"dump_all_page()"
+			"Dumps information for all pages, in version-specific format, to standard output."
+	}, 
+	{"dump_page", (PyCFunction)pymdbm_dump_page, METH_VARARGS,
+		"dump_page(pagenum)"
+			"Dumps specified page's information, in version-specific format, to standard output."
+	}, 
+
+
 	{0,0}
 };
 

@@ -167,8 +167,16 @@ class TestMDBMMethods(unittest.TestCase):
         self.assertTrue((rv == 0))
 
     def test_70_check(self):
-        rv = self.dbm.check(10, False)
+        rv = self.dbm.check(mdbm.MDBM_CHECK_HEADER, False)
         self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.check(mdbm.MDBM_CHECK_CHUNKS, False)
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.check(mdbm.MDBM_CHECK_DIRECTORY, False)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.check(mdbm.MDBM_CHECK_ALL, False)
+        self.assertTrue(rv, "rv=%s" % rv)
+
         rv = self.dbm.check(10, True)
         self.assertTrue(rv, "rv=%s" % rv)
 
@@ -508,6 +516,16 @@ class TestMDBMMethods(unittest.TestCase):
         self.assertTrue(rv, "rv=%s" % rv)
         rv = self.dbm.get_cachemode()
         self.assertEqual(rv, mdbm.MDBM_CACHEMODE_GDSF)
+
+    def test_999_dump_all_page(self):
+        print("\n[*] this following is not error, dump_all_page api dumps to stdout\n")
+        self.dbm.dump_all_page()
+
+    def test_999_dump_page(self):
+        print("\n[*] this following is not error, dump_page api dumps to stdout\n")
+        self.dbm.dump_page(0)
+
+
 
     def test_999_misc(self):
         pass

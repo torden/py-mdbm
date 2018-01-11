@@ -1884,6 +1884,24 @@ PyObject *pymdbm_nextkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
     return pretdic;
 }
 
+PyObject *pymdbm_clean(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	int pagenum = -1;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &pagenum);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required int(pagenum)");
+        return NULL;
+    }
+
+    CAPTURE_START();
+    rv = mdbm_clean(pmdbm_link->pmdbm, pagenum, 0); // flags Ignored
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
+
 PyObject *pymdbm_check(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
 	int level = -1;
@@ -1898,6 +1916,12 @@ PyObject *pymdbm_check(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
         return NULL;
     }
 
+	/*
+	MDBM_CHECK_HEADER    //< Check MDBM header for integrity
+	MDBM_CHECK_CHUNKS    //< Check MDBM header and chunks (page structure)
+	MDBM_CHECK_DIRECTORY //< Check MDBM header, chunks, and directory
+	MDBM_CHECK_ALL       //< Check MDBM header, chunks, directory, and data
+	*/
 	if (level < 0 || level > 10) {
         PyErr_Format(MDBMError, "mdbm::check does not support level(=%d)", level);
         return NULL;
@@ -2276,6 +2300,35 @@ PyObject *pymdbm_pre_split(register MDBMObj *pmdbm_link, PyObject *args) {
 
 	_RETURN_RV_BOOLEN(rv);
 }
+
+PyObject *pymdbm_dump_all_page(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    CAPTURE_START();
+    mdbm_dump_all_page(pmdbm_link->pmdbm);
+    CAPTURE_END();
+
+	_RETURN_NONE();
+}
+
+PyObject *pymdbm_dump_page(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	int pagenum = 0;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &pagenum);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required int(pagenum)");
+        return NULL;
+    }
+
+    CAPTURE_START();
+    mdbm_dump_page(pmdbm_link->pmdbm, pagenum);
+    CAPTURE_END();
+
+	_RETURN_NONE();
+}
+
+
 
 #if PY_MAJOR_VERSION >= 3
 // - for context manager
