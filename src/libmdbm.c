@@ -116,7 +116,17 @@ PyMethodDef mdbm_methods[] = {
 	{"open", (PyCFunction)pymdbm_open, METH_VARARGS | METH_KEYWORDS, 
 		"open(path, flags, mode, [psize, presize])"
 			"Creates and/or opens a database."
+            "PARAM :"
+            "\t if psize not specified or 0, API sets the 4096"
+            "\t if presize not specified, API will be increased to the next psize multiple."
 	},
+    {"dup_handle", (PyCFunction)pymdbm_dup_handle, METH_NOARGS,
+        "dup_handle()"
+            "Duplicate an existing database handle."
+            "The advantage of dup'ing a handle over doing a separate open() "
+            "is that dup's handle share the same virtual page mapping within the process space (saving memory)."
+            "Threaded applications should use pthread_mutex_lock and unlock around calls to dup_handle()."
+    },
 	{"close", (PyCFunction)pymdbm_close, METH_NOARGS, 
 		"close()"
 			"Creates and/or opens a database."
@@ -154,6 +164,7 @@ PyMethodDef mdbm_methods[] = {
 	{"store", (PyCFunction)pymdbm_store, METH_VARARGS | METH_KEYWORDS, 
 		"store(key, val, [flags])"
 			"Stores the record specified by the key and val parameters."
+            "PARAM :"
 			"\t Values for flags mask:"
 			"\t   - MDBM_INSERT - Operation will fail if a record with the same key"
 			"\t     already exists in the database."
@@ -170,8 +181,11 @@ PyMethodDef mdbm_methods[] = {
 			"\t Insertion with flag MDBM_MODIFY set will fail if the key does not already exist."
 	},
 	{"store_r", (PyCFunction)pymdbm_store_r, METH_VARARGS | METH_KEYWORDS, 
-		"store_r(key, val, iter{m_pageno,m_next}, [flags])"
+		"store_r(key, val, [iter{m_pageno,m_next}], [flags])"
 			"Stores the record specified by the key and val parameters."
+            "PARAM : "
+            "\tIf iter not specified, API uses the global iter"
+            "\tIf flags not specified, API uses the MDBM_INSERT"
 	},
 
 	{"fetch", (PyCFunction)pymdbm_fetch, METH_VARARGS, 
@@ -181,9 +195,11 @@ PyMethodDef mdbm_methods[] = {
 	{"fetch_r", (PyCFunction)pymdbm_fetch_r, METH_VARARGS | METH_KEYWORDS, 
 		"fetch(key, [iter{m_pageno,m_next}])"
             "A record can be updated in-place by fetching the value"
+            "PARAM : "
+            "\tIf iter not specified, API uses the global iter"
 	},
     {"fetch_dup_r", (PyCFunction)pymdbm_fetch_dup_r, METH_VARARGS | METH_KEYWORDS, 
-        "fetch_dup_r(key, iter{m_pageno,m_next})"
+        "fetch_dup_r(key, [iter{m_pageno,m_next}])"
             "Fetches the next value for a key inserted via store() with the MDBM_INSERT_DUP flag set."
             "The order of values returned by iterating via this function is not guaranteed to be the same order as the values were inserted."
             ""
@@ -200,13 +216,14 @@ PyMethodDef mdbm_methods[] = {
 		"delete(key)"
 			"Deletes a specific record."
 	},
-    {"delete_r", (PyCFunction)pymdbm_delete, METH_VARARGS, 
-        "delete(iter{m_pageno,m_next})"
-            "=param[in,out] iter MDBM iterator pointing to item to be deleted"
+    {"delete_r", (PyCFunction)pymdbm_delete_r, METH_VARARGS, 
+        "delete_r([iter{m_pageno,m_next}])"
             "Deletes the record currently addressed by the iter argument."
             "After deletion, the key and/or value returned by the iterating function is no longer valid."
             "Calling next_r() on the iterator will return the key/value"
             "for the entry following the entry that was deleted."
+            "PARAM : "
+            "\tIf iter not specified, API uses the global iter"
     },
 
     {"get_hash", (PyCFunction)pymdbm_get_hash, METH_NOARGS, 
@@ -233,6 +250,15 @@ PyMethodDef mdbm_methods[] = {
 			"\t3 - 32-bit alignment    (mdbm.MDBM_ALIGN_32_BITS)"
 			"\t7 - 64-bit alignment    (mdbm.MDBM_ALIGN_64_BITS)"
 	},
+	{"set_alignment", (PyCFunction)pymdbm_set_alignment, METH_VARARGS, 
+		"set_alignment()"
+            "Sets a database's byte-size alignment for keys and values within a page."
+            "This feature is useful for hardware/memory architectures "
+            "that incur a performance penalty for unaligned accesses."
+            "Later (2006+) i386 and x86 architectures do not need special byte alignment,"
+            "and should use the default of 8-bit alignment."
+	},
+
 	{"get_limit_size", (PyCFunction)pymdbm_get_limit_size, METH_NOARGS, 
 		"get_limit_size()"
 			"Gets the MDBM's size limit."
@@ -241,6 +267,22 @@ PyMethodDef mdbm_methods[] = {
 			"\t0 No limit is set"
 			"\tTotal number of bytes for maximum database size, including header and directory"
 	},
+
+	{"limit_dir_size", (PyCFunction)pymdbm_limit_dir_size, METH_VARARGS, 
+		"limit_dir_size(pages)"
+            "Limits the internal page directory size to a number of pages."
+            "The number of pages is rounded up to a power of 2."
+	},
+
+    {"setspillsize", (PyCFunction)pymdbm_setspillsize, METH_VARARGS, 
+        "setspillsize(size)"
+            "Sets the size of item data value which will be put on the large-object heap rather than inline."
+            "The spill size can be changed at any point after the db has been created."
+            "However, it's a recommended practice to set the spill size at creation time."
+            ""
+            "NOTE: The database has to be opened with the MDBM_LARGE_OBJECTS flag for spillsize to take effect."
+    },
+
 	{"get_version", (PyCFunction)pymdbm_get_version, METH_NOARGS, 
 		"get_version()"
 			"Gets the on-disk format version number of an MDBM."
@@ -393,6 +435,38 @@ PyMethodDef mdbm_methods[] = {
 			"Returns the next key pair from the database."
 			"The order that records are returned is not specified."
 	},
+    {"first_r", (PyCFunction)pymdbm_first_r, METH_VARARGS, 
+        "first_r([iter{m_pageno,m_next}])"
+            "Returns the first key/value pair from the database."
+            "The order that records are returned is not specified."
+            "PARAM : "
+            "\tIf iter not specified, API uses the global iter"
+    },
+    {"next_r", (PyCFunction)pymdbm_next_r, METH_VARARGS, 
+        "next_r([iter{m_pageno,m_next}])"
+            "Fetches the next record in an MDBM."
+            "Returns the next key/value pair from the db, based on the iterator."
+            "PARAM : "
+            "\tIf iter not specified, API uses the global iter"
+    },
+
+    {"firstkey_r", (PyCFunction)pymdbm_firstkey_r, METH_VARARGS, 
+        "firstkey_r()"
+            "Fetches the first key in an MDBM."
+            "Initializes the iterator, and returns the first key from the db."
+            "Subsequent calls to next_r() or nextkey_r() with this iterator will loop through the entire db."
+            "PARAM : "
+            "\tIf iter not specified, API uses the global iter"
+    },
+	{"nextkey_r", (PyCFunction)pymdbm_nextkey_r, METH_VARARGS, 
+        "nextkey_r()"
+            "Fetches the next key in an MDBM."
+            "Returns the next key from the db."
+            "Subsequent calls to next_r() or nextkey_r() with this iterator will loop through the entire db."
+            "PARAM : "
+            "\tIf iter not specified, API uses the global iter"
+    },
+
 	{"islocked", (PyCFunction)pymdbm_islocked, METH_NOARGS, 
 		"islocked()"
 			"returns whether or not mdbm is locked by another process or thread."
@@ -501,6 +575,24 @@ PyMethodDef mdbm_methods[] = {
 			"and without per-access locking, if all accesses are read (fetches) accesses across all programs that open that MDBM."
 			"If there are any write (store/delete) accesses, you must open the MDBM with locking, and you must lock around all operations (fetch, store, delete, iterate)."
 	},
+    {"get_hash_value", (PyCFunction)pymdbm_get_hash_value, METH_VARARGS | METH_KEYWORDS, 
+        "get_hash_value(key, hashfunc)"
+            "Given a hash function code, get the hash value for the given key."
+            "See set_hash() for the list of valid hash function codes."
+            "PARAM:"
+            "Values for hashfunc:"
+            "\t- MDBM_HASH_CRC32   - Table based 32bit CRC"
+            "\t- MDBM_HASH_EJB     - From hsearch"
+            "\t- MDBM_HASH_PHONG   - Congruential hash"
+            "\t- MDBM_HASH_OZ      - From sdbm"
+            "\t- MDBM_HASH_TOREK   - From BerkeleyDB"
+            "\t- MDBM_HASH_FNV     - Fowler/Vo/Noll hash (DEFAULT)"
+            "\t- MDBM_HASH_STL     - STL string hash"
+            "\t- MDBM_HASH_MD5     - MD5"
+            "\t- MDBM_HASH_SHA_1   - SHA_1"
+            "\t- MDBM_HASH_JENKINS - Jenkins string"
+            "\t- MDBM_HASH_HSIEH   - Hsieh SuperFast"
+    },
 	{0,0}
 };
 
@@ -534,14 +626,14 @@ static inline char *copy_strptr(char *dptr, int dsize) {
     return pretval;
 }
 
-static inline int pymdbm_iter_handler(MDBM_ITER *arg_iter,  PyObject *previter) {
+static inline int pymdbm_iter_handler(register MDBMObj *pmdbm_link, MDBM_ITER **piter,  PyObject *previter) {
 
     PyObject *previter_pageno = NULL;
     PyObject *previter_next = NULL;
 
-    MDBM_ITER_INIT(arg_iter);
+    MDBM_ITER_INIT(*piter);
 
-    if(previter != NULL && PyDict_Size(previter) > 0 && PyDict_Check(previter) > 0) {
+    if (previter != NULL && PyDict_Size(previter) > 0 && PyDict_Check(previter) > 0) { //use the parameter
 
         previter_pageno = PyDict_GetItemString(previter, "m_pageno");
         if (previter_pageno == NULL) {
@@ -555,15 +647,20 @@ static inline int pymdbm_iter_handler(MDBM_ITER *arg_iter,  PyObject *previter) 
             return -1;
         }
 
-    	Py_DECREF(previter_pageno);
-	    Py_DECREF(previter_next);
+        Py_DECREF(previter_pageno);
+        Py_DECREF(previter_next);
 
-        arg_iter->m_pageno = (mdbm_ubig_t) PyLong_AsLong(previter_pageno);
-        arg_iter->m_next = (int) PyLong_AsLong(previter_next);
-		return 0;
+        (*piter)->m_pageno = (mdbm_ubig_t) PyLong_AsLong(previter_pageno);
+        (*piter)->m_next = (int) PyLong_AsLong(previter_next);
+        return 0;
+
+    } else if(previter == NULL) { //use the global
+
+        (*piter) = &(*pmdbm_link).iter;
+        return 0;
     }
 
-	return -2;
+    return -2;
 }
 
 static inline PyObject *get_iter_dict(MDBM_ITER *arg_iter) {
@@ -975,10 +1072,33 @@ PyObject *pymdbm_open(PyObject *self, PyObject *args, PyObject *kwds) {
     CAPTURE_END();
     if (pmdbm_link->pmdbm == NULL) {
         PyErr_SetFromErrno(MDBMError);
+	    PyErr_SetString(MDBMError, "failed to open the MDBM");
         Py_DECREF(pmdbm_link);
+        return NULL;
     }
 
     return (PyObject *)pmdbm_link;
+}
+
+PyObject *pymdbm_dup_handle(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    MDBMObj *pmdbm_dup_link = NULL;
+    pmdbm_dup_link = PyObject_New(MDBMObj, &MDBMType);
+    if (pmdbm_dup_link == NULL) {
+        return NULL;
+    }
+
+    CAPTURE_START();
+    pmdbm_dup_link->pmdbm = mdbm_dup_handle(pmdbm_link->pmdbm, 0); //flags Reserved for future use
+    CAPTURE_END();
+
+    if (pmdbm_dup_link->pmdbm == NULL) {
+	    PyErr_Format(MDBMError, "failed to returns the duplicated an existing database handle (errno=%d, errmsg=%s)", errno, strerror(errno));
+        Py_DECREF(pmdbm_dup_link);
+        return NULL;
+    }
+
+    return (PyObject *)pmdbm_dup_link;
 }
 
 PyObject *pymdbm_log_minlevel(register MDBMObj *pmdbm_link, PyObject *args) {
@@ -1131,8 +1251,10 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     char *pval = NULL;
     int flags = MDBM_INSERT;
 	PyObject *previter = NULL;
-    MDBM_ITER arg_iter;
     PyObject *pretdic = NULL;
+
+    MDBM_ITER arg_iter;
+    MDBM_ITER *parg_iter = &arg_iter;
 
     int rv = -1;
     datum key, val;
@@ -1145,8 +1267,8 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     }
 
 	//pass to iter handler
-	rv = pymdbm_iter_handler(&arg_iter,  previter);
-	if (rv < 0) {
+	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+	if (rv < 0 && rv != -2) { //optional previter
 		return NULL;
 	}
 
@@ -1157,17 +1279,20 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     val.dsize = (int)strlen(pval);
 
     CAPTURE_START();
-    rv = mdbm_store_r(pmdbm_link->pmdbm, &key, &val, (int)flags, &arg_iter);
+    rv = mdbm_store_r(pmdbm_link->pmdbm, &key, &val, (int)flags, parg_iter);
     CAPTURE_END();
 
 	if (rv == 1 && flags == (flags | MDBM_INSERT)) { //the key already exists
         PyErr_Format(MDBMError, "the key(=%s) already exists", pkey);
-        _RETURN_FALSE();
+        return NULL;
 	}
 
+    if (rv == -1) {
+        _RETURN_FALSE();
+    }
 
 	//make a return value include iter
-    pretdic = get_iter_dict(&arg_iter);
+    pretdic = get_iter_dict(parg_iter);
 	if (pretdic == NULL) {
         _RETURN_FALSE();
     }
@@ -1214,6 +1339,7 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     datum key, val;
     PyObject *previter = NULL;
     MDBM_ITER arg_iter;
+    MDBM_ITER *parg_iter = &arg_iter;
 
     PyObject *pretdic = NULL;
 
@@ -1225,8 +1351,8 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     }
 
 	//pass to iter handler
-	rv = pymdbm_iter_handler(&arg_iter,  previter);
-	if (rv < 0) {
+	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+	if (rv < 0 && rv != -2) { //optional previter
 		return NULL;
 	}
 
@@ -1235,7 +1361,7 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     key.dsize = (int)strlen(pkey);
 
     CAPTURE_START();
-    rv = mdbm_fetch_r(pmdbm_link->pmdbm, &key, &val, &arg_iter);
+    rv = mdbm_fetch_r(pmdbm_link->pmdbm, &key, &val, parg_iter);
     CAPTURE_END();
 
     if (rv == -1) {
@@ -1247,7 +1373,7 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     }
 
 	//make a return value include iter
-    pretdic = get_iter_dict(&arg_iter);
+    pretdic = get_iter_dict(parg_iter);
 	if (pretdic == NULL) {
         _RETURN_FALSE();
     }
@@ -1263,8 +1389,6 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     return pretdic;
 }
 
-
-
 PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
     char *pkey = NULL;
@@ -1273,19 +1397,20 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
     datum key, val;
     PyObject *previter = NULL;
     MDBM_ITER arg_iter;
+    MDBM_ITER *parg_iter = &arg_iter;
 
     PyObject *pretdic = NULL;
 
     static char *pkwlist[] = {"key", "iter", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "sO", pkwlist, &pkey, &previter);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|O", pkwlist, &pkey, &previter);
     if (!rv) {
         PyErr_SetString(MDBMError, "required str(key) and dict(iter{m_pageno,mnext})");
         return NULL;
     }
 
 	//pass to iter handler
-	rv = pymdbm_iter_handler(&arg_iter,  previter);
-	if (rv < 0) {
+	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+	if (rv < 0 && rv != -2) { //optional previter
 		return NULL;
 	}
 
@@ -1294,7 +1419,7 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
     key.dsize = (int)strlen(pkey);
 
     CAPTURE_START();
-    rv = mdbm_fetch_dup_r(pmdbm_link->pmdbm, &key, &val, &arg_iter);
+    rv = mdbm_fetch_dup_r(pmdbm_link->pmdbm, &key, &val, parg_iter);
     CAPTURE_END();
 
     if (rv == -1) {
@@ -1306,7 +1431,7 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
     }
 
 	//make a return value include iter
-    pretdic = get_iter_dict(&arg_iter);
+    pretdic = get_iter_dict(parg_iter);
 	if (pretdic == NULL) {
         _RETURN_FALSE();
     }
@@ -1378,6 +1503,7 @@ PyObject *pymdbm_delete_r(register MDBMObj *pmdbm_link, PyObject *args) {
     int rv = -1;
     PyObject *previter = NULL;
     MDBM_ITER arg_iter;
+    MDBM_ITER *parg_iter = &arg_iter;
 
     rv = PyArg_ParseTuple(args, "O", &previter);
     if (!rv) {
@@ -1386,7 +1512,7 @@ PyObject *pymdbm_delete_r(register MDBMObj *pmdbm_link, PyObject *args) {
     }
 
 	//pass to iter handler
-	rv = pymdbm_iter_handler(&arg_iter,  previter);
+	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
 	if (rv == -2) {
         PyErr_SetString(MDBMError, "failed to read to dic(iter{m_pageno,m_next})");
         return NULL;
@@ -1398,7 +1524,7 @@ PyObject *pymdbm_delete_r(register MDBMObj *pmdbm_link, PyObject *args) {
 
 
     CAPTURE_START();
-    rv = mdbm_delete_r(pmdbm_link->pmdbm, &arg_iter);
+    rv = mdbm_delete_r(pmdbm_link->pmdbm, parg_iter);
     CAPTURE_END();
 
     _RETURN_RV_BOOLEN(rv);
@@ -1440,6 +1566,33 @@ PyObject *pymdbm_set_hash(register MDBMObj *pmdbm_link, PyObject *args) {
     _RETURN_RV_BOOLEN(rv);
 }
 
+PyObject *pymdbm_setspillsize(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    int rv = -1;
+    int size = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &size);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required size");
+        _RETURN_FALSE();
+    }
+    if (size < 0) {
+        PyErr_Format(MDBMError, "mdbm::setspillsize does not support size(=%d)", size);
+        _RETURN_FALSE();
+    }
+
+    CAPTURE_START();
+    rv = mdbm_setspillsize(pmdbm_link->pmdbm, size);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::setspillsize() does not set the size of item data value which will be put on the large-object heap rather then inline");
+        _RETURN_FALSE();
+    }
+ 
+    _RETURN_RV_BOOLEN(rv);
+}
+
+
 PyObject *pymdbm_get_alignment(register MDBMObj *pmdbm_link, PyObject *unused) {
 
     int rv = -1;
@@ -1454,6 +1607,33 @@ PyObject *pymdbm_get_alignment(register MDBMObj *pmdbm_link, PyObject *unused) {
     return Py_BuildValue("i", rv);
 }
 
+PyObject *pymdbm_set_alignment(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    int rv = -1;
+    int align = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &align);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required alignment(align)");
+        _RETURN_FALSE();
+    }
+    if (align < MDBM_ALIGN_8_BITS || align > MDBM_ALIGN_64_BITS) {
+        PyErr_Format(MDBMError, "mdbm::set_alignment does not support align(=%d)", align);
+        _RETURN_FALSE();
+    }
+
+
+    CAPTURE_START();
+    rv = mdbm_set_alignment(pmdbm_link->pmdbm, align);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::set_alignment() does not set the MDBM's record byte-alignment.");
+        _RETURN_FALSE();
+    }
+ 
+    return Py_BuildValue("i", rv);
+}
+
 PyObject *pymdbm_get_limit_size(register MDBMObj *pmdbm_link, PyObject *unused) {
 
     uint64_t rv = -1;
@@ -1462,6 +1642,28 @@ PyObject *pymdbm_get_limit_size(register MDBMObj *pmdbm_link, PyObject *unused) 
     CAPTURE_END();
  
     return Py_BuildValue("i", rv);
+}
+
+PyObject *pymdbm_limit_dir_size(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    int rv = -1;
+    int pages = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &pages);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required pages");
+        _RETURN_FALSE();
+    }
+
+    CAPTURE_START();
+    rv = mdbm_limit_dir_size(pmdbm_link->pmdbm, pages);
+    CAPTURE_END();
+    if (rv == -1) {
+        PyErr_SetString(MDBMError, "mdbm::limit_dir_size() does not set limits the internal page directory size to a number of pages");
+        _RETURN_FALSE();
+    }
+ 
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_get_version(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1698,8 +1900,6 @@ PyObject *pymdbm_delete_lockfiles(register MDBMObj *pmdbm_link, PyObject *args) 
 	_RETURN_RV_BOOLEN(rv);
 }
 
-
-
 PyObject *pymdbm_first(register MDBMObj *pmdbm_link, PyObject *unused) {
 
     kvpair kv;
@@ -1820,6 +2020,258 @@ PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused) {
 	//Py_DECREF(retval);
 
     return retval;
+}
+
+PyObject *pymdbm_first_r(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    int rv = -1;
+    PyObject *previter = NULL;
+    PyObject *pretdic = NULL;
+    MDBM_ITER arg_iter;
+    MDBM_ITER *parg_iter = &arg_iter;
+    kvpair kv;
+    char *pretkey = NULL;
+    char *pretval = NULL;
+
+    rv = PyArg_ParseTuple(args, "|O", &previter);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required dic(iter{m_pageno,m_next})");
+        return NULL;
+    }
+
+	//pass to iter handler
+	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+	if (rv == -2) {
+        PyErr_SetString(MDBMError, "failed to read to dic(iter{m_pageno,m_next})");
+        return NULL;
+	}
+
+	if (rv < 0) {
+		return NULL;
+	}
+
+    CAPTURE_START();
+    kv = mdbm_first_r(pmdbm_link->pmdbm, parg_iter);
+    CAPTURE_END();
+
+    if (kv.key.dptr == NULL || kv.val.dptr == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretkey = copy_strptr(kv.key.dptr, kv.key.dsize);
+    if (pretkey == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretval = copy_strptr(kv.val.dptr, kv.val.dsize);
+    if (pretval == NULL) {
+        _RETURN_FALSE();
+    }
+
+	//make a return value include iter
+    pretdic = get_iter_dict(parg_iter);
+	if (pretdic == NULL) {
+        _RETURN_FALSE();
+    }
+
+    rv = PyDict_SetItemString(pretdic, "key", _PYUNICODE_ANDSIZE(kv.key.dptr, kv.key.dsize));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::first_r does not make a return value (key)");
+        _RETURN_FALSE();
+    }
+
+
+    rv = PyDict_SetItemString(pretdic, "val", _PYUNICODE_ANDSIZE(kv.val.dptr, kv.val.dsize));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::first_r does not make a return value (val)");
+        _RETURN_FALSE();
+    }
+
+    Py_INCREF(pretdic);
+
+    return pretdic;
+}
+
+PyObject *pymdbm_next_r(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    int rv = -1;
+    PyObject *previter = NULL;
+    PyObject *pretdic = NULL;
+    MDBM_ITER arg_iter;
+    MDBM_ITER *parg_iter = &arg_iter;
+    kvpair kv;
+    char *pretkey = NULL;
+    char *pretval = NULL;
+
+    rv = PyArg_ParseTuple(args, "|O", &previter);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required dic(iter{m_pageno,m_next})");
+        return NULL;
+    }
+
+	//pass to iter handler
+	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+	if (rv == -2) {
+        PyErr_SetString(MDBMError, "failed to read to dic(iter{m_pageno,m_next})");
+        return NULL;
+	}
+
+	if (rv < 0) {
+		return NULL;
+	}
+
+    CAPTURE_START();
+    kv = mdbm_next_r(pmdbm_link->pmdbm, parg_iter);
+    CAPTURE_END();
+
+    if (kv.key.dptr == NULL || kv.val.dptr == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretkey = copy_strptr(kv.key.dptr, kv.key.dsize);
+    if (pretkey == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretval = copy_strptr(kv.val.dptr, kv.val.dsize);
+    if (pretval == NULL) {
+        _RETURN_FALSE();
+    }
+
+	//make a return value include iter
+    pretdic = get_iter_dict(parg_iter);
+	if (pretdic == NULL) {
+        _RETURN_FALSE();
+    }
+
+    rv = PyDict_SetItemString(pretdic, "key", _PYUNICODE_ANDSIZE(kv.key.dptr, kv.key.dsize));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::next_r does not make a return value (key)");
+        _RETURN_FALSE();
+    }
+
+
+    rv = PyDict_SetItemString(pretdic, "val", _PYUNICODE_ANDSIZE(kv.val.dptr, kv.val.dsize));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::next_r does not make a return value (val)");
+        _RETURN_FALSE();
+    }
+
+    Py_INCREF(pretdic);
+
+    return pretdic;
+}
+
+PyObject *pymdbm_firstkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    int rv = -1;
+    PyObject *previter = NULL;
+    PyObject *pretdic = NULL;
+    MDBM_ITER arg_iter;
+    MDBM_ITER *parg_iter = &arg_iter;
+    datum key;
+    char *pretkey = NULL;
+
+    rv = PyArg_ParseTuple(args, "|O", &previter);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required dic(iter{m_pageno,m_next})");
+        return NULL;
+    }
+
+	//pass to iter handler
+	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+	if (rv == -2) {
+        PyErr_SetString(MDBMError, "failed to read to dic(iter{m_pageno,m_next})");
+        return NULL;
+	}
+
+	if (rv < 0) {
+		return NULL;
+	}
+
+    CAPTURE_START();
+    key = mdbm_firstkey_r(pmdbm_link->pmdbm, parg_iter);
+    CAPTURE_END();
+
+    if (key.dptr == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretkey = copy_strptr(key.dptr, key.dsize);
+    if (pretkey == NULL) {
+        _RETURN_FALSE();
+    }
+
+	//make a return value include iter
+    pretdic = get_iter_dict(parg_iter);
+	if (pretdic == NULL) {
+        _RETURN_FALSE();
+    }
+
+    rv = PyDict_SetItemString(pretdic, "key", _PYUNICODE_ANDSIZE(key.dptr, key.dsize));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::firstkey_r does not make a return value (key)");
+        _RETURN_FALSE();
+    }
+
+    Py_INCREF(pretdic);
+    return pretdic;
+}
+
+PyObject *pymdbm_nextkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
+
+    int rv = -1;
+    PyObject *previter = NULL;
+    PyObject *pretdic = NULL;
+    MDBM_ITER arg_iter;
+    MDBM_ITER *parg_iter = &arg_iter;
+    datum key; 
+    char *pretkey = NULL;
+
+    rv = PyArg_ParseTuple(args, "|O", &previter);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required dic(iter{m_pageno,m_next})");
+        return NULL;
+    }
+
+	//pass to iter handler
+	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+	if (rv == -2) {
+        PyErr_SetString(MDBMError, "failed to read to dic(iter{m_pageno,m_next})");
+        return NULL;
+	}
+
+	if (rv < 0) {
+		return NULL;
+	}
+
+    CAPTURE_START();
+    key = mdbm_nextkey_r(pmdbm_link->pmdbm, parg_iter);
+    CAPTURE_END();
+
+    if (key.dptr == NULL) {
+        _RETURN_FALSE();
+    }
+
+    pretkey = copy_strptr(key.dptr, key.dsize);
+    if (pretkey == NULL) {
+        _RETURN_FALSE();
+    }
+
+	//make a return value include iter
+    pretdic = get_iter_dict(parg_iter);
+	if (pretdic == NULL) {
+        _RETURN_FALSE();
+    }
+
+    rv = PyDict_SetItemString(pretdic, "key", _PYUNICODE_ANDSIZE(key.dptr, key.dsize));
+    if(rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::nextkey_r does not make a return value (key)");
+        _RETURN_FALSE();
+    }
+
+    Py_INCREF(pretdic);
+    return pretdic;
 }
 
 PyObject *pymdbm_check(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
@@ -2162,6 +2614,40 @@ PyObject *pymdbm_replace_file(register MDBMObj *unused, PyObject *args, PyObject
 }
 
 
+PyObject *pymdbm_get_hash_value(register MDBMObj *unused, PyObject *args, PyObject *kwds) {
+
+    int rv = -1;
+	char *pkey = NULL;
+    int hashfunc = -1;
+    datum key;
+    uint32_t hashval = -1;
+
+    static char *pkwlist[] = {"key", "hashfunc", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "si", pkwlist, &pkey, &hashfunc);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(key) and mdbm.MDBM_HASH_XXX");
+        return NULL;
+    }
+
+    if (hashfunc < MDBM_HASH_CRC32 || hashfunc > MDBM_MAX_HASH) {
+        PyErr_Format(MDBMError, "mdbm::get_hash_value does not support hashfunc(=%d)", hashfunc);
+        return NULL;
+    }
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+
+    CAPTURE_START();
+    rv = mdbm_get_hash_value(key, hashfunc, &hashval);
+    CAPTURE_END();
+
+    if (rv == -1) {
+        _RETURN_FALSE();
+    }
+
+    return Py_BuildValue("l", hashval);
+}
 
 #if PY_MAJOR_VERSION >= 3
 // - for context manager

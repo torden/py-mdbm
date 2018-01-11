@@ -1,7 +1,7 @@
 import random
 import unittest
 import mdbm
-import os
+# import os
 
 
 class TestMDBMMethods(unittest.TestCase):
@@ -31,15 +31,19 @@ class TestMDBMMethods(unittest.TestCase):
         self.dbm.close()
 
     def test_01_open(self):
-        pass
+        flags = mdbm.MDBM_O_RDONLY
+        dbm = mdbm.open(self.path, flags, self.mode, 0, 0)
+        self.assertTrue(dbm)
+
+    def test_01_dup_handle(self):
+        dbm_dup = self.dbm.dup_handle()
+        self.assertTrue(dbm_dup)
 
     def test_99_purge(self):
-        # self.dbm.purge()
-        pass
+        self.dbm.purge()
 
     def test_99_truncate(self):
-        # self.dbm.truncate()
-        pass
+        self.dbm.truncate()
 
     def test_02_store_fetch(self):
 
@@ -64,6 +68,36 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.fetch(str(1))
         self.assertTrue(rv, "rv=%s" % rv)
 
+    def test_02_store_r_fetch_r(self):
+        k = "02"
+        v = str(random.randint(0, 65535))
+        rv = self.dbm.store_r(k, v, mdbm.MDBM_REPLACE)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.fetch_r(k)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_02_fetch_dup_r(self):
+
+        k = "02"
+        v = str(random.randint(0, 65535))
+        rv = self.dbm.store(k, v, mdbm.MDBM_INSERT_DUP)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        k = "02"
+        v = str(random.randint(0, 65535))
+        rv = self.dbm.store(k, v, mdbm.MDBM_INSERT_DUP)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.fetch_dup_r(k)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.fetch_dup_r(k)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.fetch_dup_r(k)
+        self.assertFalse(rv, "rv=%s" % rv)
+
     def test_03_sync(self):
         rv = self.dbm.sync()
         self.assertTrue(rv, "failed to sync")
@@ -87,16 +121,32 @@ class TestMDBMMethods(unittest.TestCase):
         kv = self.dbm.first()
         self.assertTrue(kv)
 
-    def test_09_next(self):
+    def test_08_next(self):
         kv = self.dbm.next()
         self.assertTrue(kv)
 
-    def test_10_firstkey(self):
+    def test_09_firstkey(self):
         key = self.dbm.firstkey()
         self.assertTrue(key)
 
-    def test_11_nextkey(self):
+    def test_09_nextkey(self):
         key = self.dbm.nextkey()
+        self.assertTrue(key)
+
+    def test_10_first_r(self):
+        key = self.dbm.first_r()
+        self.assertTrue(key)
+
+    def test_10_next_r(self):
+        key = self.dbm.next_r()
+        self.assertTrue(key)
+
+    def test_11_firstkey_r(self):
+        key = self.dbm.firstkey_r()
+        self.assertTrue(key)
+
+    def test_11_nextkey_r(self):
+        key = self.dbm.nextkey_r()
         self.assertTrue(key)
 
     def test_12_count_records(self):
@@ -316,6 +366,16 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.unlock()
         self.assertTrue(rv, "rv=%s" % rv)
 
+    def test_82_delete_r(self):
+        mrv = self.dbm.fetch_r(str(1))
+        self.assertTrue(mrv)
+
+        rv = self.dbm.delete_r(mrv['iter'])
+        self.assertTrue(rv)
+
+        mrv = self.dbm.fetch_r(str(1))
+        self.assertTrue(rv, "failed to deleted use iter")
+
     def test_83_islocked(self):
         rv = self.dbm.lock()
         self.assertTrue(rv, "rv=%s" % rv)
@@ -365,6 +425,44 @@ class TestMDBMMethods(unittest.TestCase):
 
         rv = self.dbm.delete_lockfiles(self.path)
         self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_get_hash_value(self):
+        rv = mdbm.get_hash_value("I hope this will be helpful for you", mdbm.MDBM_HASH_CRC32)
+        self.assertEqual(rv, 3278106577)
+        rv = mdbm.get_hash_value("I hope this will be helpful for you", mdbm.MDBM_HASH_EJB)
+        self.assertEqual(rv, 115485)
+        rv = mdbm.get_hash_value("I hope this will be helpful for you", mdbm.MDBM_HASH_PHONG)
+        self.assertEqual(rv, 2730050143)
+        rv = mdbm.get_hash_value("I hope this will be helpful for you", mdbm.MDBM_HASH_OZ)
+        self.assertEqual(rv, 1071549504)
+        rv = mdbm.get_hash_value("I hope this will be helpful for you", mdbm.MDBM_HASH_TOREK)
+        self.assertEqual(rv, 1618211232)
+        rv = mdbm.get_hash_value("I hope this will be helpful for you", mdbm.MDBM_HASH_FNV)
+        self.assertEqual(rv, 3381919419)
+        rv = mdbm.get_hash_value("I hope this will be helpful for you", mdbm.MDBM_HASH_STL)
+        self.assertEqual(rv, 266133472)
+        rv = mdbm.get_hash_value("I hope this will be helpful for you", mdbm.MDBM_HASH_MD5)
+        self.assertEqual(rv, 1243268166)
+        rv = mdbm.get_hash_value("I hope this will be helpful for you", mdbm.MDBM_HASH_SHA_1)
+        self.assertEqual(rv, 4033019161)
+        rv = mdbm.get_hash_value("I hope this will be helpful for you", mdbm.MDBM_HASH_JENKINS)
+        self.assertEqual(rv, 2081026389)
+        rv = mdbm.get_hash_value("I hope this will be helpful for you", mdbm.MDBM_HASH_HSIEH)
+        self.assertEqual(rv, 4291882138)
+
+
+    def test_99_alignment(self):
+        rv = self.dbm.get_alignment()
+        self.assertEqual(rv, mdbm.MDBM_ALIGN_8_BITS)
+
+    def test_99_setsplillsize(self):
+        rv = self.dbm.setspillsize(1024)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_99_limit_dir_size(self):
+        rv = self.dbm.limit_dir_size(1024)
+        self.assertTrue(rv, "rv=%s" % rv)
+
 
     def test_999_misc(self):
         pass
