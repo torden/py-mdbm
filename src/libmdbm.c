@@ -2741,8 +2741,20 @@ PyObject *pymdbm_get_db_info(register MDBMObj *pmdbm_link, PyObject *unused) {
     return pretdbinfo;
 }
 
+/*
+get_stat_counter
+get_stat_time
+reset_stat_operations
+enable_stat_operations
+set_stat_time_func
 
 
+PyObject *pymdbm_get_stat_counter(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_get_stat_time(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_reset_stat_operations(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_enable_stat_operations(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_set_stat_time_func(register MDBMObj *pmdbm_link, PyObject *args);
+*/
 
 // -------------------------------------------------------------------
 
