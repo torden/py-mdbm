@@ -41,8 +41,27 @@ def mdbm_store(limit):
     mode = 0o644  # means 0644
     dbm = mdbm.open(path, flags, mode, 0, 0)
 
-    # required !! it while running on pytest-performance
-    dbm.log_minlevel(mdbm.MDBM_LOG_EMERGENCY)
+    for i in range(0, limit):
+        k = str(i)
+        v = str(random.randrange(0, 65535))
+
+        rv = dbm.store(k, v, mdbm.MDBM_INSERT)
+        if not rv:
+            return False
+
+    dbm.close()
+    return True
+
+def mdbm_store_clock_time_tsc(limit):
+    path = "/tmp/test_py_benchmark2.mdbm"
+    flags = mdbm.MDBM_O_RDWR
+    flags = flags | mdbm.MDBM_O_CREAT
+    flags = flags | mdbm.MDBM_LARGE_OBJECTS
+    flags = flags | mdbm.MDBM_ANY_LOCKS
+    flags = flags | mdbm.MDBM_O_TRUNC
+    mode = 0o644  # means 0644
+    dbm = mdbm.open(path, flags, mode, 0, 0)
+    dbm.set_stat_time_func(MDBM_CLOCK_TIME_TSC)
 
     for i in range(0, limit):
         k = str(i)
@@ -56,14 +75,12 @@ def mdbm_store(limit):
     return True
 
 
+
 def mdbm_fetch(limit):
     path = "/tmp/test_py_benchmark1.mdbm"
     flags = mdbm.MDBM_O_RDWR
     mode = 0o644  # means 0644
     dbm = mdbm.open(path, flags, mode, 0, 0)
-
-    # required !! it while running on pytest-performance
-    dbm.log_minlevel(mdbm.MDBM_LOG_EMERGENCY)
 
     for i in range(0, limit):
         k = str(random.randrange(0, limit-1))
@@ -81,8 +98,22 @@ def mdbm_fetch_after_preload(limit):
     mode = 0o644  # means 0644
     dbm = mdbm.open(path, flags, mode, 0, 0)
 
-    # required !! it while running on pytest-performance
-    dbm.log_minlevel(mdbm.MDBM_LOG_EMERGENCY)
+    dbm.preload()
+
+    for i in range(0, limit):
+        k = str(random.randrange(0, limit-1))
+        v = dbm.fetch(k)
+        if len(v) < 1:
+            return False
+
+    dbm.close()
+    return True
+
+def mdbm_fetch_after_preload_tsc(limit):
+    path = "/tmp/test_py_benchmark2.mdbm"
+    flags = mdbm.MDBM_O_RDWR
+    mode = 0o644  # means 0644
+    dbm = mdbm.open(path, flags, mode, 0, 0)
 
     dbm.preload()
 
@@ -94,6 +125,7 @@ def mdbm_fetch_after_preload(limit):
 
     dbm.close()
     return True
+
 
 
 def anydbm_store(limit):
@@ -270,12 +302,16 @@ def test_mdbm_store_10000(benchmark):
     result = benchmark(mdbm_store, 10000)
     assert result
 
+@pytest.mark.store_loop_10000
+def test_mdbm_store_tsc_10000(benchmark):
+    result = benchmark(mdbm_store_clock_time_tsc, 10000)
+    assert result
+
 
 @pytest.mark.store_loop_10000
 def test_anydbm_store_10000(benchmark):
     result = benchmark(anydbm_store, 10000)
     assert result
-
 
 @pytest.mark.store_loop_10000
 def test_kyotocabinet_kch_store_10000(benchmark):
@@ -295,13 +331,16 @@ def test_sqlite3_store_10000(benchmark):
     result = benchmark(sqlite3_store, 10000)
     assert result
 
-
 # 100000 -----------------------------------------------
 @pytest.mark.store_loop_100000
 def test_mdbm_store_100000(benchmark):
     result = benchmark(mdbm_store, 100000)
     assert result
 
+@pytest.mark.store_loop_100000
+def test_mdbm_store_tsc_100000(benchmark):
+    result = benchmark(mdbm_store_clock_time_tsc, 100000)
+    assert result
 
 @pytest.mark.store_loop_100000
 def test_anydbm_store_100000(benchmark):
@@ -341,6 +380,10 @@ def test_mdbm_preload_random_fetch_10000(benchmark):
     result = benchmark(mdbm_fetch_after_preload, 10000)
     assert result
 
+@pytest.mark.random_fetch_loop_tsc_10000
+def test_mdbm_preload_random_fetch_tsc_10000(benchmark):
+    result = benchmark(mdbm_fetch_after_preload_tsc, 10000)
+    assert result
 
 @pytest.mark.random_fetch_loop_10000
 def test_anydbm_random_fetch_10000(benchmark):
@@ -379,6 +422,10 @@ def test_mdbm_preload_random_fetch_100000(benchmark):
     result = benchmark(mdbm_fetch_after_preload, 100000)
     assert result
 
+@pytest.mark.random_fetch_loop_tsc_100000
+def test_mdbm_preload_random_fetch_tsc_100000(benchmark):
+    result = benchmark(mdbm_fetch_after_preload_tsc, 100000)
+    assert result
 
 @pytest.mark.random_fetch_loop_100000
 def test_anydbm_random_fetch_100000(benchmark):
