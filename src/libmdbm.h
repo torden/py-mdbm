@@ -115,6 +115,12 @@ PyObject *pymdbm_dump_page(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_get_stats(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_get_db_info(register MDBMObj *pmdbm_link, PyObject *unused);
 
+PyObject *pymdbm_get_stat_counter(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_get_stat_time(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_reset_stat_operations(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_enable_stat_operations(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_set_stat_time_func(register MDBMObj *pmdbm_link, PyObject *args);
+
 #if PY_MAJOR_VERSION >= 3
 PyObject *pymdbm__enter(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm__exit(register MDBMObj *pmdbm_link, PyObject *args);
@@ -728,11 +734,61 @@ PyMethodDef mdbm_methods[] = {
 		"get_stats()"
             "Gets configuration information about a database."
 	}, 
+    {"get_stat_counter", (PyCFunction)pymdbm_get_stat_counter, METH_VARARGS,
+        "get_stat_counter(type)"
+            "Gets the number of operations performed for a stat type."
+            "Values for type:"
+            "\t- MDBM_STAT_TYPE_FETCH  - For fetch* operations"
+            "\t- MDBM_STAT_TYPE_STORE  - For store* operations"
+            "\t- MDBM_STAT_TYPE_DELETE - For delete* operations"
+            "Stat operations must be enabled for operations to be tracked."
+            "Use enable_stat_operations() to enable this feature."
+            "Once enabled, statistics are persisted in the MDBM and are not reset on close()."
+            "Use program `mdbm_stat -H' to display stat operation metrics stored in the header."
+    }, 
+    {"get_stat_time", (PyCFunction)pymdbm_get_stat_time, METH_VARARGS,
+        "get_stat_time(type)"
+            "Gets the last time when an type operation was performed."
+            "Values for  type:"
+            "\t- MDBM_STAT_TYPE_FETCH  - For fetch* operations"
+            "\t- MDBM_STAT_TYPE_STORE  - For store* operations"
+            "\t- MDBM_STAT_TYPE_DELETE - For delete* operations"
+            "Stat operations must be enabled for operations to be tracked."
+            "Use enable_stat_operations() to enable this feature."
+            "Once enabled, statistics are persisted in the MDBM and are not reset on close()."
+            "Use program `mdbm_stat -H' to display stat operation metrics stored in the header."
+    },
+    {"reset_stat_operations", (PyCFunction)pymdbm_reset_stat_operations, METH_NOARGS,
+        "reset_stat_operations()"
+            "Resets the stat counter and last-time performed for fetch, store, and remove operations."
+            "Stat operations must be enabled for operations to be tracked."
+            "Use enable_stat_operations() to enable this feature."
+            "If stat operations are not enabled, using this function will merely reset and already cleared storage."
+            "Use program `mdbm_stat -H' to display stat operation metrics stored in the header."
+    },
+    {"enable_stat_operations", (PyCFunction)pymdbm_enable_stat_operations, METH_VARARGS,
+        "enable_stat_operations(flags)"
+            "Enables and disables gathering of stat counters and/or last-time performed for fetch, store, and remove operations."
+            ""
+            "Enables stat operations so that we can track one or both of:"
+            "1. Operations counters fetch, store and remove."
+            "2. Last timestamp when a fetch, store or delete was performed."
+            ""
+            "flags = MDBM_STATS_BASIC  enables gathering only the stats counters."
+            "flags = MDBM_STATS_TIMED  enables gathering only the stats timestamps."
+            "flags = (MDBM_STATS_BASIC | MDBM_STATS_TIMED)  enables both the stats counters and timestamps."
+            "flags = 0  disables gathering of stats counters and timestamps."
+    }, 
+    {"set_stat_time_func", (PyCFunction)pymdbm_set_stat_time_func, METH_VARARGS,
+        "set_stat_time_func(flags)"
+            "Tells the MDBM library whether to use TSC (CPU TimeStamp Counters)"
+            "for timing the performance of fetch, store and delete operations."
+            "The standard behavior of timed stat operations is to use clock_gettime(MONOTONIC)"
+            "flags == MDBM_CLOCK_TSC       Enables use of TSC"
+            "flags == MDBM_CLOCK_STANDARD  Disables use of TSC"
+    }, 
 	{0,0}
 };
-
-
-
 
 #endif
 

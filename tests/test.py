@@ -4,12 +4,18 @@ import mdbm
 # import os
 
 def initDefaultData(dbm):
-
+    # warming up
     for i in range(0,100):
         k = str(i)
         v = str(random.randint(0, 65535))
         dbm.store(k, v, mdbm.MDBM_REPLACE)
 
+    for i in range(0,100):
+        v = str(random.randint(0, 65535))
+        dbm.fetch(k)
+
+    v = str(random.randint(0, 2))
+    dbm.delete(k)
 
 class TestMDBMMethods(unittest.TestCase):
 
@@ -26,6 +32,8 @@ class TestMDBMMethods(unittest.TestCase):
         self.flags = flags
         self.mode = 0o644  # means 0644
         self.dbm = mdbm.open(self.path, flags, self.mode, 0, 0)
+        self.dbm.enable_stat_operations(mdbm.MDBM_STATS_BASIC | mdbm.MDBM_STATS_TIMED)
+        self.dbm.set_stat_time_func(mdbm.MDBM_CLOCK_TSC)
         initDefaultData(self.dbm)
 
     def tearDown(self):
@@ -562,9 +570,28 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.fcopy("/tmp/test_fcopied.mdbm")
         self.assertTrue(rv)
 
+    def test_999_get_stat_counter(self):
+        rv = self.dbm.get_stat_counter(mdbm.MDBM_STAT_TYPE_FETCH)
+        self.assertTrue(rv)
+        rv = self.dbm.get_stat_counter(mdbm.MDBM_STAT_TYPE_STORE)
+        self.assertTrue(rv)
+        rv = self.dbm.get_stat_counter(mdbm.MDBM_STAT_TYPE_DELETE)
+        self.assertTrue(rv)
+
+    def test_999_get_stat_time(self):
+        rv = self.dbm.get_stat_time(mdbm.MDBM_STAT_TYPE_FETCH)
+        self.assertTrue(rv)
+        rv = self.dbm.get_stat_time(mdbm.MDBM_STAT_TYPE_STORE)
+        self.assertTrue(rv)
+        rv = self.dbm.get_stat_time(mdbm.MDBM_STAT_TYPE_DELETE)
+        self.assertTrue(rv)
+
     def test_999_get_stats(self):
         rv = self.dbm.get_stats()
         self.assertTrue(rv)
+
+    def test_999_zzz_last_reset_stat_operations(self):
+        self.dbm.reset_stat_operations() # none
 
     def test_999_misc(self):
         pass
