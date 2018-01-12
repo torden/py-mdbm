@@ -39,6 +39,7 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
 PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
+PyObject *pymdbm_fetch_info(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_delete_r(register MDBMObj *pmdbm_link, PyObject *args);
 
@@ -103,6 +104,7 @@ PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *unused);
 
 PyObject *pymdbm_replace_db(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_replace_file(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
+PyObject *pymdbm_fcopy(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 
 PyObject *pymdbm_get_hash_value(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 PyObject *pymdbm_pre_split(register MDBMObj *pmdbm_link, PyObject *args);
@@ -268,6 +270,18 @@ PyMethodDef mdbm_methods[] = {
             "As with any db iteration, record insertion and deletion during iteration may cause the iteration to skip and/or repeat records."
             "Calling this function with an iterator initialized via init_iter() will cause this function to return the first value for the given key."
 	},
+    {"fetch_info", (PyCFunction)pymdbm_fetch_info, METH_VARARGS | METH_KEYWORDS, 
+        "fetch_info(key, [iter{m_pageno,m_next}])"
+            "Fetches and copies the record specified by the key argument."
+            "If such a record exists in the database, the size and location are stored in the datum pointed to by val."
+            "If no matching record exists, a null val is returned."
+            ""
+            "fetch_info() is only supported by MDBM version 3 or higher."
+            ""
+            "Note that a record can be updated in-place by fetching the value datum,"
+            "casting the dptr as appropriate, and updating the record."
+            "However, the update must not change the size of the record."
+    },
 
 	{"get_magic_number", (PyCFunction)pymdbm_get_magic_number, METH_NOARGS, 
 		"get_magic_number()"
@@ -657,6 +671,17 @@ PyMethodDef mdbm_methods[] = {
 			"and without per-access locking, if all accesses are read (fetches) accesses across all programs that open that MDBM."
 			"If there are any write (store/delete) accesses, you must open the MDBM with locking, and you must lock around all operations (fetch, store, delete, iterate)."
 	},
+    {"fcopy", (PyCFunction)pymdbm_fcopy, METH_VARARGS | METH_KEYWORDS, 
+        "fcopy(newfile, [flags])"
+            "Copies the contents of a database to an open file handle."
+            "WARN"
+            "\twill truncate an existing file (newfile)"
+            "Values for flags mask:"
+            "\tMDBM_COPY_LOCK_ALL - Whether lock for the duration of the copy."
+            "\t\tFor a consistent snapshot of the entire database, this flag must be used."
+            "\t\tOtherwise, consistency will only be on a per-page level."
+    },
+ 
     {"get_hash_value", (PyCFunction)pymdbm_get_hash_value, METH_VARARGS | METH_KEYWORDS, 
         "get_hash_value(key, hashfunc)"
             "Given a hash function code, get the hash value for the given key."

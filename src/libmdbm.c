@@ -149,14 +149,11 @@ static inline int pymdbm_iter_handler(register MDBMObj *pmdbm_link, MDBM_ITER **
             return -1;
         }
 
-        Py_DECREF(previter_pageno);
-        Py_DECREF(previter_next);
-
         (*piter)->m_pageno = (mdbm_ubig_t) PyLong_AsLong(previter_pageno);
         (*piter)->m_next = (int) PyLong_AsLong(previter_next);
         return 0;
 
-    } else if(previter == NULL) { //use the global
+    } else if (previter == NULL) { //use the global
 
         (*piter) = &(*pmdbm_link).iter;
         return 0;
@@ -173,24 +170,22 @@ static inline PyObject *get_iter_dict(MDBM_ITER *arg_iter) {
 
     pretiter = PyDict_New();
     rv = PyDict_SetItemString(pretiter, "m_pageno", Py_BuildValue("i", arg_iter->m_pageno));
-    if(rv == -1) {
+    if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::iter does not make a return value (m_pageno)");
         return NULL;
     }
     rv = PyDict_SetItemString(pretiter, "m_next", Py_BuildValue("i", arg_iter->m_next));
-    if(rv == -1) {
+    if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::iter does not make a return value (m_next)");
         return NULL;
     }
 
     pretdic = PyDict_New();
 	rv = PyDict_SetItemString(pretdic, "iter",  pretiter);
-    if(rv == -1) {
+    if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (iter)");
         _RETURN_FALSE();
     }
-
-	Py_DECREF(pretiter);
 
 	return pretdic;
 }
@@ -514,12 +509,12 @@ PyObject *pymdbm_init_iter(register MDBMObj *pmdbm_link, PyObject *unsed) {
 
     pretiter = PyDict_New();
     rv = PyDict_SetItemString(pretiter, "m_pageno", Py_BuildValue("i", iter.m_pageno));
-    if(rv == -1) {
+    if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (iter.m_pageno)");
         _RETURN_FALSE();
     }
     rv = PyDict_SetItemString(pretiter, "m_next", Py_BuildValue("i", iter.m_next));
-    if(rv == -1) {
+    if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (iter.m_next)");
         _RETURN_FALSE();
     }
@@ -606,6 +601,7 @@ PyObject *pymdbm_dup_handle(register MDBMObj *pmdbm_link, PyObject *args) {
         return NULL;
     }
 
+    Py_INCREF(pmdbm_dup_link);
     return (PyObject *)pmdbm_dup_link;
 }
 
@@ -818,11 +814,15 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     rv = mdbm_store(pmdbm_link->pmdbm, key, val, (int)flags);
     CAPTURE_END();
 
-
-	if (rv == 1 && flags == (flags | MDBM_INSERT)) { //the key already exists
+	if (rv == MDBM_STORE_ENTRY_EXISTS  && flags == (flags | MDBM_INSERT)) { //the key already exists
         PyErr_Format(MDBMError, "the key(=%s) already exists", pkey);
-        _RETURN_FALSE();
+        return NULL;
 	}
+
+    if (rv != MDBM_STORE_SUCCESS) {
+        _RETURN_FALSE();
+    }
+
 
     _RETURN_RV_BOOLEN(rv);
 }
@@ -864,12 +864,12 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     rv = mdbm_store_r(pmdbm_link->pmdbm, &key, &val, (int)flags, parg_iter);
     CAPTURE_END();
 
-	if (rv == 1 && flags == (flags | MDBM_INSERT)) { //the key already exists
+	if (rv == MDBM_STORE_ENTRY_EXISTS  && flags == (flags | MDBM_INSERT)) { //the key already exists
         PyErr_Format(MDBMError, "the key(=%s) already exists", pkey);
         return NULL;
 	}
 
-    if (rv == -1) {
+    if (rv != MDBM_STORE_SUCCESS) {
         _RETURN_FALSE();
     }
 
@@ -961,7 +961,7 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     }
 
     rv = PyDict_SetItemString(pretdic, "val", _PYUNICODE_ANDSIZE(val.dptr, val.dsize));
-    if(rv == -1) {
+    if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (val)");
         _RETURN_FALSE();
     }
@@ -1019,7 +1019,7 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
     }
 
     rv = PyDict_SetItemString(pretdic, "val", _PYUNICODE_ANDSIZE(val.dptr, val.dsize));
-    if(rv == -1) {
+    if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::fetch_dup_r does not make a return value (val)");
         _RETURN_FALSE();
     }
@@ -1028,6 +1028,110 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
 
     return pretdic;
 }
+
+PyObject *pymdbm_fetch_info(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
+
+    char *pkey = NULL;
+
+    int rv = -1;
+    char locbuf[8192] = {0x00,};
+    datum key, val, buf;
+
+    struct mdbm_fetch_info info;
+    PyObject *previter = NULL;
+    MDBM_ITER arg_iter;
+    MDBM_ITER *parg_iter = &arg_iter;
+
+    PyObject *pretdic = NULL;
+    PyObject *pretinfo = NULL;
+
+    static char *pkwlist[] = {"key", "iter", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|O", pkwlist, &pkey, &previter);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(key) and dict(iter{m_pageno,mnext})");
+        return NULL;
+    }
+
+	//pass to iter handler
+	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter, previter);
+	if (rv < 0 && rv != -2) { //optional previter
+		return NULL;
+	}
+
+    //make a datum
+    key.dptr = pkey;
+    key.dsize = (int)strlen(pkey);
+
+    //init.
+    val.dptr = 0;
+    val.dsize = 0;
+
+    //not use
+    //if not set, see the realloc(): invalid pointer: 0x00007feddb90c7d8 
+    buf.dptr = locbuf;
+    buf.dsize = 8192; //small object
+
+    CAPTURE_START();
+    rv = mdbm_fetch_info(pmdbm_link->pmdbm, &key, &val, &buf, &info, parg_iter);
+    CAPTURE_END();
+
+    if (rv == -1) {
+        _RETURN_FALSE();
+    }
+
+    if (val.dptr == NULL) {
+        _RETURN_FALSE();
+    }
+
+    //make a fetch_info
+    pretinfo = PyDict_New();
+    rv = PyDict_SetItemString(pretinfo, "flags", Py_BuildValue("l", info.flags));
+    if (rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_info does not make a return value (info{flags})");
+        Py_DECREF(pretinfo);
+        return NULL;
+    }
+
+    rv = PyDict_SetItemString(pretinfo, "cache_num_accesses", Py_BuildValue("l", info.cache_num_accesses));
+    if (rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_info does not make a return value (info{cache_num_accesses})");
+        Py_DECREF(pretinfo);
+        return NULL;
+    }
+
+    rv = PyDict_SetItemString(pretinfo, "cache_access_time", Py_BuildValue("l", info.cache_access_time));
+    if (rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_info does not make a return value (info{cache_access_time})");
+        Py_DECREF(pretinfo);
+        return NULL;
+    }
+
+	//make a return value include iter
+    pretdic = get_iter_dict(parg_iter);
+	if (pretdic == NULL) {
+        _RETURN_FALSE();
+    }
+
+    rv = PyDict_SetItemString(pretdic, "val", _PYUNICODE_ANDSIZE(val.dptr, val.dsize));
+    if (rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_info does not make a return value (val)");
+        Py_DECREF(pretdic);
+        _RETURN_FALSE();
+    }
+
+    rv = PyDict_SetItemString(pretdic, "info", pretinfo);
+    if (rv == -1) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_info does not make a return value (val)");
+        Py_DECREF(pretdic);
+        _RETURN_FALSE();
+    }
+
+    Py_DECREF(pretinfo);
+    Py_INCREF(pretdic);
+
+    return pretdic;
+}
+
 
 PyObject *pymdbm_get_magic_number(register MDBMObj *pmdbm_link, PyObject *unused) {
 
@@ -1087,7 +1191,7 @@ PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
  
-    return Py_BuildValue("i", rv);
+    return Py_BuildValue("l", rv);
 }
 
 PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args) {
@@ -1691,14 +1795,14 @@ PyObject *pymdbm_first_r(register MDBMObj *pmdbm_link, PyObject *args) {
     }
 
     rv = PyDict_SetItemString(pretdic, "key", _PYUNICODE_ANDSIZE(kv.key.dptr, kv.key.dsize));
-    if(rv == -1) {
+    if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::first_r does not make a return value (key)");
         _RETURN_FALSE();
     }
 
 
     rv = PyDict_SetItemString(pretdic, "val", _PYUNICODE_ANDSIZE(kv.val.dptr, kv.val.dsize));
-    if(rv == -1) {
+    if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::first_r does not make a return value (val)");
         _RETURN_FALSE();
     }
@@ -1761,14 +1865,14 @@ PyObject *pymdbm_next_r(register MDBMObj *pmdbm_link, PyObject *args) {
     }
 
     rv = PyDict_SetItemString(pretdic, "key", _PYUNICODE_ANDSIZE(kv.key.dptr, kv.key.dsize));
-    if(rv == -1) {
+    if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::next_r does not make a return value (key)");
         _RETURN_FALSE();
     }
 
 
     rv = PyDict_SetItemString(pretdic, "val", _PYUNICODE_ANDSIZE(kv.val.dptr, kv.val.dsize));
-    if(rv == -1) {
+    if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::next_r does not make a return value (val)");
         _RETURN_FALSE();
     }
@@ -1825,7 +1929,7 @@ PyObject *pymdbm_firstkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
     }
 
     rv = PyDict_SetItemString(pretdic, "key", _PYUNICODE_ANDSIZE(key.dptr, key.dsize));
-    if(rv == -1) {
+    if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::firstkey_r does not make a return value (key)");
         _RETURN_FALSE();
     }
@@ -1881,7 +1985,7 @@ PyObject *pymdbm_nextkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
     }
 
     rv = PyDict_SetItemString(pretdic, "key", _PYUNICODE_ANDSIZE(key.dptr, key.dsize));
-    if(rv == -1) {
+    if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::nextkey_r does not make a return value (key)");
         _RETURN_FALSE();
     }
@@ -1981,7 +2085,7 @@ PyObject *pymdbm_count_records(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_count_records(pmdbm_link->pmdbm);
     CAPTURE_END();
 
-    return Py_BuildValue("i", rv);
+    return Py_BuildValue("l", rv);
 }
 
 PyObject *pymdbm_count_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1991,7 +2095,7 @@ PyObject *pymdbm_count_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_count_pages(pmdbm_link->pmdbm);
     CAPTURE_END();
 
-    return Py_BuildValue("i", rv);
+    return Py_BuildValue("l", rv);
 }
 
 PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -2001,7 +2105,7 @@ PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_get_errno(pmdbm_link->pmdbm);
     CAPTURE_END();
 
-    return Py_BuildValue("i", rv);
+    return Py_BuildValue("l", rv);
 }
 
 PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
@@ -2253,6 +2357,27 @@ PyObject *pymdbm_replace_file(register MDBMObj *unused, PyObject *args, PyObject
 	_RETURN_RV_BOOLEN(rv);
 }
 
+PyObject *pymdbm_fcopy(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
+
+	char *pnewfile = NULL;
+    int flags = 0;
+    int rv = -1;
+    int fd = -1;
+
+    rv = PyArg_ParseTuple(args, "s|i", &pnewfile, &flags);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required str(newfile)");
+        return NULL;
+    }
+
+    fd = open(pnewfile, O_RDWR | O_CREAT | O_TRUNC, 0644);
+
+    CAPTURE_START();
+    rv = mdbm_fcopy(pmdbm_link->pmdbm, fd, flags);
+    CAPTURE_END();
+
+	_RETURN_RV_BOOLEN(rv);
+}
 
 PyObject *pymdbm_get_hash_value(register MDBMObj *unused, PyObject *args, PyObject *kwds) {
 

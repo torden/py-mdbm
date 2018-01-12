@@ -31,7 +31,7 @@ the following is list of support api on now.
                                     mdbm_replace_db,
                                     mdbm_replace_file,
                                     mdbm_dup_handle, mdbm_pre_split,
-                                    _~~mdbm_fcopy~~_
+                                    mdbm_fcopy
 
   Configuration                     mdbm_get_version, mdbm_get_size,
                                     mdbm_get_page_size,
@@ -48,8 +48,7 @@ the following is list of support api on now.
   Record Access                     mdbm_fetch, mdbm_delete,
                                     mdbm_store, mdbm_fetch_r,
                                     mdbm_fetch_dup_r, mdbm_delete_r,
-                                    mdbm_store_r,
-                                    _~~mdbm_fetch_info~~_
+                                    mdbm_store_r, mdbm_fetch_info
 
   Record Iteration                  mdbm_first, mdbm_next,
                                     mdbm_firstkey, mdbm_nextkey,
@@ -71,15 +70,15 @@ the following is list of support api on now.
 
   Data Management                   mdbm_compress_tree,
                                     mdbm_truncate, mdbm_purge,
-                                    _~~mdbm_prune,
-                                    mdbm_set_cleanfunc, mdbm_clean~~_
+                                    _~~mdbm_clean, mdbm_prune,
+                                    mdbm_set_cleanfunc~~_
 
   Data Integrity                    mdbm_check, mdbm_chk_all_page,
                                     mdbm_chk_page, mdbm_protect,
                                     _~~mdbm_chk_error~~_
 
-  Data Display                      _~~mdbm_dump_all_page~~,
-                                    ~~mdbm_dump_page~~_
+  Data Display                      mdbm_dump_all_page,
+                                    mdbm_dump_page
 
   Statistics                        mdbm_count_records,
                                     mdbm_count_pages,
@@ -97,8 +96,8 @@ the following is list of support api on now.
 
   Cache and Backing Store           mdbm_set_cachemode,
                                     mdbm_get_cachemode,
-                                    mdbm_get_cachemode_name,
-                                    _~~mdbm_set_backingstore~~_
+                                    _~~mdbm_get_cachemode_name,
+                                    mdbm_set_backingstore~~_
 
   Import and Export                 _~~mdbm_cdbdump_to_file,
                                     mdbm_cdbdump_trailer_and_close,
