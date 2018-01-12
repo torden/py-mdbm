@@ -88,6 +88,8 @@ static int org_stderr;
     _RETURN_FUNC(Py_True);\
 }
 
+
+
 #if PY_MAJOR_VERSION >= 3
     struct module_state {
         PyObject *error;
@@ -143,11 +145,15 @@ static inline int pymdbm_iter_handler(register MDBMObj *pmdbm_link, MDBM_ITER **
             return -1;
         }
 
+        Py_DECREF(previter_pageno);
+
         previter_next = PyDict_GetItemString(previter, "m_next");
         if (previter_next == NULL) {
             PyErr_SetString(MDBMError, "required iter must have a m_next field");
             return -1;
         }
+
+        Py_DECREF(previter_next);
 
         (*piter)->m_pageno = (mdbm_ubig_t) PyLong_AsLong(previter_pageno);
         (*piter)->m_next = (int) PyLong_AsLong(previter_next);
@@ -171,11 +177,13 @@ static inline PyObject *get_iter_dict(MDBM_ITER *arg_iter) {
     pretiter = PyDict_New();
     rv = PyDict_SetItemString(pretiter, "m_pageno", Py_BuildValue("i", arg_iter->m_pageno));
     if (rv == -1) {
+        Py_DECREF(pretiter);
         PyErr_Format(PyExc_IOError, "mdbm::iter does not make a return value (m_pageno)");
         return NULL;
     }
     rv = PyDict_SetItemString(pretiter, "m_next", Py_BuildValue("i", arg_iter->m_next));
     if (rv == -1) {
+        Py_DECREF(pretiter);
         PyErr_Format(PyExc_IOError, "mdbm::iter does not make a return value (m_next)");
         return NULL;
     }
@@ -183,9 +191,14 @@ static inline PyObject *get_iter_dict(MDBM_ITER *arg_iter) {
     pretdic = PyDict_New();
 	rv = PyDict_SetItemString(pretdic, "iter",  pretiter);
     if (rv == -1) {
+        Py_DECREF(pretiter);
+        Py_DECREF(pretdic);
         PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (iter)");
         _RETURN_FALSE();
     }
+
+    Py_DECREF(pretiter);
+    Py_INCREF(pretdic);
 
 	return pretdic;
 }
@@ -795,7 +808,8 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     int flags = MDBM_INSERT;
 
     int rv = -1;
-    datum key, val;
+    datum key = {0x00,};
+    datum val = {0x00,};
 
     static char *pkwlist[] = {"key", "val", "flags", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "ss|i", pkwlist, &pkey, &pval, &flags);
@@ -839,7 +853,8 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     MDBM_ITER *parg_iter = &arg_iter;
 
     int rv = -1;
-    datum key, val;
+    datum key = {0x00,};
+    datum val = {0x00,};
 
     static char *pkwlist[] = {"key", "val", "flags", "iter", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "ss|iO", pkwlist, &pkey, &pval, &flags, &previter);
@@ -889,7 +904,8 @@ PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
     char *pkey = NULL;
 
     int rv = -1;
-    datum key, val;
+    datum key = {0x00,};
+    datum val = {0x00,};
 
     rv = PyArg_ParseTuple(args, "s", &pkey);
     if (!rv) {
@@ -918,7 +934,9 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     char *pkey = NULL;
 
     int rv = -1;
-    datum key, val;
+    datum key = {0x00,};
+    datum val = {0x00,};
+
     PyObject *previter = NULL;
     MDBM_ITER arg_iter;
     MDBM_ITER *parg_iter = &arg_iter;
@@ -976,7 +994,8 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
     char *pkey = NULL;
 
     int rv = -1;
-    datum key, val;
+    datum key = {0x00,};
+    datum val = {0x00,};
     PyObject *previter = NULL;
     MDBM_ITER arg_iter;
     MDBM_ITER *parg_iter = &arg_iter;
@@ -1035,15 +1054,19 @@ PyObject *pymdbm_fetch_info(register MDBMObj *pmdbm_link, PyObject *args, PyObje
 
     int rv = -1;
     char locbuf[8192] = {0x00,};
-    datum key, val, buf;
+    datum key = {0x00,};
+    datum val = {0x00,};
+    datum buf = {0x00,};
 
-    struct mdbm_fetch_info info;
+    struct mdbm_fetch_info info = {0x00,};
     PyObject *previter = NULL;
     MDBM_ITER arg_iter;
     MDBM_ITER *parg_iter = &arg_iter;
 
     PyObject *pretdic = NULL;
     PyObject *pretinfo = NULL;
+
+    PyObject *x_flags, *x_cna, *x_cat;
 
     static char *pkwlist[] = {"key", "iter", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|O", pkwlist, &pkey, &previter);
@@ -1084,22 +1107,48 @@ PyObject *pymdbm_fetch_info(register MDBMObj *pmdbm_link, PyObject *args, PyObje
     }
 
     //make a fetch_info
+
+    x_flags = PyLong_FromLong(info.flags);
+    if (x_flags == NULL) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_info does not make a return value (info.flags)");
+        Py_DECREF(x_flags);
+        return NULL;
+    }
+
+    x_cna = PyLong_FromLong(info.cache_num_accesses);
+    if (x_cna == NULL) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_info does not make a return value (info.cache_num_accesses)");
+        Py_DECREF(x_cna);
+        return NULL;
+    }
+
+    x_cat = PyLong_FromLong(info.cache_num_accesses);
+    if (x_cat == NULL) {
+        PyErr_Format(PyExc_IOError, "mdbm::fetch_info does not make a return value (info.cache_access_time)");
+        Py_DECREF(x_cat);
+        return NULL;
+    }
+
+    Py_INCREF(x_flags);
+    Py_INCREF(x_cna);
+    Py_INCREF(x_cat);
+
     pretinfo = PyDict_New();
-    rv = PyDict_SetItemString(pretinfo, "flags", Py_BuildValue("l", info.flags));
+    rv = PyDict_SetItemString(pretinfo, "flags", x_flags);
     if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::fetch_info does not make a return value (info{flags})");
         Py_DECREF(pretinfo);
         return NULL;
     }
 
-    rv = PyDict_SetItemString(pretinfo, "cache_num_accesses", Py_BuildValue("l", info.cache_num_accesses));
+    rv = PyDict_SetItemString(pretinfo, "cache_num_accesses", x_cna);
     if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::fetch_info does not make a return value (info{cache_num_accesses})");
         Py_DECREF(pretinfo);
         return NULL;
     }
 
-    rv = PyDict_SetItemString(pretinfo, "cache_access_time", Py_BuildValue("l", info.cache_access_time));
+    rv = PyDict_SetItemString(pretinfo, "cache_access_time", x_cat);
     if (rv == -1) {
         PyErr_Format(PyExc_IOError, "mdbm::fetch_info does not make a return value (info{cache_access_time})");
         Py_DECREF(pretinfo);
@@ -1171,7 +1220,7 @@ PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
 
     char *pkey = NULL;
     mdbm_ubig_t rv = -1;
-    datum key;
+    datum key = {0x00,};
 
     rv = PyArg_ParseTuple(args, "s", &pkey);
     if (!rv) {
@@ -1199,7 +1248,7 @@ PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args) {
     char *pkey = NULL;
 
     int rv = -1;
-    datum key;
+    datum key = {0x00,};
 
     rv = PyArg_ParseTuple(args, "s", &pkey);
     if (!rv) {
@@ -1689,7 +1738,7 @@ PyObject *pymdbm_next(register MDBMObj *pmdbm_link, PyObject *unused) {
 
 PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused) {
 
-    datum key;
+    datum key = {0x00,};
     PyObject *retval;
     char *pretkey;
 
@@ -1717,7 +1766,7 @@ PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused) {
 
 PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused) {
 
-    datum key;
+    datum key = {0x00,};
     PyObject *retval;
     char *pretkey;
 
@@ -1889,7 +1938,7 @@ PyObject *pymdbm_firstkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
     PyObject *pretdic = NULL;
     MDBM_ITER arg_iter;
     MDBM_ITER *parg_iter = &arg_iter;
-    datum key;
+    datum key = {0x00,};
     char *pretkey = NULL;
 
     rv = PyArg_ParseTuple(args, "|O", &previter);
@@ -1945,7 +1994,7 @@ PyObject *pymdbm_nextkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
     PyObject *pretdic = NULL;
     MDBM_ITER arg_iter;
     MDBM_ITER *parg_iter = &arg_iter;
-    datum key; 
+    datum key = {0x00,}; 
     char *pretkey = NULL;
 
     rv = PyArg_ParseTuple(args, "|O", &previter);
@@ -2113,7 +2162,7 @@ PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
 	char *pkey = NULL;
 	int flags = 0;
 
-    datum key;
+    datum key = {0x00,};
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
@@ -2144,7 +2193,7 @@ PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
 	char *pkey = NULL;
 	int flags = 0;
 
-    datum key;
+    datum key = {0x00,};
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
@@ -2175,7 +2224,7 @@ PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args, PyObject
 	char *pkey = NULL;
 	int flags = 0;
 
-    datum key;
+    datum key ={0x00,};
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
@@ -2206,7 +2255,7 @@ PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObje
 	char *pkey = NULL;
 	int flags = 0;
 
-    datum key;
+    datum key = {0x00,};
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
@@ -2237,7 +2286,7 @@ PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyO
 	char *pkey = NULL;
 	int flags = 0;
 
-    datum key;
+    datum key = {0x00,};
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
@@ -2268,7 +2317,7 @@ PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyOb
 	char *pkey = NULL;
 	int flags = 0;
 
-    datum key;
+    datum key = {0x00,};
     int rv = -1;
 
     
@@ -2384,7 +2433,7 @@ PyObject *pymdbm_get_hash_value(register MDBMObj *unused, PyObject *args, PyObje
     int rv = -1;
 	char *pkey = NULL;
     int hashfunc = -1;
-    datum key;
+    datum key = {0x00,};
     uint32_t hashval = -1;
 
     static char *pkwlist[] = {"key", "hashfunc", NULL};
