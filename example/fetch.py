@@ -29,6 +29,13 @@ for i in range(0, 10):
 print("|-------|-------|")
 print("[*] count of records : %d" % dbm.count_records())
 
+for i in range(0, 10):
+
+    k = str(random.randrange(0, 65534))
+    mval = dbm.fetch_info(k)
+    print(mval)
+
+
 dbm.close()
 
 print("done")

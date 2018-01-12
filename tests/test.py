@@ -101,6 +101,36 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.fetch_dup_r(k)
         self.assertFalse(rv, "rv=%s" % rv)
 
+    def test_02_fetch_info(self):
+
+        k = str(1)
+        v = str(random.randint(0, 65535))
+        rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
+        self.assertTrue(rv, "failred to store, \
+        rv=%d, key=%s, val=%s" % (rv, k, v))
+
+        k = str(2)
+        v = str(random.randint(0, 65535))
+        rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
+        self.assertTrue(rv, "failred to store, \
+        rv=%d, key=%s, val=%s" % (rv, k, v))
+
+        k = str(3)
+        v = str(random.randint(0, 65535))
+        rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
+        self.assertTrue(rv, "failred to store, \
+        rv=%d, key=%s, val=%s" % (rv, k, v))
+
+        rv = self.dbm.fetch(str(1))
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.fetch(str(2))
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.fetch(str(1))
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.fetch_info(str(1))
+        self.assertTrue(rv, "rv=%s" % rv)
+
     def test_03_sync(self):
         rv = self.dbm.sync()
         self.assertTrue(rv, "failed to sync")
@@ -528,7 +558,13 @@ class TestMDBMMethods(unittest.TestCase):
         print("\n[*] this following is not error, dump_page api dumps to stdout\n")
         self.dbm.dump_page(0)
 
+    def test_999_fcopy(self):
+        rv = self.dbm.fcopy("/tmp/test_fcopied.mdbm")
+        self.assertTrue(rv)
 
+    def test_999_get_stats(self):
+        rv = self.dbm.get_stats()
+        self.assertTrue(rv)
 
     def test_999_misc(self):
         pass

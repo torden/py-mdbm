@@ -18,7 +18,7 @@ for i in range(0, 65535):
     k = str(i)
     v = str(random.randrange(0, 65535))
 
-    rv = dbm.store(k, v, mdbm.MDBM_INSERT)
+    rv = dbm.store(k, v, mdbm.MDBM_INSERT|mdbm.MDBM_CACHE_MODIFY)
     if not rv:
         print("[-] failed to data store to ", path)
         break
