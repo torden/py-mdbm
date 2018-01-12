@@ -209,6 +209,97 @@ static inline PyObject *get_iter_dict(MDBM_ITER *arg_iter) {
 	return pretdic;
 }
 
+static inline PyObject *get_db_info_dict(mdbm_db_info_t *info) {
+
+    int rv = -1;
+    PyObject *pretdbinfo = NULL;
+
+    pretdbinfo = PyDict_New();
+
+    rv = PyDict_SetItemString(pretdbinfo, "db_page_size", Py_BuildValue("i", info->db_page_size));
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo->db_page_size)");
+        return NULL;
+    }
+    rv = PyDict_SetItemString(pretdbinfo, "db_num_pages", Py_BuildValue("i", info->db_num_pages));
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo->db_num_pages)");
+        return NULL;
+    }
+    rv = PyDict_SetItemString(pretdbinfo, "db_max_pages", Py_BuildValue("i", info->db_max_pages));
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo->db_max_pages)");
+        return NULL;
+    }
+    rv = PyDict_SetItemString(pretdbinfo, "db_num_dir_pages", Py_BuildValue("i", info->db_num_dir_pages));
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo->db_num_dir_pages)");
+        return NULL;
+    }
+    rv = PyDict_SetItemString(pretdbinfo, "db_dir_width", Py_BuildValue("i", info->db_dir_width));
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo->db_dir_width)");
+        return NULL;
+    }
+    rv = PyDict_SetItemString(pretdbinfo, "db_max_dir_shift", Py_BuildValue("i", info->db_max_dir_shift));
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo->db_max_dir_shift)");
+        return NULL;
+    }
+    rv = PyDict_SetItemString(pretdbinfo, "db_dir_min_level", Py_BuildValue("i", info->db_dir_min_level));
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo->db_dir_min_level)");
+        return NULL;
+    }
+    rv = PyDict_SetItemString(pretdbinfo, "db_dir_max_level", Py_BuildValue("i", info->db_dir_max_level));
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo->db_dir_max_level)");
+        return NULL;
+    }
+    rv = PyDict_SetItemString(pretdbinfo, "db_dir_num_nodes", Py_BuildValue("i", info->db_dir_num_nodes));
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo->db_dir_num_nodes)");
+        return NULL;
+    }
+    rv = PyDict_SetItemString(pretdbinfo, "db_hash_func", Py_BuildValue("i", info->db_hash_func));
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo->db_hash_func)");
+        return NULL;
+    }
+    rv = PyDict_SetItemString(pretdbinfo, "db_hash_funcname", Py_BuildValue("i", info->db_hash_funcname));
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo->db_hash_funcname)");
+        return NULL;
+    }
+    rv = PyDict_SetItemString(pretdbinfo, "db_spill_size", Py_BuildValue("i", info->db_spill_size));
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo->db_spill_size)");
+        return NULL;
+    }
+    rv = PyDict_SetItemString(pretdbinfo, "db_cache_mode", Py_BuildValue("i", info->db_cache_mode));
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo->db_cache_mode)");
+        return NULL;
+    }
+
+    return pretdbinfo;
+}
+
+
+
 #if PY_MAJOR_VERSION <= 2
 static PyObject *mdbm_getattr(MDBMObj *pmdbm_link, char *name) {
 
@@ -2675,86 +2766,7 @@ PyObject *pymdbm_get_db_info(register MDBMObj *pmdbm_link, PyObject *unused) {
         _RETURN_FALSE();
     }
 
-    pretdbinfo = PyDict_New();
-
-    rv = PyDict_SetItemString(pretdbinfo, "db_page_size", Py_BuildValue("i", info.db_page_size));
-    if (rv == -1) {
-        Py_DECREF(pretdbinfo);
-        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo.db_page_size)");
-        return NULL;
-    }
-    rv = PyDict_SetItemString(pretdbinfo, "db_num_pages", Py_BuildValue("i", info.db_num_pages));
-    if (rv == -1) {
-        Py_DECREF(pretdbinfo);
-        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo.db_num_pages)");
-        return NULL;
-    }
-    rv = PyDict_SetItemString(pretdbinfo, "db_max_pages", Py_BuildValue("i", info.db_max_pages));
-    if (rv == -1) {
-        Py_DECREF(pretdbinfo);
-        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo.db_max_pages)");
-        return NULL;
-    }
-    rv = PyDict_SetItemString(pretdbinfo, "db_num_dir_pages", Py_BuildValue("i", info.db_num_dir_pages));
-    if (rv == -1) {
-        Py_DECREF(pretdbinfo);
-        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo.db_num_dir_pages)");
-        return NULL;
-    }
-    rv = PyDict_SetItemString(pretdbinfo, "db_dir_width", Py_BuildValue("i", info.db_dir_width));
-    if (rv == -1) {
-        Py_DECREF(pretdbinfo);
-        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo.db_dir_width)");
-        return NULL;
-    }
-    rv = PyDict_SetItemString(pretdbinfo, "db_max_dir_shift", Py_BuildValue("i", info.db_max_dir_shift));
-    if (rv == -1) {
-        Py_DECREF(pretdbinfo);
-        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo.db_max_dir_shift)");
-        return NULL;
-    }
-    rv = PyDict_SetItemString(pretdbinfo, "db_dir_min_level", Py_BuildValue("i", info.db_dir_min_level));
-    if (rv == -1) {
-        Py_DECREF(pretdbinfo);
-        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo.db_dir_min_level)");
-        return NULL;
-    }
-    rv = PyDict_SetItemString(pretdbinfo, "db_dir_max_level", Py_BuildValue("i", info.db_dir_max_level));
-    if (rv == -1) {
-        Py_DECREF(pretdbinfo);
-        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo.db_dir_max_level)");
-        return NULL;
-    }
-    rv = PyDict_SetItemString(pretdbinfo, "db_dir_num_nodes", Py_BuildValue("i", info.db_dir_num_nodes));
-    if (rv == -1) {
-        Py_DECREF(pretdbinfo);
-        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo.db_dir_num_nodes)");
-        return NULL;
-    }
-    rv = PyDict_SetItemString(pretdbinfo, "db_hash_func", Py_BuildValue("i", info.db_hash_func));
-    if (rv == -1) {
-        Py_DECREF(pretdbinfo);
-        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo.db_hash_func)");
-        return NULL;
-    }
-    rv = PyDict_SetItemString(pretdbinfo, "db_hash_funcname", Py_BuildValue("i", info.db_hash_funcname));
-    if (rv == -1) {
-        Py_DECREF(pretdbinfo);
-        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo.db_hash_funcname)");
-        return NULL;
-    }
-    rv = PyDict_SetItemString(pretdbinfo, "db_spill_size", Py_BuildValue("i", info.db_spill_size));
-    if (rv == -1) {
-        Py_DECREF(pretdbinfo);
-        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo.db_spill_size)");
-        return NULL;
-    }
-    rv = PyDict_SetItemString(pretdbinfo, "db_cache_mode", Py_BuildValue("i", info.db_cache_mode));
-    if (rv == -1) {
-        Py_DECREF(pretdbinfo);
-        PyErr_Format(PyExc_IOError, "mdbm::get_db_info() does not make a return value(dbinfo.db_cache_mode)");
-        return NULL;
-    }
+    pretdbinfo = get_db_info_dict(&info);
 
     Py_INCREF(pretdbinfo);
     return pretdbinfo;
@@ -2906,8 +2918,6 @@ PyObject *pymdbm__exit(register MDBMObj *pmdbm_link, PyObject *args) {
 }
 
 #endif
-
-
 
 /*
  * Local variables:

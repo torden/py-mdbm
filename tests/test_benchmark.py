@@ -216,6 +216,7 @@ def sqlite3_store(limit):
         conn = sqlite3.connect(path)
         c = conn.cursor()
         c.execute('''CREATE TABLE benchmark (key text, val text)''')
+        c.execute('''CREATE INDEX idx_benchmark_key ON benchmark(key)''')
 
         data = []
         for i in range(0, limit):
