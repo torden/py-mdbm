@@ -562,6 +562,10 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.fcopy("/tmp/test_fcopied.mdbm")
         self.assertTrue(rv)
 
+    def test_999_get_stats(self):
+        rv = self.dbm.get_stats()
+        self.assertTrue(rv)
+
     def test_999_misc(self):
         pass
 

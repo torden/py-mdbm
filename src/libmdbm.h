@@ -112,6 +112,9 @@ PyObject *pymdbm_pre_split(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_dump_all_page(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_dump_page(register MDBMObj *pmdbm_link, PyObject *args);
 
+PyObject *pymdbm_get_stats(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_get_db_info(register MDBMObj *pmdbm_link, PyObject *unused);
+
 #if PY_MAJOR_VERSION >= 3
 PyObject *pymdbm__enter(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm__exit(register MDBMObj *pmdbm_link, PyObject *args);
@@ -717,8 +720,14 @@ PyMethodDef mdbm_methods[] = {
 		"dump_page(pagenum)"
 			"Dumps specified page's information, in version-specific format, to standard output."
 	}, 
-
-
+	{"get_stats", (PyCFunction)pymdbm_get_stats, METH_NOARGS,
+		"get_stats()"
+            "Gets a a stats block with individual stat values."
+	}, 
+    {"get_db_info", (PyCFunction)pymdbm_get_db_info, METH_NOARGS,
+		"get_stats()"
+            "Gets configuration information about a database."
+	}, 
 	{0,0}
 };
 
