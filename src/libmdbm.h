@@ -779,8 +779,8 @@ PyMethodDef mdbm_methods[] = {
             "flags = (MDBM_STATS_BASIC | MDBM_STATS_TIMED)  enables both the stats counters and timestamps."
             "flags = 0  disables gathering of stats counters and timestamps."
     }, 
-    {"set_stat_time_fun", (PyCFunction)pymdbm_set_stat_time_fun, METH_VARARGS,
-        "set_stat_time_fun(flags)"
+    {"set_stat_time_func", (PyCFunction)pymdbm_set_stat_time_func, METH_VARARGS,
+        "set_stat_time_func(flags)"
             "Tells the MDBM library whether to use TSC (CPU TimeStamp Counters)"
             "for timing the performance of fetch, store and delete operations."
             "The standard behavior of timed stat operations is to use clock_gettime(MONOTONIC)"

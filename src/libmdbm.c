@@ -25,6 +25,16 @@
 #define MDBM_LOG_ABORT          LOG_EMERG
 #define MDBM_LOG_FATAL          LOG_ALERT
 
+#define MDBM_STAT_TYPE_FETCH    0
+#define MDBM_STAT_TYPE_STORE    1
+#define MDBM_STAT_TYPE_DELETE   2
+#define MDBM_STAT_TYPE_MAX      MDBM_STAT_TYPE_DELETE
+
+#define MDBM_PTYPE_FREE         0 // Page type free
+#define MDBM_PTYPE_DATA         1 // Page type data
+#define MDBM_PTYPE_DIR          2 // Page type directory
+#define MDBM_PTYPE_LOB          3 // Page type large object
+
 static int loglevel = -1;
 /* -- conflict
 static int capture = 0;
@@ -500,6 +510,17 @@ PyMODINIT_FUNC initmdbm(void) {
     PyModule_AddIntMacro(m, MDBM_HASH_HSIEH);
     PyModule_AddIntMacro(m, MDBM_MAX_HASH);
     PyModule_AddIntMacro(m, MDBM_CONFIG_DEFAULT_HASH);
+
+    PyModule_AddIntMacro(m, MDBM_STAT_TYPE_FETCH);
+    PyModule_AddIntMacro(m, MDBM_STAT_TYPE_STORE);
+    PyModule_AddIntMacro(m, MDBM_STAT_TYPE_DELETE);
+    PyModule_AddIntMacro(m, MDBM_STAT_TYPE_MAX);
+
+    PyModule_AddIntMacro(m, MDBM_PTYPE_FREE);
+    PyModule_AddIntMacro(m, MDBM_PTYPE_DATA);
+    PyModule_AddIntMacro(m, MDBM_PTYPE_DIR);
+    PyModule_AddIntMacro(m, MDBM_PTYPE_LOB);
+
 
 #if PY_MAJOR_VERSION >= 3
     return m;
@@ -2741,20 +2762,118 @@ PyObject *pymdbm_get_db_info(register MDBMObj *pmdbm_link, PyObject *unused) {
     return pretdbinfo;
 }
 
-/*
-get_stat_counter
-get_stat_time
-reset_stat_operations
-enable_stat_operations
-set_stat_time_func
+PyObject *pymdbm_get_stat_counter(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	mdbm_stat_type type = 0;
+	mdbm_counter_t value = 0;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &type);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required type");
+        return NULL;
+    }
+
+    CAPTURE_START();
+    rv = mdbm_get_stat_counter(pmdbm_link->pmdbm, type, &value);
+    CAPTURE_END();
+    if (rv == -1) {
+        _RETURN_FALSE();
+    }
+
+    return Py_BuildValue("i", value);
+}
+
+PyObject *pymdbm_get_stat_time(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	mdbm_stat_type type = 0;
+	time_t value = 0;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &type);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required type");
+        return NULL;
+    }
+
+    if (type != MDBM_STAT_TYPE_FETCH && type != MDBM_STAT_TYPE_STORE && type != MDBM_STAT_TYPE_DELETE) {
+        PyErr_Format(MDBMError, "mdbm::get_stat_time does not support type(=%d)", type);
+        return NULL;
+    }
+
+    CAPTURE_START();
+    rv = mdbm_get_stat_time(pmdbm_link->pmdbm, type, &value);
+    CAPTURE_END();
+    if (rv == -1) {
+        _RETURN_FALSE();
+    }
+
+    return Py_BuildValue("s", ctime(&value));
+}
 
 
-PyObject *pymdbm_get_stat_counter(register MDBMObj *pmdbm_link, PyObject *args);
-PyObject *pymdbm_get_stat_time(register MDBMObj *pmdbm_link, PyObject *args);
-PyObject *pymdbm_reset_stat_operations(register MDBMObj *pmdbm_link, PyObject *unused);
-PyObject *pymdbm_enable_stat_operations(register MDBMObj *pmdbm_link, PyObject *args);
-PyObject *pymdbm_set_stat_time_func(register MDBMObj *pmdbm_link, PyObject *args);
-*/
+PyObject *pymdbm_reset_stat_operations(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    CAPTURE_START();
+    mdbm_reset_stat_operations(pmdbm_link->pmdbm);
+    CAPTURE_END();
+
+    _RETURN_NONE();
+}
+
+PyObject *pymdbm_enable_stat_operations(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	int flags = 0;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &flags);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required flags");
+        return NULL;
+    }
+
+    if (flags != MDBM_STATS_BASIC && flags != MDBM_STATS_TIMED &&
+        flags != (MDBM_STATS_BASIC | MDBM_STATS_TIMED) && flags != 0) {
+        PyErr_Format(MDBMError, "mdbm::enable_stat_operations does not support flags(=%d)", flags);
+        return NULL;
+    }
+
+
+    CAPTURE_START();
+    rv = mdbm_enable_stat_operations(pmdbm_link->pmdbm, flags);
+    CAPTURE_END();
+    if (rv == -1) {
+        _RETURN_FALSE();
+    }
+
+    return Py_BuildValue("i", rv);
+}
+
+PyObject *pymdbm_set_stat_time_func(register MDBMObj *pmdbm_link, PyObject *args) {
+
+	int flags = 0;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "i", &flags);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "required flags");
+        return NULL;
+    }
+
+    if (flags != MDBM_CLOCK_TSC && flags != MDBM_CLOCK_STANDARD) {
+        PyErr_Format(MDBMError, "mdbm::set_stat_time_func does not support flags(=%d)", flags);
+        return NULL;
+    }
+
+    CAPTURE_START();
+    rv = mdbm_set_stat_time_func(pmdbm_link->pmdbm, flags);
+    CAPTURE_END();
+    if (rv == -1) {
+        _RETURN_FALSE();
+    }
+
+    return Py_BuildValue("i", rv);
+}
 
 // -------------------------------------------------------------------
 
