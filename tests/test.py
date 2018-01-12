@@ -3,28 +3,30 @@ import unittest
 import mdbm
 # import os
 
+def initDefaultData(dbm):
+
+    for i in range(0,100):
+        k = str(i)
+        v = str(random.randint(0, 65535))
+        dbm.store(k, v, mdbm.MDBM_REPLACE)
+
 
 class TestMDBMMethods(unittest.TestCase):
 
     def setUp(self):
         self.path = "/tmp/test_py.mdbm"
+        self.path_pure = "/tmp/test_py_pure.mdbm"
+        self.path_split = "/tmp/test_py_split.mdbm"
         self.path_prot = "/tmp/test_py_protect.mdbm"
         flags = mdbm.MDBM_O_RDWR
         flags = flags | mdbm.MDBM_O_CREAT
         flags = flags | mdbm.MDBM_LARGE_OBJECTS
         flags = flags | mdbm.MDBM_ANY_LOCKS
         flags = flags | mdbm.MDBM_O_TRUNC
+        self.flags = flags
         self.mode = 0o644  # means 0644
         self.dbm = mdbm.open(self.path, flags, self.mode, 0, 0)
-
-        self.flags = flags
-        kv1 = str(1)
-        kv2 = str(2)
-        kv3 = str(3)
-
-        self.dbm.store(kv1, kv1, mdbm.MDBM_REPLACE)
-        self.dbm.store(kv2, kv2, mdbm.MDBM_REPLACE)
-        self.dbm.store(kv3, kv3, mdbm.MDBM_REPLACE)
+        initDefaultData(self.dbm)
 
     def tearDown(self):
         self.dbm.sync()
@@ -35,9 +37,10 @@ class TestMDBMMethods(unittest.TestCase):
         dbm = mdbm.open(self.path, flags, self.mode, 0, 0)
         self.assertTrue(dbm)
 
-    def test_01_dup_handle(self):
-        dbm_dup = self.dbm.dup_handle()
-        self.assertTrue(dbm_dup)
+#    def test_01_dup_handle(self):
+#        dbm_dup = self.dbm.dup_handle()
+#        self.assertTrue(dbm_dup)
+#        dbm_dup.close()
 
     def test_99_purge(self):
         self.dbm.purge()
@@ -166,8 +169,16 @@ class TestMDBMMethods(unittest.TestCase):
         self.assertTrue((rv == 0))
 
     def test_70_check(self):
-        rv = self.dbm.check(10, False)
+        rv = self.dbm.check(mdbm.MDBM_CHECK_HEADER, False)
         self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.check(mdbm.MDBM_CHECK_CHUNKS, False)
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = self.dbm.check(mdbm.MDBM_CHECK_DIRECTORY, False)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+        rv = self.dbm.check(mdbm.MDBM_CHECK_ALL, False)
+        self.assertTrue(rv, "rv=%s" % rv)
+
         rv = self.dbm.check(10, True)
         self.assertTrue(rv, "rv=%s" % rv)
 
@@ -412,6 +423,17 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.get_page_size()
         self.assertTrue(rv, "rv=%s" % rv)
 
+#    # segfault
+#    def test_90_get_cachemode_name(self):
+#        rv = mdbm.get_cachemode_name(mdbm.MDBM_CACHEMODE_NONE)
+#        self.assertEqual(rv, "none")
+#        rv = mdbm.get_cachemode_name(mdbm.MDBM_CACHEMODE_LFU)
+#        self.assertEqual(rv, "LFU")
+#        rv = mdbm.get_cachemode_name(mdbm.MDBM_CACHEMODE_LRU)
+#        self.assertEqual(rv, "LRU")
+#        rv = mdbm.get_cachemode_name(mdbm.MDBM_CACHEMODE_GDSF)
+#        self.assertEqual(rv, "GDSF")
+
     def test_98_lock_reset(self):
         rv = self.dbm.lock()
         self.assertTrue(rv, "rv=%s" % rv)
@@ -462,6 +484,50 @@ class TestMDBMMethods(unittest.TestCase):
     def test_99_limit_dir_size(self):
         rv = self.dbm.limit_dir_size(1024)
         self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_99_get_magic_number(self):
+        rv = self.dbm.get_magic_number()
+        # print(mdbm._MDBM_MAGIC) # v2
+        # print(mdbm._MDBM_MAGIC_NEW) # v2 with large objects
+        # print(mdbm._MDBM_MAGIC_NEW2) # v3
+        self.assertEqual(rv, mdbm.MDBM_MAGIC)
+
+    def test_99_pre_split(self):
+        dbm2 = mdbm.open(self.path_split, self.flags, self.mode)
+        rv = dbm2.pre_split(512)
+        self.assertTrue(rv, "rv=%s" % rv)
+
+    def test_99_set_cachemode_get_cachemode(self):
+
+        dbm_pure = mdbm.open(self.path_pure, self.flags, self.mode, 0, 0)
+        rv = dbm_pure.set_cachemode(mdbm.MDBM_CACHEMODE_NONE)
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = dbm_pure.get_cachemode()
+        self.assertEqual(rv, mdbm.MDBM_CACHEMODE_NONE)
+
+        rv = dbm_pure.set_cachemode(mdbm.MDBM_CACHEMODE_LFU)
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = dbm_pure.get_cachemode()
+        self.assertEqual(rv, mdbm.MDBM_CACHEMODE_LFU)
+
+        rv = dbm_pure.set_cachemode(mdbm.MDBM_CACHEMODE_LRU)
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = dbm_pure.get_cachemode()
+        self.assertEqual(rv, mdbm.MDBM_CACHEMODE_LRU)
+
+        rv = dbm_pure.set_cachemode(mdbm.MDBM_CACHEMODE_GDSF)
+        self.assertTrue(rv, "rv=%s" % rv)
+        rv = dbm_pure.get_cachemode()
+        self.assertEqual(rv, mdbm.MDBM_CACHEMODE_GDSF)
+
+    def test_999_dump_all_page(self):
+        print("\n[*] this following is not error, dump_all_page api dumps to stdout\n")
+        self.dbm.dump_all_page()
+
+    def test_999_dump_page(self):
+        print("\n[*] this following is not error, dump_page api dumps to stdout\n")
+        self.dbm.dump_page(0)
+
 
 
     def test_999_misc(self):
