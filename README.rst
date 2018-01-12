@@ -1,219 +1,279 @@
+Py-mdbm
+=======
 
+-  Py-mdbm is a Python binds to `Yahoo! MDBM C
+   API. <https://github.com/yahoo/mdbm/>`__
+-  MDBM is a super-fast memory-mapped key/value store.
+-  MDBM is an ndbm work-alike hashed database library based on sdbm
+   which is based on Per-Aake Larson’s Dynamic Hashing algorithms.
+-  MDBM is a high-performance, memory-mapped hash database similar to
+   the homegrown libhash.
+-  The records stored in a mdbm database may have keys and values of
+   arbitrary and variable lengths.
 
-PY-MDBM
-
-
--   Py-mdbm is a Python binds to Yahoo! MDBM C API.
--   MDBM is a super-fast memory-mapped key/value store.
--   MDBM is an ndbm work-alike hashed database library based on sdbm
-    which is based on Per-Aake Larson’s Dynamic Hashing algorithms.
--   MDBM is a high-performance, memory-mapped hash database similar to
-    the homegrown libhash.
--   The records stored in a mdbm database may have keys and values of
-    arbitrary and variable lengths.
-
-    Build Stats       Py-mdbm ver.       Y! mdbm ver.
-  ---------------- ------------------ ------------------
-   [Build Status]   [GitHub version]   [GitHub version]
-
++----------------+------------------+------------------+
+| Build Stats    | Py-mdbm ver.     | Y! mdbm ver.     |
++================+==================+==================+
+| |Build Status| | |GitHub version| | |GitHub version| |
++----------------+------------------+------------------+
 
 API
+---
 
 Currently Supported APIs
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 the following is list of support api on now.
 
-  -------------------------------------------------------------------------
-  Group                                API
-  ------------------------------------ ------------------------------------
-  File Management                      mdbm_open, mdbm_close, mdbm_sync,
-                                       mdbm_fsync, mdbm_close_fd,
-                                       mdbm_replace_db, mdbm_replace_file,
-                                       mdbm_dup_handle, mdbm_pre_split,
-                                       mdbm_fcopy
-
-  Configuration                        mdbm_get_version, mdbm_get_size,
-                                       mdbm_get_page_size,
-                                       mdbm_get_limit_size, mdbm_get_hash,
-                                       mdbm_get_alignment,
-                                       mdbm_set_alignment,
-                                       mdbm_setspillsize,
-                                       mdbm_limit_dir_size,
-                                       mdbm_get_magic_number,
-                                       _~~mdbm_limit_size_v3,
-                                       mdbm_set_window_size~~_
-
-  Record Access                        mdbm_fetch, mdbm_delete, mdbm_store,
-                                       mdbm_fetch_r, mdbm_fetch_dup_r,
-                                       mdbm_delete_r, mdbm_store_r,
-                                       mdbm_fetch_info
-
-  Record Iteration                     mdbm_first, mdbm_next,
-                                       mdbm_firstkey, mdbm_nextkey,
-                                       mdbm_first_r, mdbm_next_r,
-                                       mdbm_firstkey_r, mdbm_nextkey_r,
-                                       _~~mdbm_iterate~~_
-
-  Locking                              mdbm_islocked, mdbm_isowned,
-                                       mdbm_lock, mdbm_unlock,
-                                       mdbm_lock_reset,
-                                       mdbm_delete_lockfiles,
-                                       mdbm_get_lockmode, mdbm_trylock,
-                                       mdbm_plock, mdbm_punlock,
-                                       mdbm_tryplock, mdbm_lock_shared,
-                                       mdbm_trylock_shared,
-                                       mdbm_lock_smart, mdbm_trylock_smart,
-                                       mdbm_unlock_smart
-
-  Data Management                      mdbm_compress_tree, mdbm_truncate,
-                                       mdbm_purge, mdbm_clean,
-                                       _~~mdbm_prune, mdbm_set_cleanfunc~~_
-
-  Data Integrity                       mdbm_check, mdbm_chk_all_page,
-                                       mdbm_chk_page, mdbm_protect
-
-  Data Display                         mdbm_dump_all_page, mdbm_dump_page
-
-  Statistics                           mdbm_count_records,
-                                       mdbm_count_pages, mdbm_get_stats,
-                                       mdbm_get_db_info,
-                                       mdbm_get_stat_counter,
-                                       mdbm_get_stat_time,
-                                       mdbm_reset_stat_operations,
-                                       mdbm_enable_stat_operations,
-                                       mdbm_set_stat_time_func,
-                                       _~~mdbm_get_stat_name,
-                                       mdbm_set_stats_func,
-                                       mdbm_chunk_iterate,
-                                       mdbm_get_db_stats,
-                                       mdbm_get_window_stats~~_
-
-  Cache and Backing Store              mdbm_set_cachemode,
-                                       mdbm_get_cachemode,
-                                       mdbm_get_cachemode_name,
-                                       _~~mdbm_set_backingstore~~_
-
-  Import and Export                    _~~mdbm_cdbdump_to_file,
-                                       mdbm_cdbdump_trailer_and_close,
-                                       mdbm_cdbdump_add_record,
-                                       mdbm_dbdump_to_file,
-                                       mdbm_dbdump_trailer_and_close,
-                                       mdbm_dbdump_add_record,
-                                       mdbm_dbdump_export_header,
-                                       mdbm_dbdump_import_header,
-                                       mdbm_dbdump_import,
-                                       mdbm_cdbdump_import~~_
-
-  Miscellaneous                        mdbm_preload, mdbm_get_errno,
-                                       mdbm_get_page, mdbm_lock_pages,
-                                       mdbm_unlock_pages,
-                                       mdbm_get_hash_value
-  -------------------------------------------------------------------------
++-----------------------------------+-----------------------------------+
+| Group                             | API                               |
++===================================+===================================+
+| `File                             | mdbm_open, mdbm_close, mdbm_sync, |
+| Management <http://yahoo.github.i | mdbm_fsync, mdbm_close_fd,        |
+| o/mdbm/api/group__FileManagementG | mdbm_replace_db,                  |
+| roup.html>`__                     | mdbm_replace_file,                |
+|                                   | mdbm_dup_handle, mdbm_pre_split,  |
+|                                   | mdbm_fcopy                        |
++-----------------------------------+-----------------------------------+
+| `Configuration <http://yahoo.gith | mdbm_get_version, mdbm_get_size,  |
+| ub.io/mdbm/api/group__Configurati | mdbm_get_page_size,               |
+| onGroup.html>`__                  | mdbm_get_limit_size,              |
+|                                   | mdbm_get_hash,                    |
+|                                   | mdbm_get_alignment,               |
+|                                   | mdbm_set_alignment,               |
+|                                   | mdbm_setspillsize,                |
+|                                   | mdbm_limit_dir_size,              |
+|                                   | mdbm_get_magic_number,            |
+|                                   | *[STRIKEOUT:mdbm_limit_size_v3,   |
+|                                   | mdbm_set_window_size]*            |
++-----------------------------------+-----------------------------------+
+| `Record                           | mdbm_fetch, mdbm_delete,          |
+| Access <http://yahoo.github.io/md | mdbm_store, mdbm_fetch_r,         |
+| bm/api/group__RecordAccessGroup.h | mdbm_fetch_dup_r, mdbm_delete_r,  |
+| tml>`__                           | mdbm_store_r, mdbm_fetch_info     |
++-----------------------------------+-----------------------------------+
+| `Record                           | mdbm_first, mdbm_next,            |
+| Iteration <http://yahoo.github.io | mdbm_firstkey, mdbm_nextkey,      |
+| /mdbm/api/group__RecordIterationG | mdbm_first_r, mdbm_next_r,        |
+| roup.html>`__                     | mdbm_firstkey_r, mdbm_nextkey_r,  |
+|                                   | *[STRIKEOUT:mdbm_iterate]*        |
++-----------------------------------+-----------------------------------+
+| `Locking <http://yahoo.github.io/ | mdbm_islocked, mdbm_isowned,      |
+| mdbm/api/group__LockingGroup.html | mdbm_lock, mdbm_unlock,           |
+| >`__                              | mdbm_lock_reset,                  |
+|                                   | mdbm_delete_lockfiles,            |
+|                                   | mdbm_get_lockmode, mdbm_trylock,  |
+|                                   | mdbm_plock, mdbm_punlock,         |
+|                                   | mdbm_tryplock, mdbm_lock_shared,  |
+|                                   | mdbm_trylock_shared,              |
+|                                   | mdbm_lock_smart,                  |
+|                                   | mdbm_trylock_smart,               |
+|                                   | mdbm_unlock_smart                 |
++-----------------------------------+-----------------------------------+
+| `Data                             | mdbm_compress_tree,               |
+| Management <http://yahoo.github.i | mdbm_truncate, mdbm_purge,        |
+| o/mdbm/api/group__DataManagementG | mdbm_clean,                       |
+| roup.html>`__                     | *[STRIKEOUT:mdbm_prune,           |
+|                                   | mdbm_set_cleanfunc]*              |
++-----------------------------------+-----------------------------------+
+| `Data                             | mdbm_check, mdbm_chk_all_page,    |
+| Integrity <http://yahoo.github.io | mdbm_chk_page, mdbm_protect       |
+| /mdbm/api/group__DataIntegrityGro |                                   |
+| up.html>`__                       |                                   |
++-----------------------------------+-----------------------------------+
+| `Data                             | mdbm_dump_all_page,               |
+| Display <http://yahoo.github.io/m | mdbm_dump_page                    |
+| dbm/api/group__DataDisplayGroup.h |                                   |
+| tml>`__                           |                                   |
++-----------------------------------+-----------------------------------+
+| `Statistics <http://yahoo.github. | mdbm_count_records,               |
+| io/mdbm/api/group__StatisticsGrou | mdbm_count_pages, mdbm_get_stats, |
+| p.html>`__                        | mdbm_get_db_info,                 |
+|                                   | mdbm_get_stat_counter,            |
+|                                   | mdbm_get_stat_time,               |
+|                                   | mdbm_reset_stat_operations,       |
+|                                   | mdbm_enable_stat_operations,      |
+|                                   | mdbm_set_stat_time_func,          |
+|                                   | *[STRIKEOUT:mdbm_get_stat_name,   |
+|                                   | mdbm_set_stats_func,              |
+|                                   | mdbm_chunk_iterate,               |
+|                                   | mdbm_get_db_stats,                |
+|                                   | mdbm_get_window_stats]*           |
++-----------------------------------+-----------------------------------+
+| `Cache and Backing                | mdbm_set_cachemode,               |
+| Store <http://yahoo.github.io/mdb | mdbm_get_cachemode,               |
+| m/api/group__CacheAndBackingStore | mdbm_get_cachemode_name,          |
+| Group.html>`__                    | *[STRIKEOUT:mdbm_set_backingstore |
+|                                   | ]*                                |
++-----------------------------------+-----------------------------------+
+| `Import and                       | *[STRIKEOUT:mdbm_cdbdump_to_file, |
+| Export <http://yahoo.github.io/md | mdbm_cdbdump_trailer_and_close,   |
+| bm/api/group__ImportExportGroup.h | mdbm_cdbdump_add_record,          |
+| tml>`__                           | mdbm_dbdump_to_file,              |
+|                                   | mdbm_dbdump_trailer_and_close,    |
+|                                   | mdbm_dbdump_add_record,           |
+|                                   | mdbm_dbdump_export_header,        |
+|                                   | mdbm_dbdump_import_header,        |
+|                                   | mdbm_dbdump_import,               |
+|                                   | mdbm_cdbdump_import]*             |
++-----------------------------------+-----------------------------------+
+| `Miscellaneous <http://yahoo.gith | mdbm_preload, mdbm_get_errno,     |
+| ub.io/mdbm/api/group__Miscellaneo | mdbm_get_page, mdbm_lock_pages,   |
+| usGroup.html>`__                  | mdbm_unlock_pages,                |
+|                                   | mdbm_get_hash_value               |
++-----------------------------------+-----------------------------------+
 
 Deprecated APIs
+~~~~~~~~~~~~~~~
 
-  --------------------------------------------------------------------------
-  _API_                    _STATUS_                 _COMMENT_
-  ------------------------ ------------------------ ------------------------
-  mdbm_save                DEPRECATED               mdbm_save is only
-                                                    supported for V2 MDBMs.
-
-  mdbm_restore             DEPRECATED               mdbm_restore is only
-                                                    supported for V2 MDBMs.
-
-  mdbm_sethash             DEPRECATED               Legacy version of
-                                                    mdbm_set_hash() This
-                                                    function has
-                                                    inconsistent naming, an
-                                                    error return value. It
-                                                    will be removed in a
-                                                    future version.
-  --------------------------------------------------------------------------
++-----------------------+-----------------------+-----------------------+
+| *API*                 | *STATUS*              | *COMMENT*             |
++=======================+=======================+=======================+
+| mdbm_save             | DEPRECATED            | mdbm_save is only     |
+|                       |                       | supported for V2      |
+|                       |                       | MDBMs.                |
++-----------------------+-----------------------+-----------------------+
+| mdbm_restore          | DEPRECATED            | mdbm_restore is only  |
+|                       |                       | supported for V2      |
+|                       |                       | MDBMs.                |
++-----------------------+-----------------------+-----------------------+
+| mdbm_sethash          | DEPRECATED            | Legacy version of     |
+|                       |                       | mdbm_set_hash() This  |
+|                       |                       | function has          |
+|                       |                       | inconsistent naming,  |
+|                       |                       | an error return       |
+|                       |                       | value. It will be     |
+|                       |                       | removed in a future   |
+|                       |                       | version.              |
++-----------------------+-----------------------+-----------------------+
 
 Only a V2 implementation
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-  --------------------------------------------------------------------------
-  _API_                    _STATUS_                 _COMMENT_
-  ------------------------ ------------------------ ------------------------
-  mdbm_stat_all_page       V3 not supported         There is only a V2
-                                                    implementation. V3 not
-                                                    currently supported.
-
-  mdbm_stat_header         V3 not supported         There is only a V2
-                                                    implementation. V3 not
-                                                    currently supported.
-  --------------------------------------------------------------------------
++-----------------------+-----------------------+-----------------------+
+| *API*                 | *STATUS*              | *COMMENT*             |
++=======================+=======================+=======================+
+| mdbm_stat_all_page    | V3 not supported      | There is only a V2    |
+|                       |                       | implementation. V3    |
+|                       |                       | not currently         |
+|                       |                       | supported.            |
++-----------------------+-----------------------+-----------------------+
+| mdbm_stat_header      | V3 not supported      | There is only a V2    |
+|                       |                       | implementation. V3    |
+|                       |                       | not currently         |
+|                       |                       | supported.            |
++-----------------------+-----------------------+-----------------------+
 
 Has not been implemented
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-  _API_           _STATUS_          _COMMENT_
-  --------------- ----------------- -------------------------------
-  dbm_chk_error   Not Implemented   This has not been implemented
-
++---------------+-----------------+-------------------------------+
+| *API*         | *STATUS*        | *COMMENT*                     |
++===============+=================+===============================+
+| dbm_chk_error | Not Implemented | This has not been implemented |
++---------------+-----------------+-------------------------------+
 
 Support two compatibility version
+---------------------------------
 
 Python
+~~~~~~
 
-  _Version_              _Support_   _Test_
-  ---------------------- ----------- --------
-  Python 2.6.x ~ 2.7.x   yes         always
-  Python 3.0.x ~ 3.x.x   yes         always
-  PyPy                   yes         always
-  PyPy3                  yes         always
++----------------------+-----------+--------+
+| *Version*            | *Support* | *Test* |
++======================+===========+========+
+| Python 2.6.x ~ 2.7.x | yes       | always |
++----------------------+-----------+--------+
+| Python 3.0.x ~ 3.x.x | yes       | always |
++----------------------+-----------+--------+
+| PyPy                 | yes       | always |
++----------------------+-----------+--------+
+| PyPy3                | yes       | always |
++----------------------+-----------+--------+
 
 MDBM
+~~~~
 
-  _branch or release ver._   _Support_   _Test_   _Comment_
-  -------------------------- ----------- -------- -----------
-  master                     yes         always   
-  4.x                        yes         always   
-
++--------------------------+-----------+--------+-----------+
+| *branch or release ver.* | *Support* | *Test* | *Comment* |
++==========================+===========+========+===========+
+| master                   | yes       | always |           |
++--------------------------+-----------+--------+-----------+
+| 4.x                      | yes       | always |           |
++--------------------------+-----------+--------+-----------+
 
 Install
+-------
+
+.. _mdbm-1:
 
 MDBM
+~~~~
 
--   Ubuntu : See the pre-build packages
--   RHEL (CentOS) : See the pre-build packages
+-  Ubuntu : See the `pre-build
+   packages <https://github.com/torden/go-mdbm/tree/master/pkg>`__
+-  RHEL (CentOS) : See the `pre-build
+   packages <https://github.com/torden/go-mdbm/tree/master/pkg>`__
 
 py-mdbm (use pip)
+~~~~~~~~~~~~~~~~~
+
+.. code:: shell
 
     pip install py-mdbm
 
 py-mdbm (use source)
+~~~~~~~~~~~~~~~~~~~~
 
 Download
+^^^^^^^^
+
+.. code:: shell
 
     git clone https://github.com/torden/py-mdbm
 
 Build and Test
+^^^^^^^^^^^^^^
+
+.. code:: shell
 
     cd py-mdbm
     CMD_PYTHON=`which python` make
 
 Check
+~~~~~
+
+.. code:: shell
 
     $ python
     >>> import mdbm
     >>> help(mdbm)
 
 Benchmark
+~~~~~~~~~
+
+.. code:: shell
 
     cd py-mdbm
     `which pip` install -r requirements.txt
     CMD_PYTHON=`which python` CMD_PYTEST=`which pytest` make benchmark
 
-
 Example
+-------
 
-See the Source Code for more details
+See the `Source
+Code <https://github.com/torden/py-mdbm/tree/master/example>`__ for more
+details
 
 The following is Sample codes for a first look at py-mdbm
 
 Creating and populating a database
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Python 2 or higher
+^^^^^^^^^^^^^^^^^^
+
+.. code:: python
 
     import mdbm
     import random
@@ -245,6 +305,9 @@ Python 2 or higher
     print("done")
 
 Python 3 or higher
+^^^^^^^^^^^^^^^^^^
+
+.. code:: python
 
     import mdbm
     import random
@@ -274,6 +337,9 @@ Python 3 or higher
     print("done")
 
 Fetching records in-place
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
 
     import mdbm
     import random
@@ -309,6 +375,9 @@ Fetching records in-place
     print("done")
 
 Fetching and updating records in-place
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
 
     import mdbm
     import random
@@ -344,6 +413,9 @@ Fetching and updating records in-place
     print("done")
 
 Deleting records in-place
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
 
     import mdbm
     import random
@@ -376,6 +448,9 @@ Deleting records in-place
     print("done")
 
 Iterating over all records
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
 
     import mdbm
     import random
@@ -410,6 +485,9 @@ Iterating over all records
     print("done")
 
 Iterating over all keys
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
 
     import mdbm
     import random
@@ -444,6 +522,9 @@ Iterating over all keys
     print("done")
 
 Iteration over all value by key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
 
     import mdbm
     import random
@@ -492,42 +573,68 @@ Iteration over all value by key
 
     print("done")
 
+.. _benchmark-1:
 
 Benchmark
+---------
 
 The following is results of Py-mdbm vs AnyDBM vs SQLite3 vs Kyotocabinet
 benchmarks for simple data storing and random fetching in them.
 
-See the Source Code for more details
+See the `Source
+Code <https://github.com/torden/py-mdbm/blob/master/test_benchmark.py>`__
+for more details
 
 Spec
+~~~~
 
 Host
+^^^^
 
-  Type   Spec
-  ------ --------------
-  CPU    Inte i-7
-  RAM    DDR4 32G
-  HDD    Nvme M.2 SSD
++------+--------------+
+| Type | Spec         |
++======+==============+
+| CPU  | Inte i-7     |
++------+--------------+
+| RAM  | DDR4 32G     |
++------+--------------+
+| HDD  | Nvme M.2 SSD |
++------+--------------+
 
 VM
+^^
 
-  Type           Spec
-  -------------- ---------------------------------------------------------
-  Machine        VM(VirtualBox)
-  OS             CentOS 7 64bit
-  CPU            2 vCore
-  RAM            8G
-  AnyDBM         Berkeley DB (Hash, version 9, native byte-order) format
-  Mdbm           893f7a8 on 26 Jul, MDBM V3 format
-  SQLite         V3
-  Kyotocabinet   1.2.76, kch
++--------------+---------------------------------------------------------+
+| Type         | Spec                                                    |
++==============+=========================================================+
+| Machine      | VM(VirtualBox)                                          |
++--------------+---------------------------------------------------------+
+| OS           | CentOS 7 64bit                                          |
++--------------+---------------------------------------------------------+
+| CPU          | 2 vCore                                                 |
++--------------+---------------------------------------------------------+
+| RAM          | 8G                                                      |
++--------------+---------------------------------------------------------+
+| AnyDBM       | Berkeley DB (Hash, version 9, native byte-order) format |
++--------------+---------------------------------------------------------+
+| Mdbm         | 893f7a8 on 26 Jul, MDBM V3 format                       |
++--------------+---------------------------------------------------------+
+| SQLite       | V3                                                      |
++--------------+---------------------------------------------------------+
+| Kyotocabinet | 1.2.76, kch                                             |
++--------------+---------------------------------------------------------+
 
 Command
+~~~~~~~
+
+::
 
     CMD_PYTHON=`which python` CMD_PYTEST=`which pytest` make benchmark
 
 10,000 INSERTs
+~~~~~~~~~~~~~~
+
+::
 
     platform linux2 -- Python 2.7.14, pytest-3.3.2, py-1.5.2, pluggy-0.6.0
     benchmark: 3.1.1 (defaults: timer=time.time disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
@@ -545,7 +652,12 @@ Command
     test_anydbm_store_10000               121.6981 (3.17)     124.4709 (2.92)     122.5444 (3.05)     0.8690 (1.05)     122.5522 (3.05)     0.9117 (1.55)          1;1   8.1603 (0.33)          9           1
     ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+.. _inserts-1:
+
 100,000 INSERTs
+~~~~~~~~~~~~~~~
+
+::
 
     ------------------------------------------------------------------------------------------------ benchmark: 5 tests -----------------------------------------------------------------------------------------------
     Name (time in ms)                             Min                   Max                  Mean             StdDev                Median                IQR            Outliers     OPS            Rounds  Iterations
@@ -558,6 +670,9 @@ Command
     -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 10,000 Random Key SELECTs
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
 
     ---------------------------------------------------------------------------------------------------------- benchmark: 6 tests ----------------------------------------------------------------------------------------------------------
     Name (time in ms)                                     Min                     Max                    Mean                StdDev                  Median                   IQR            Outliers      OPS            Rounds  Iterations
@@ -570,7 +685,12 @@ Command
     test_sqlite3_random_fetch_10000              109,115.6809 (>1000.0)  115,857.6381 (>1000.0)  114,274.0032 (>1000.0)  2,895.5717 (>1000.0)  115,345.3960 (>1000.0)  2,082.3945 (>1000.0)       1;1   0.0088 (0.00)          5           1
     ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+.. _random-key-selects-1:
+
 100,000 Random Key SELECTs
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
 
     --------------------------------------------------------------------------------------------------- benchmark: 5 tests ---------------------------------------------------------------------------------------------------
     Name (time in ms)                                    Min                   Max                  Mean             StdDev                Median                IQR            Outliers     OPS            Rounds  Iterations
@@ -582,19 +702,26 @@ Command
     test_anydbm_random_fetch_100000               1,300.4990 (3.47)     1,359.2131 (3.56)     1,335.3496 (3.53)     23.5258 (9.72)     1,345.5169 (3.55)     33.8326 (10.94)         2;0  0.7489 (0.28)          5           1
     --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
 Link
+----
 
--   Yahoo! MDBM
--   MDBM::Concept
--   MDBM::Build
--   MDBM::Document
--   MDBM::FAQ
--   DBM
--   MDBM::Macro(const)
--   Go-mdbm
--   PHP-mdbm
+-  `Yahoo! MDBM <https://github.com/yahoo/mdbm>`__
+-  `MDBM::Concept <http://yahoo.github.io/mdbm/guide/concepts.html>`__
+-  `MDBM::Build <https://github.com/yahoo/mdbm/blob/master/README.build>`__
+-  `MDBM::Document <http://yahoo.github.io/mdbm/>`__
+-  `MDBM::FAQ <http://yahoo.github.io/mdbm/guide/faq.html>`__
+-  `DBM <https://en.wikipedia.org/wiki/Dbm>`__
+-  `MDBM::Macro(const) <http://yahoo.github.io/mdbm/api/mdbm_8h.html>`__
+-  `Go-mdbm <https://github.com/torden/go-mdbm>`__
+-  `PHP-mdbm <https://github.com/torden/php-mdbm>`__
 
-------------------------------------------------------------------------
+--------------
 
 Please feel free. I hope it is helpful for you
+
+.. |Build Status| image:: https://travis-ci.org/torden/py-mdbm.svg?branch=master
+   :target: https://travis-ci.org/torden/py-mdbm
+.. |GitHub version| image:: https://badge.fury.io/gh/torden%2Fpy-mdbm.svg
+   :target: https://badge.fury.io/gh/torden%2Fpy-mdbm
+.. |GitHub version| image:: https://badge.fury.io/gh/yahoo%2Fmdbm.svg
+   :target: https://badge.fury.io/gh/yahoo%2Fmdbm

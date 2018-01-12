@@ -63,12 +63,10 @@ static int org_stderr;
 #define CAPTURE_START()
 #define CAPTURE_END()
 
-// New in version 2.6.
 #if !defined(PyModule_AddIntMacro)
 #define PyModule_AddIntMacro(module, name){ PyModule_AddIntConstant(module, #name, name); }
 #endif
 
-// New in version 2.6.
 #if !defined(PyModule_AddStringMacro)
 #define PyModule_AddStringMacro(module, name) { PyModule_AddStringConstant(module, #name, name); }
 #endif
@@ -360,6 +358,9 @@ PyMODINIT_FUNC initmdbm(void) {
         m = NULL;
     }
 
+    PyModule_AddStringConstant(m, "__version__", PYMDBM_VERSION);
+    PyModule_AddIntConstant(m, "__mdbm_api_version__", MDBM_API_VERSION);
+
     PyModule_AddIntMacro(m, MDBM_LOG_OFF);
     PyModule_AddIntMacro(m, MDBM_LOG_EMERGENCY);
     PyModule_AddIntMacro(m, MDBM_LOG_ALERT);
@@ -374,8 +375,6 @@ PyMODINIT_FUNC initmdbm(void) {
     PyModule_AddIntMacro(m, MDBM_LOG_MAXLEVEL);
     PyModule_AddIntMacro(m, MDBM_LOG_ABORT);
     PyModule_AddIntMacro(m, MDBM_LOG_FATAL);
-
-
     PyModule_AddIntMacro(m, MDBM_KEYLEN_MAX);
     PyModule_AddIntMacro(m, MDBM_VALLEN_MAX);
     PyModule_AddIntMacro(m, MDBM_LOC_NORMAL);
@@ -520,7 +519,6 @@ PyMODINIT_FUNC initmdbm(void) {
     PyModule_AddIntMacro(m, MDBM_PTYPE_DATA);
     PyModule_AddIntMacro(m, MDBM_PTYPE_DIR);
     PyModule_AddIntMacro(m, MDBM_PTYPE_LOB);
-
 
 #if PY_MAJOR_VERSION >= 3
     return m;

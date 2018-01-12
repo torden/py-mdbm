@@ -1,14 +1,25 @@
 #!/usr/bin/env python
 # coding=utf-8
+import os
 from distutils.core import setup, Extension
+#from mdbm import __version__
+
+# read a desc
+f = open(os.path.join(os.path.dirname(__file__), 'README.rst'))
+long_description = f.read()
+f.close()
 
 setup(name = "py-mdbm",
+    #version = __version__,
     version = "0.0.2",
-    author="torden",
+    author="Torden",
     author_email="torden@myself.com",
-    description="Just! Python interface for Y! MDBM, Python MDBM Wapper",
+    maintainer='Torden',
+    maintainer_email='torden@myself.com',
+    keywords=['mdbm', 'key-value store', 'pymdbm', 'py-mdbm', 'database', 'nosql', 'key-value'],
+    description="The Python interface to the MDBM key-value store.",
+    long_description=long_description,
     license="MIT",
-    keywords="database nosql key-value",
     url="https://github.com/torden/py-mdbm",
     classifiers=[
         "Development Status :: 3 - Alpha",
