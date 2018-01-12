@@ -5,7 +5,7 @@ from distutils.core import setup, Extension
 #from mdbm import __version__
 
 # read a desc
-f = open(os.path.join(os.path.dirname(__file__), 'README.rst'))
+f = open(os.path.join(os.path.dirname(__file__), 'README.txt'))
 long_description = f.read()
 f.close()
 
