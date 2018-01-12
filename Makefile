@@ -43,8 +43,8 @@ sdist::
 test::
 ifeq ($(PY_VER),2)
 	@$(CMD_ECHO)  -e "\033[1;40;32mTesting Memory Leak and Unit-test.\033[01;m\x1b[0m"
-#	@$(CMD_VALGRIND) --tool=memcheck --dsymutil=yes --track-origins=yes --show-leak-kinds=all --trace-children=yes --suppressions=tests/.valgrind-python.supp $(CMD_PYTHON) -E -tt tests/test.py -v
-	@$(CMD_PYTHON) -E tests/test.py -v
+	@$(CMD_VALGRIND) --tool=memcheck --dsymutil=yes --track-origins=yes --show-leak-kinds=all --trace-children=yes --suppressions=tests/.valgrind-python.supp $(CMD_PYTHON) -E -tt tests/test.py -v
+#	@$(CMD_PYTHON) -E tests/test.py -v
 else
 	@$(CMD_ECHO)  -e "\033[1;40;32mUnit-Testing.\033[01;m\x1b[0m"
 #	@$(CMD_VALGRIND) --tool=memcheck --suppressions=tests/.valgrind-python3.supp $(PYTHON) -E test.py -v

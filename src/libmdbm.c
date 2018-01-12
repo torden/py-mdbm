@@ -581,7 +581,6 @@ PyObject *pymdbm_open(PyObject *self, PyObject *args, PyObject *kwds) {
     CAPTURE_END();
     if (pmdbm_link->pmdbm == NULL) {
         PyErr_SetFromErrno(MDBMError);
-	    PyErr_SetString(MDBMError, "failed to open the MDBM");
         Py_DECREF(pmdbm_link);
         return NULL;
     }
