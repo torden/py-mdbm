@@ -11,11 +11,11 @@ Py-mdbm
 -  The records stored in a mdbm database may have keys and values of
    arbitrary and variable lengths.
 
-+----------------+------------------+------------------+
-| Build Stats    | Py-mdbm ver.     | Y! mdbm ver.     |
-+================+==================+==================+
-| |Build Status| | |GitHub version| | |GitHub version| |
-+----------------+------------------+------------------+
++------------------+--------------------+--------------------+
+| Build Stats      | Py-mdbm ver.       | Y! mdbm ver.       |
++==================+====================+====================+
+| |Build Status|   | |GitHub version|   | |GitHub version|   |
++------------------+--------------------+--------------------+
 
 API
 ---
@@ -25,153 +25,698 @@ Currently Supported APIs
 
 the following is list of support api on now.
 
-+-----------------------------------+-----------------------------------+
-| Group                             | API                               |
-+===================================+===================================+
-| `File                             | mdbm_open, mdbm_close, mdbm_sync, |
-| Management <http://yahoo.github.i | mdbm_fsync, mdbm_close_fd,        |
-| o/mdbm/api/group__FileManagementG | mdbm_replace_db,                  |
-| roup.html>`__                     | mdbm_replace_file,                |
-|                                   | mdbm_dup_handle, mdbm_pre_split,  |
-|                                   | mdbm_fcopy                        |
-+-----------------------------------+-----------------------------------+
-| `Configuration <http://yahoo.gith | mdbm_get_version, mdbm_get_size,  |
-| ub.io/mdbm/api/group__Configurati | mdbm_get_page_size,               |
-| onGroup.html>`__                  | mdbm_get_limit_size,              |
-|                                   | mdbm_get_hash,                    |
-|                                   | mdbm_get_alignment,               |
-|                                   | mdbm_set_alignment,               |
-|                                   | mdbm_setspillsize,                |
-|                                   | mdbm_limit_dir_size,              |
-|                                   | mdbm_get_magic_number,            |
-|                                   | *[STRIKEOUT:mdbm_limit_size_v3,   |
-|                                   | mdbm_set_window_size]*            |
-+-----------------------------------+-----------------------------------+
-| `Record                           | mdbm_fetch, mdbm_delete,          |
-| Access <http://yahoo.github.io/md | mdbm_store, mdbm_fetch_r,         |
-| bm/api/group__RecordAccessGroup.h | mdbm_fetch_dup_r, mdbm_delete_r,  |
-| tml>`__                           | mdbm_store_r, mdbm_fetch_info     |
-+-----------------------------------+-----------------------------------+
-| `Record                           | mdbm_first, mdbm_next,            |
-| Iteration <http://yahoo.github.io | mdbm_firstkey, mdbm_nextkey,      |
-| /mdbm/api/group__RecordIterationG | mdbm_first_r, mdbm_next_r,        |
-| roup.html>`__                     | mdbm_firstkey_r, mdbm_nextkey_r,  |
-|                                   | *[STRIKEOUT:mdbm_iterate]*        |
-+-----------------------------------+-----------------------------------+
-| `Locking <http://yahoo.github.io/ | mdbm_islocked, mdbm_isowned,      |
-| mdbm/api/group__LockingGroup.html | mdbm_lock, mdbm_unlock,           |
-| >`__                              | mdbm_lock_reset,                  |
-|                                   | mdbm_delete_lockfiles,            |
-|                                   | mdbm_get_lockmode, mdbm_trylock,  |
-|                                   | mdbm_plock, mdbm_punlock,         |
-|                                   | mdbm_tryplock, mdbm_lock_shared,  |
-|                                   | mdbm_trylock_shared,              |
-|                                   | mdbm_lock_smart,                  |
-|                                   | mdbm_trylock_smart,               |
-|                                   | mdbm_unlock_smart                 |
-+-----------------------------------+-----------------------------------+
-| `Data                             | mdbm_compress_tree,               |
-| Management <http://yahoo.github.i | mdbm_truncate, mdbm_purge,        |
-| o/mdbm/api/group__DataManagementG | mdbm_clean,                       |
-| roup.html>`__                     | *[STRIKEOUT:mdbm_prune,           |
-|                                   | mdbm_set_cleanfunc]*              |
-+-----------------------------------+-----------------------------------+
-| `Data                             | mdbm_check, mdbm_chk_all_page,    |
-| Integrity <http://yahoo.github.io | mdbm_chk_page, mdbm_protect       |
-| /mdbm/api/group__DataIntegrityGro |                                   |
-| up.html>`__                       |                                   |
-+-----------------------------------+-----------------------------------+
-| `Data                             | mdbm_dump_all_page,               |
-| Display <http://yahoo.github.io/m | mdbm_dump_page                    |
-| dbm/api/group__DataDisplayGroup.h |                                   |
-| tml>`__                           |                                   |
-+-----------------------------------+-----------------------------------+
-| `Statistics <http://yahoo.github. | mdbm_count_records,               |
-| io/mdbm/api/group__StatisticsGrou | mdbm_count_pages, mdbm_get_stats, |
-| p.html>`__                        | mdbm_get_db_info,                 |
-|                                   | mdbm_get_stat_counter,            |
-|                                   | mdbm_get_stat_time,               |
-|                                   | mdbm_reset_stat_operations,       |
-|                                   | mdbm_enable_stat_operations,      |
-|                                   | mdbm_set_stat_time_func,          |
-|                                   | *[STRIKEOUT:mdbm_get_stat_name,   |
-|                                   | mdbm_set_stats_func,              |
-|                                   | mdbm_chunk_iterate,               |
-|                                   | mdbm_get_db_stats,                |
-|                                   | mdbm_get_window_stats]*           |
-+-----------------------------------+-----------------------------------+
-| `Cache and Backing                | mdbm_set_cachemode,               |
-| Store <http://yahoo.github.io/mdb | mdbm_get_cachemode,               |
-| m/api/group__CacheAndBackingStore | mdbm_get_cachemode_name,          |
-| Group.html>`__                    | *[STRIKEOUT:mdbm_set_backingstore |
-|                                   | ]*                                |
-+-----------------------------------+-----------------------------------+
-| `Import and                       | *[STRIKEOUT:mdbm_cdbdump_to_file, |
-| Export <http://yahoo.github.io/md | mdbm_cdbdump_trailer_and_close,   |
-| bm/api/group__ImportExportGroup.h | mdbm_cdbdump_add_record,          |
-| tml>`__                           | mdbm_dbdump_to_file,              |
-|                                   | mdbm_dbdump_trailer_and_close,    |
-|                                   | mdbm_dbdump_add_record,           |
-|                                   | mdbm_dbdump_export_header,        |
-|                                   | mdbm_dbdump_import_header,        |
-|                                   | mdbm_dbdump_import,               |
-|                                   | mdbm_cdbdump_import]*             |
-+-----------------------------------+-----------------------------------+
-| `Miscellaneous <http://yahoo.gith | mdbm_preload, mdbm_get_errno,     |
-| ub.io/mdbm/api/group__Miscellaneo | mdbm_get_page, mdbm_lock_pages,   |
-| usGroup.html>`__                  | mdbm_unlock_pages,                |
-|                                   | mdbm_get_hash_value               |
-+-----------------------------------+-----------------------------------+
++------+------+
+| Grou | API  |
+| p    |      |
++======+======+
+| `Fil | mdbm |
+| e    | \_op |
+| Mana | en,  |
+| geme | mdbm |
+| nt < | \_cl |
+| http | ose, |
+| ://y | mdbm |
+| ahoo | \_sy |
+| .git | nc,  |
+| hub. | mdbm |
+| io/m | \_fs |
+| dbm/ | ync, |
+| api/ | mdbm |
+| grou | \_cl |
+| p__F | ose\ |
+| ileM | _fd, |
+| anag | mdbm |
+| emen | \_re |
+| tGro | plac |
+| up.h | e\_d |
+| tml> | b,   |
+| `__  | mdbm |
+|      | \_re |
+|      | plac |
+|      | e\_f |
+|      | ile, |
+|      | mdbm |
+|      | \_du |
+|      | p\_h |
+|      | andl |
+|      | e,   |
+|      | mdbm |
+|      | \_pr |
+|      | e\_s |
+|      | plit |
+|      | ,    |
+|      | mdbm |
+|      | \_fc |
+|      | opy  |
++------+------+
+| `Con | mdbm |
+| figu | \_ge |
+| rati | t\_v |
+| on < | ersi |
+| http | on,  |
+| ://y | mdbm |
+| ahoo | \_ge |
+| .git | t\_s |
+| hub. | ize, |
+| io/m | mdbm |
+| dbm/ | \_ge |
+| api/ | t\_p |
+| grou | age\ |
+| p__C | _siz |
+| onfi | e,   |
+| gura | mdbm |
+| tion | \_ge |
+| Grou | t\_l |
+| p.ht | imit |
+| ml>` | \_si |
+| __   | ze,  |
+|      | mdbm |
+|      | \_ge |
+|      | t\_h |
+|      | ash, |
+|      | mdbm |
+|      | \_ge |
+|      | t\_a |
+|      | lign |
+|      | ment |
+|      | ,    |
+|      | mdbm |
+|      | \_se |
+|      | t\_a |
+|      | lign |
+|      | ment |
+|      | ,    |
+|      | mdbm |
+|      | \_se |
+|      | tspi |
+|      | llsi |
+|      | ze,  |
+|      | mdbm |
+|      | \_li |
+|      | mit\ |
+|      | _dir |
+|      | \_si |
+|      | ze,  |
+|      | mdbm |
+|      | \_ge |
+|      | t\_m |
+|      | agic |
+|      | \_nu |
+|      | mber |
+|      | ,    |
+|      | *[ST |
+|      | RIKE |
+|      | OUT: |
+|      | mdbm |
+|      | \_li |
+|      | mit\ |
+|      | _siz |
+|      | e\_v |
+|      | 3,   |
+|      | mdbm |
+|      | \_se |
+|      | t\_w |
+|      | indo |
+|      | w\_s |
+|      | ize] |
+|      | *    |
++------+------+
+| `Rec | mdbm |
+| ord  | \_fe |
+| Acce | tch, |
+| ss < | mdbm |
+| http | \_de |
+| ://y | lete |
+| ahoo | ,    |
+| .git | mdbm |
+| hub. | \_st |
+| io/m | ore, |
+| dbm/ | mdbm |
+| api/ | \_fe |
+| grou | tch\ |
+| p__R | _r,  |
+| ecor | mdbm |
+| dAcc | \_fe |
+| essG | tch\ |
+| roup | _dup |
+| .htm | \_r, |
+| l>`_ | mdbm |
+| _    | \_de |
+|      | lete |
+|      | \_r, |
+|      | mdbm |
+|      | \_st |
+|      | ore\ |
+|      | _r,  |
+|      | mdbm |
+|      | \_fe |
+|      | tch\ |
+|      | _inf |
+|      | o    |
++------+------+
+| `Rec | mdbm |
+| ord  | \_fi |
+| Iter | rst, |
+| atio | mdbm |
+| n <h | \_ne |
+| ttp: | xt,  |
+| //ya | mdbm |
+| hoo. | \_fi |
+| gith | rstk |
+| ub.i | ey,  |
+| o/md | mdbm |
+| bm/a | \_ne |
+| pi/g | xtke |
+| roup | y,   |
+| __Re | mdbm |
+| cord | \_fi |
+| Iter | rst\ |
+| atio | _r,  |
+| nGro | mdbm |
+| up.h | \_ne |
+| tml> | xt\_ |
+| `__  | r,   |
+|      | mdbm |
+|      | \_fi |
+|      | rstk |
+|      | ey\_ |
+|      | r,   |
+|      | mdbm |
+|      | \_ne |
+|      | xtke |
+|      | y\_r |
+|      | ,    |
+|      | *[ST |
+|      | RIKE |
+|      | OUT: |
+|      | mdbm |
+|      | \_it |
+|      | erat |
+|      | e]*  |
++------+------+
+| `Loc | mdbm |
+| king | \_is |
+|  <ht | lock |
+| tp:/ | ed,  |
+| /yah | mdbm |
+| oo.g | \_is |
+| ithu | owne |
+| b.io | d,   |
+| /mdb | mdbm |
+| m/ap | \_lo |
+| i/gr | ck,  |
+| oup_ | mdbm |
+| _Loc | \_un |
+| king | lock |
+| Grou | ,    |
+| p.ht | mdbm |
+| ml>` | \_lo |
+| __   | ck\_ |
+|      | rese |
+|      | t,   |
+|      | mdbm |
+|      | \_de |
+|      | lete |
+|      | \_lo |
+|      | ckfi |
+|      | les, |
+|      | mdbm |
+|      | \_ge |
+|      | t\_l |
+|      | ockm |
+|      | ode, |
+|      | mdbm |
+|      | \_tr |
+|      | yloc |
+|      | k,   |
+|      | mdbm |
+|      | \_pl |
+|      | ock, |
+|      | mdbm |
+|      | \_pu |
+|      | nloc |
+|      | k,   |
+|      | mdbm |
+|      | \_tr |
+|      | yplo |
+|      | ck,  |
+|      | mdbm |
+|      | \_lo |
+|      | ck\_ |
+|      | shar |
+|      | ed,  |
+|      | mdbm |
+|      | \_tr |
+|      | yloc |
+|      | k\_s |
+|      | hare |
+|      | d,   |
+|      | mdbm |
+|      | \_lo |
+|      | ck\_ |
+|      | smar |
+|      | t,   |
+|      | mdbm |
+|      | \_tr |
+|      | yloc |
+|      | k\_s |
+|      | mart |
+|      | ,    |
+|      | mdbm |
+|      | \_un |
+|      | lock |
+|      | \_sm |
+|      | art  |
++------+------+
+| `Dat | mdbm |
+| a    | \_co |
+| Mana | mpre |
+| geme | ss\_ |
+| nt < | tree |
+| http | ,    |
+| ://y | mdbm |
+| ahoo | \_tr |
+| .git | unca |
+| hub. | te,  |
+| io/m | mdbm |
+| dbm/ | \_pu |
+| api/ | rge, |
+| grou | mdbm |
+| p__D | \_cl |
+| ataM | ean, |
+| anag | *[ST |
+| emen | RIKE |
+| tGro | OUT: |
+| up.h | mdbm |
+| tml> | \_pr |
+| `__  | une, |
+|      | mdbm |
+|      | \_se |
+|      | t\_c |
+|      | lean |
+|      | func |
+|      | ]*   |
++------+------+
+| `Dat | mdbm |
+| a    | \_ch |
+| Inte | eck, |
+| grit | mdbm |
+| y <h | \_ch |
+| ttp: | k\_a |
+| //ya | ll\_ |
+| hoo. | page |
+| gith | ,    |
+| ub.i | mdbm |
+| o/md | \_ch |
+| bm/a | k\_p |
+| pi/g | age, |
+| roup | mdbm |
+| __Da | \_pr |
+| taIn | otec |
+| tegr | t    |
+| ityG |      |
+| roup |      |
+| .htm |      |
+| l>`_ |      |
+| _    |      |
++------+------+
+| `Dat | mdbm |
+| a    | \_du |
+| Disp | mp\_ |
+| lay  | all\ |
+| <htt | _pag |
+| p:// | e,   |
+| yaho | mdbm |
+| o.gi | \_du |
+| thub | mp\_ |
+| .io/ | page |
+| mdbm |      |
+| /api |      |
+| /gro |      |
+| up__ |      |
+| Data |      |
+| Disp |      |
+| layG |      |
+| roup |      |
+| .htm |      |
+| l>`_ |      |
+| _    |      |
++------+------+
+| `Sta | mdbm |
+| tist | \_co |
+| ics  | unt\ |
+| <htt | _rec |
+| p:// | ords |
+| yaho | ,    |
+| o.gi | mdbm |
+| thub | \_co |
+| .io/ | unt\ |
+| mdbm | _pag |
+| /api | es,  |
+| /gro | mdbm |
+| up__ | \_ge |
+| Stat | t\_s |
+| isti | tats |
+| csGr | ,    |
+| oup. | mdbm |
+| html | \_ge |
+| >`__ | t\_d |
+|      | b\_i |
+|      | nfo, |
+|      | mdbm |
+|      | \_ge |
+|      | t\_s |
+|      | tat\ |
+|      | _cou |
+|      | nter |
+|      | ,    |
+|      | mdbm |
+|      | \_ge |
+|      | t\_s |
+|      | tat\ |
+|      | _tim |
+|      | e,   |
+|      | mdbm |
+|      | \_re |
+|      | set\ |
+|      | _sta |
+|      | t\_o |
+|      | pera |
+|      | tion |
+|      | s,   |
+|      | mdbm |
+|      | \_en |
+|      | able |
+|      | \_st |
+|      | at\_ |
+|      | oper |
+|      | atio |
+|      | ns,  |
+|      | mdbm |
+|      | \_se |
+|      | t\_s |
+|      | tat\ |
+|      | _tim |
+|      | e\_f |
+|      | unc, |
+|      | *[ST |
+|      | RIKE |
+|      | OUT: |
+|      | mdbm |
+|      | \_ge |
+|      | t\_s |
+|      | tat\ |
+|      | _nam |
+|      | e,   |
+|      | mdbm |
+|      | \_se |
+|      | t\_s |
+|      | tats |
+|      | \_fu |
+|      | nc,  |
+|      | mdbm |
+|      | \_ch |
+|      | unk\ |
+|      | _ite |
+|      | rate |
+|      | ,    |
+|      | mdbm |
+|      | \_ge |
+|      | t\_d |
+|      | b\_s |
+|      | tats |
+|      | ,    |
+|      | mdbm |
+|      | \_ge |
+|      | t\_w |
+|      | indo |
+|      | w\_s |
+|      | tats |
+|      | ]*   |
++------+------+
+| `Cac | mdbm |
+| he   | \_se |
+| and  | t\_c |
+| Back | ache |
+| ing  | mode |
+| Stor | ,    |
+| e <h | mdbm |
+| ttp: | \_ge |
+| //ya | t\_c |
+| hoo. | ache |
+| gith | mode |
+| ub.i | ,    |
+| o/md | mdbm |
+| bm/a | \_ge |
+| pi/g | t\_c |
+| roup | ache |
+| __Ca | mode |
+| cheA | \_na |
+| ndBa | me,  |
+| ckin | *[ST |
+| gSto | RIKE |
+| reGr | OUT: |
+| oup. | mdbm |
+| html | \_se |
+| >`__ | t\_b |
+|      | acki |
+|      | ngst |
+|      | ore] |
+|      | *    |
++------+------+
+| `Imp | *[ST |
+| ort  | RIKE |
+| and  | OUT: |
+| Expo | mdbm |
+| rt < | \_cd |
+| http | bdum |
+| ://y | p\_t |
+| ahoo | o\_f |
+| .git | ile, |
+| hub. | mdbm |
+| io/m | \_cd |
+| dbm/ | bdum |
+| api/ | p\_t |
+| grou | rail |
+| p__I | er\_ |
+| mpor | and\ |
+| tExp | _clo |
+| ortG | se,  |
+| roup | mdbm |
+| .htm | \_cd |
+| l>`_ | bdum |
+| _    | p\_a |
+|      | dd\_ |
+|      | reco |
+|      | rd,  |
+|      | mdbm |
+|      | \_db |
+|      | dump |
+|      | \_to |
+|      | \_fi |
+|      | le,  |
+|      | mdbm |
+|      | \_db |
+|      | dump |
+|      | \_tr |
+|      | aile |
+|      | r\_a |
+|      | nd\_ |
+|      | clos |
+|      | e,   |
+|      | mdbm |
+|      | \_db |
+|      | dump |
+|      | \_ad |
+|      | d\_r |
+|      | ecor |
+|      | d,   |
+|      | mdbm |
+|      | \_db |
+|      | dump |
+|      | \_ex |
+|      | port |
+|      | \_he |
+|      | ader |
+|      | ,    |
+|      | mdbm |
+|      | \_db |
+|      | dump |
+|      | \_im |
+|      | port |
+|      | \_he |
+|      | ader |
+|      | ,    |
+|      | mdbm |
+|      | \_db |
+|      | dump |
+|      | \_im |
+|      | port |
+|      | ,    |
+|      | mdbm |
+|      | \_cd |
+|      | bdum |
+|      | p\_i |
+|      | mpor |
+|      | t]*  |
++------+------+
+| `Mis | mdbm |
+| cell | \_pr |
+| aneo | eloa |
+| us < | d,   |
+| http | mdbm |
+| ://y | \_ge |
+| ahoo | t\_e |
+| .git | rrno |
+| hub. | ,    |
+| io/m | mdbm |
+| dbm/ | \_ge |
+| api/ | t\_p |
+| grou | age, |
+| p__M | mdbm |
+| isce | \_lo |
+| llan | ck\_ |
+| eous | page |
+| Grou | s,   |
+| p.ht | mdbm |
+| ml>` | \_un |
+| __   | lock |
+|      | \_pa |
+|      | ges, |
+|      | mdbm |
+|      | \_ge |
+|      | t\_h |
+|      | ash\ |
+|      | _val |
+|      | ue   |
++------+------+
 
 Deprecated APIs
 ~~~~~~~~~~~~~~~
 
-+-----------------------+-----------------------+-----------------------+
-| *API*                 | *STATUS*              | *COMMENT*             |
-+=======================+=======================+=======================+
-| mdbm_save             | DEPRECATED            | mdbm_save is only     |
-|                       |                       | supported for V2      |
-|                       |                       | MDBMs.                |
-+-----------------------+-----------------------+-----------------------+
-| mdbm_restore          | DEPRECATED            | mdbm_restore is only  |
-|                       |                       | supported for V2      |
-|                       |                       | MDBMs.                |
-+-----------------------+-----------------------+-----------------------+
-| mdbm_sethash          | DEPRECATED            | Legacy version of     |
-|                       |                       | mdbm_set_hash() This  |
-|                       |                       | function has          |
-|                       |                       | inconsistent naming,  |
-|                       |                       | an error return       |
-|                       |                       | value. It will be     |
-|                       |                       | removed in a future   |
-|                       |                       | version.              |
-+-----------------------+-----------------------+-----------------------+
++------+------+------+
+| *API | *STA | *COM |
+| *    | TUS* | MENT |
+|      |      | *    |
++======+======+======+
+| mdbm | DEPR | mdbm |
+| \_sa | ECAT | \_sa |
+| ve   | ED   | ve   |
+|      |      | is   |
+|      |      | only |
+|      |      | supp |
+|      |      | orte |
+|      |      | d    |
+|      |      | for  |
+|      |      | V2   |
+|      |      | MDBM |
+|      |      | s.   |
++------+------+------+
+| mdbm | DEPR | mdbm |
+| \_re | ECAT | \_re |
+| stor | ED   | stor |
+| e    |      | e    |
+|      |      | is   |
+|      |      | only |
+|      |      | supp |
+|      |      | orte |
+|      |      | d    |
+|      |      | for  |
+|      |      | V2   |
+|      |      | MDBM |
+|      |      | s.   |
++------+------+------+
+| mdbm | DEPR | Lega |
+| \_se | ECAT | cy   |
+| thas | ED   | vers |
+| h    |      | ion  |
+|      |      | of   |
+|      |      | mdbm |
+|      |      | \_se |
+|      |      | t\_h |
+|      |      | ash( |
+|      |      | )    |
+|      |      | This |
+|      |      | func |
+|      |      | tion |
+|      |      | has  |
+|      |      | inco |
+|      |      | nsis |
+|      |      | tent |
+|      |      | nami |
+|      |      | ng,  |
+|      |      | an   |
+|      |      | erro |
+|      |      | r    |
+|      |      | retu |
+|      |      | rn   |
+|      |      | valu |
+|      |      | e.   |
+|      |      | It   |
+|      |      | will |
+|      |      | be   |
+|      |      | remo |
+|      |      | ved  |
+|      |      | in a |
+|      |      | futu |
+|      |      | re   |
+|      |      | vers |
+|      |      | ion. |
++------+------+------+
 
 Only a V2 implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-+-----------------------+-----------------------+-----------------------+
-| *API*                 | *STATUS*              | *COMMENT*             |
-+=======================+=======================+=======================+
-| mdbm_stat_all_page    | V3 not supported      | There is only a V2    |
-|                       |                       | implementation. V3    |
-|                       |                       | not currently         |
-|                       |                       | supported.            |
-+-----------------------+-----------------------+-----------------------+
-| mdbm_stat_header      | V3 not supported      | There is only a V2    |
-|                       |                       | implementation. V3    |
-|                       |                       | not currently         |
-|                       |                       | supported.            |
-+-----------------------+-----------------------+-----------------------+
++------+------+------+
+| *API | *STA | *COM |
+| *    | TUS* | MENT |
+|      |      | *    |
++======+======+======+
+| mdbm | V3   | Ther |
+| \_st | not  | e    |
+| at\_ | supp | is   |
+| all\ | orte | only |
+| _pag | d    | a V2 |
+| e    |      | impl |
+|      |      | emen |
+|      |      | tati |
+|      |      | on.  |
+|      |      | V3   |
+|      |      | not  |
+|      |      | curr |
+|      |      | entl |
+|      |      | y    |
+|      |      | supp |
+|      |      | orte |
+|      |      | d.   |
++------+------+------+
+| mdbm | V3   | Ther |
+| \_st | not  | e    |
+| at\_ | supp | is   |
+| head | orte | only |
+| er   | d    | a V2 |
+|      |      | impl |
+|      |      | emen |
+|      |      | tati |
+|      |      | on.  |
+|      |      | V3   |
+|      |      | not  |
+|      |      | curr |
+|      |      | entl |
+|      |      | y    |
+|      |      | supp |
+|      |      | orte |
+|      |      | d.   |
++------+------+------+
 
 Has not been implemented
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-+---------------+-----------------+-------------------------------+
-| *API*         | *STATUS*        | *COMMENT*                     |
-+===============+=================+===============================+
-| dbm_chk_error | Not Implemented | This has not been implemented |
-+---------------+-----------------+-------------------------------+
++-------------------+-------------------+---------------------------------+
+| *API*             | *STATUS*          | *COMMENT*                       |
++===================+===================+=================================+
+| dbm\_chk\_error   | Not Implemented   | This has not been implemented   |
++-------------------+-------------------+---------------------------------+
 
 Support two compatibility version
 ---------------------------------
@@ -179,33 +724,31 @@ Support two compatibility version
 Python
 ~~~~~~
 
-+----------------------+-----------+--------+
-| *Version*            | *Support* | *Test* |
-+======================+===========+========+
-| Python 2.6.x ~ 2.7.x | yes       | always |
-+----------------------+-----------+--------+
-| Python 3.0.x ~ 3.x.x | yes       | always |
-+----------------------+-----------+--------+
-| PyPy                 | yes       | always |
-+----------------------+-----------+--------+
-| PyPy3                | yes       | always |
-+----------------------+-----------+--------+
++------------------------+-------------+----------+
+| *Version*              | *Support*   | *Test*   |
++========================+=============+==========+
+| Python 2.6.x ~ 2.7.x   | yes         | always   |
++------------------------+-------------+----------+
+| Python 3.0.x ~ 3.x.x   | yes         | always   |
++------------------------+-------------+----------+
+| PyPy                   | yes         | always   |
++------------------------+-------------+----------+
+| PyPy3                  | yes         | always   |
++------------------------+-------------+----------+
 
 MDBM
 ~~~~
 
-+--------------------------+-----------+--------+-----------+
-| *branch or release ver.* | *Support* | *Test* | *Comment* |
-+==========================+===========+========+===========+
-| master                   | yes       | always |           |
-+--------------------------+-----------+--------+-----------+
-| 4.x                      | yes       | always |           |
-+--------------------------+-----------+--------+-----------+
++----------------------------+-------------+----------+-------------+
+| *branch or release ver.*   | *Support*   | *Test*   | *Comment*   |
++============================+=============+==========+=============+
+| master                     | yes         | always   |             |
++----------------------------+-------------+----------+-------------+
+| 4.x                        | yes         | always   |             |
++----------------------------+-------------+----------+-------------+
 
 Install
 -------
-
-.. _mdbm-1:
 
 MDBM
 ~~~~
@@ -573,8 +1116,6 @@ Iteration over all value by key
 
     print("done")
 
-.. _benchmark-1:
-
 Benchmark
 ---------
 
@@ -594,38 +1135,38 @@ Spec
 Host
 ^^^^
 
-+------+--------------+
-| Type | Spec         |
-+======+==============+
-| CPU  | Inte i-7     |
-+------+--------------+
-| RAM  | DDR4 32G     |
-+------+--------------+
-| HDD  | Nvme M.2 SSD |
-+------+--------------+
++--------+----------------+
+| Type   | Spec           |
++========+================+
+| CPU    | Inte i-7       |
++--------+----------------+
+| RAM    | DDR4 32G       |
++--------+----------------+
+| HDD    | Nvme M.2 SSD   |
++--------+----------------+
 
 VM
 ^^
 
-+--------------+---------------------------------------------------------+
-| Type         | Spec                                                    |
-+==============+=========================================================+
-| Machine      | VM(VirtualBox)                                          |
-+--------------+---------------------------------------------------------+
-| OS           | CentOS 7 64bit                                          |
-+--------------+---------------------------------------------------------+
-| CPU          | 2 vCore                                                 |
-+--------------+---------------------------------------------------------+
-| RAM          | 8G                                                      |
-+--------------+---------------------------------------------------------+
-| AnyDBM       | Berkeley DB (Hash, version 9, native byte-order) format |
-+--------------+---------------------------------------------------------+
-| Mdbm         | 893f7a8 on 26 Jul, MDBM V3 format                       |
-+--------------+---------------------------------------------------------+
-| SQLite       | V3                                                      |
-+--------------+---------------------------------------------------------+
-| Kyotocabinet | 1.2.76, kch                                             |
-+--------------+---------------------------------------------------------+
++----------------+-----------------------------------------------------------+
+| Type           | Spec                                                      |
++================+===========================================================+
+| Machine        | VM(VirtualBox)                                            |
++----------------+-----------------------------------------------------------+
+| OS             | CentOS 7 64bit                                            |
++----------------+-----------------------------------------------------------+
+| CPU            | 2 vCore                                                   |
++----------------+-----------------------------------------------------------+
+| RAM            | 8G                                                        |
++----------------+-----------------------------------------------------------+
+| AnyDBM         | Berkeley DB (Hash, version 9, native byte-order) format   |
++----------------+-----------------------------------------------------------+
+| Mdbm           | 893f7a8 on 26 Jul, MDBM V3 format                         |
++----------------+-----------------------------------------------------------+
+| SQLite         | V3                                                        |
++----------------+-----------------------------------------------------------+
+| Kyotocabinet   | 1.2.76, kch                                               |
++----------------+-----------------------------------------------------------+
 
 Command
 ~~~~~~~
@@ -637,39 +1178,39 @@ Command
 File Size
 ~~~~~~~~~
 
-+------------------+------------------+------------------------------------+------+
-| Count of Records | Type             | File Name                          | Size |
-+==================+==================+====================================+======+
-| 10,000           | SQLite3          | test_py_benchmark_10000.db         | 300K |
-+------------------+------------------+------------------------------------+------+
-|                  | AnyDBM           | test_py_benchmark_10000.dbm        | 348K |
-+------------------+------------------+------------------------------------+------+
-|                  | Kyotocabinet KCH | test_py_benchmark_10000.kch        | 6.3M |
-+------------------+------------------+------------------------------------+------+
-|                  | MDBM             | test_py_benchmark_10000.mdbm       | 260K |
-+------------------+------------------+------------------------------------+------+
-|                  | MDBM(TSC)        | test_py_benchmark_tsc_10000.mdbm   | 260K |
-+------------------+------------------+------------------------------------+------+
-| 100,000          | SQLite3          | test_py_benchmark_100000.db        | 3.3M |
-+------------------+------------------+------------------------------------+------+
-|                  | AnyDBM           | test_py_benchmark_100000.dbm       | 2.5M |
-+------------------+------------------+------------------------------------+------+
-|                  | Kyotocabinet KCH | test_py_benchmark_100000.kch       | 9.1M |
-+------------------+------------------+------------------------------------+------+
-|                  | MDBM             | test_py_benchmark_100000.mdbm      | 4.0M |
-+------------------+------------------+------------------------------------+------+
-|                  | MDBM(TSC)        | test_py_benchmark_tsc_100000.mdbm  | 4.0M |
-+------------------+------------------+------------------------------------+------+
-| 1,000,000        | SQLite3          | test_py_benchmark_1000000.db       | 35M  |
-+------------------+------------------+------------------------------------+------+
-|                  | AnyDBM           | test_py_benchmark_1000000.dbm      | 39M  |
-+------------------+------------------+------------------------------------+------+
-|                  | Kyotocabinet KCH | test_py_benchmark_1000000.kch      | 37M  |
-+------------------+------------------+------------------------------------+------+
-|                  | MDBM             | test_py_benchmark_1000000.mdbm     | 32M  |
-+------------------+------------------+------------------------------------+------+
-|                  | MDBM(TSC)        | test_py_benchmark_tsc_1000000.mdbm | 32M  |
-+------------------+------------------+------------------------------------+------+
++--------------------+--------------------+------------------------------------------+--------+
+| Count of Records   | Type               | File Name                                | Size   |
++====================+====================+==========================================+========+
+| 10,000             | SQLite3            | test\_py\_benchmark\_10000.db            | 300K   |
++--------------------+--------------------+------------------------------------------+--------+
+|                    | AnyDBM             | test\_py\_benchmark\_10000.dbm           | 348K   |
++--------------------+--------------------+------------------------------------------+--------+
+|                    | Kyotocabinet KCH   | test\_py\_benchmark\_10000.kch           | 6.3M   |
++--------------------+--------------------+------------------------------------------+--------+
+|                    | MDBM               | test\_py\_benchmark\_10000.mdbm          | 260K   |
++--------------------+--------------------+------------------------------------------+--------+
+|                    | MDBM(TSC)          | test\_py\_benchmark\_tsc\_10000.mdbm     | 260K   |
++--------------------+--------------------+------------------------------------------+--------+
+| 100,000            | SQLite3            | test\_py\_benchmark\_100000.db           | 3.3M   |
++--------------------+--------------------+------------------------------------------+--------+
+|                    | AnyDBM             | test\_py\_benchmark\_100000.dbm          | 2.5M   |
++--------------------+--------------------+------------------------------------------+--------+
+|                    | Kyotocabinet KCH   | test\_py\_benchmark\_100000.kch          | 9.1M   |
++--------------------+--------------------+------------------------------------------+--------+
+|                    | MDBM               | test\_py\_benchmark\_100000.mdbm         | 4.0M   |
++--------------------+--------------------+------------------------------------------+--------+
+|                    | MDBM(TSC)          | test\_py\_benchmark\_tsc\_100000.mdbm    | 4.0M   |
++--------------------+--------------------+------------------------------------------+--------+
+| 1,000,000          | SQLite3            | test\_py\_benchmark\_1000000.db          | 35M    |
++--------------------+--------------------+------------------------------------------+--------+
+|                    | AnyDBM             | test\_py\_benchmark\_1000000.dbm         | 39M    |
++--------------------+--------------------+------------------------------------------+--------+
+|                    | Kyotocabinet KCH   | test\_py\_benchmark\_1000000.kch         | 37M    |
++--------------------+--------------------+------------------------------------------+--------+
+|                    | MDBM               | test\_py\_benchmark\_1000000.mdbm        | 32M    |
++--------------------+--------------------+------------------------------------------+--------+
+|                    | MDBM(TSC)          | test\_py\_benchmark\_tsc\_1000000.mdbm   | 32M    |
++--------------------+--------------------+------------------------------------------+--------+
 
 10,000 INSERTs
 ~~~~~~~~~~~~~~
@@ -692,8 +1233,6 @@ File Size
     test_anydbm_store_10000               129.4661 (3.03)     132.9770 (2.87)     131.7690 (2.96)     1.3268 (1.54)     132.4065 (3.00)     2.1240 (2.02)          1;0   7.5890 (0.34)          8           1
     ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-.. _inserts-1:
-
 100,000 INSERTs
 ~~~~~~~~~~~~~~~
 
@@ -708,8 +1247,6 @@ File Size
     test_sqlite3_store_100000                668.3731 (1.55)       690.7680 (1.55)       676.8432 (1.54)     10.4372 (2.04)       670.3589 (1.51)     17.5762 (3.26)          1;0  1.4774 (0.65)          5           1
     test_anydbm_store_100000               1,746.3379 (4.04)     1,778.0671 (4.00)     1,759.8858 (4.00)     12.6857 (2.47)     1,761.1270 (3.98)     19.0974 (3.54)          2;0  0.5682 (0.25)          5           1
     -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-.. _inserts-2:
 
 1,000,000 INSERTs
 ~~~~~~~~~~~~~~~~~
@@ -742,8 +1279,6 @@ File Size
     test_sqlite3_random_fetch_10000              179.9428 (5.35)     264.3309 (7.22)     198.3913 (5.60)     32.8237 (61.15)    183.5115 (5.20)     14.0412 (22.32)         1;1   5.0405 (0.18)          6           1
     ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-.. _random-key-selects-1:
-
 100,000 Random Key SELECTs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -758,8 +1293,6 @@ File Size
     test_kyotocabinet_random_fetch_100000           513.2129 (1.46)       516.0379 (1.45)       514.8367 (1.45)     1.3007 (1.02)       515.3730 (1.45)     2.3472 (1.11)          1;0  1.9424 (0.69)          5           1
     test_anydbm_random_fetch_100000               1,196.3558 (3.41)     1,217.2129 (3.41)     1,207.2943 (3.40)     7.5601 (5.92)     1,206.6510 (3.41)     8.3598 (3.96)          2;0  0.8283 (0.29)          5           1
     ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-.. _random-key-selects-2:
 
 1,000,000 Random Key SELECTs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

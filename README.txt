@@ -23,126 +23,137 @@ Currently Supported APIs
 
 the following is list of support api on now.
 
-  -------------------------------------------------------------------------
-  Group                                API
-  ------------------------------------ ------------------------------------
-  File Management                      mdbm_open, mdbm_close, mdbm_sync,
-                                       mdbm_fsync, mdbm_close_fd,
-                                       mdbm_replace_db, mdbm_replace_file,
-                                       mdbm_dup_handle, mdbm_pre_split,
-                                       mdbm_fcopy
+  -------------------------------------------------------------------
+  Group                             API
+  --------------------------------- ---------------------------------
+  File Management                   mdbm_open, mdbm_close, mdbm_sync,
+                                    mdbm_fsync, mdbm_close_fd,
+                                    mdbm_replace_db,
+                                    mdbm_replace_file,
+                                    mdbm_dup_handle, mdbm_pre_split,
+                                    mdbm_fcopy
 
-  Configuration                        mdbm_get_version, mdbm_get_size,
-                                       mdbm_get_page_size,
-                                       mdbm_get_limit_size, mdbm_get_hash,
-                                       mdbm_get_alignment,
-                                       mdbm_set_alignment,
-                                       mdbm_setspillsize,
-                                       mdbm_limit_dir_size,
-                                       mdbm_get_magic_number,
-                                       _~~mdbm_limit_size_v3,
-                                       mdbm_set_window_size~~_
+  Configuration                     mdbm_get_version, mdbm_get_size,
+                                    mdbm_get_page_size,
+                                    mdbm_get_limit_size,
+                                    mdbm_get_hash,
+                                    mdbm_get_alignment,
+                                    mdbm_set_alignment,
+                                    mdbm_setspillsize,
+                                    mdbm_limit_dir_size,
+                                    mdbm_get_magic_number,
+                                    _~~mdbm_limit_size_v3,
+                                    mdbm_set_window_size~~_
 
-  Record Access                        mdbm_fetch, mdbm_delete, mdbm_store,
-                                       mdbm_fetch_r, mdbm_fetch_dup_r,
-                                       mdbm_delete_r, mdbm_store_r,
-                                       mdbm_fetch_info
+  Record Access                     mdbm_fetch, mdbm_delete,
+                                    mdbm_store, mdbm_fetch_r,
+                                    mdbm_fetch_dup_r, mdbm_delete_r,
+                                    mdbm_store_r, mdbm_fetch_info
 
-  Record Iteration                     mdbm_first, mdbm_next,
-                                       mdbm_firstkey, mdbm_nextkey,
-                                       mdbm_first_r, mdbm_next_r,
-                                       mdbm_firstkey_r, mdbm_nextkey_r,
-                                       _~~mdbm_iterate~~_
+  Record Iteration                  mdbm_first, mdbm_next,
+                                    mdbm_firstkey, mdbm_nextkey,
+                                    mdbm_first_r, mdbm_next_r,
+                                    mdbm_firstkey_r, mdbm_nextkey_r,
+                                    _~~mdbm_iterate~~_
 
-  Locking                              mdbm_islocked, mdbm_isowned,
-                                       mdbm_lock, mdbm_unlock,
-                                       mdbm_lock_reset,
-                                       mdbm_delete_lockfiles,
-                                       mdbm_get_lockmode, mdbm_trylock,
-                                       mdbm_plock, mdbm_punlock,
-                                       mdbm_tryplock, mdbm_lock_shared,
-                                       mdbm_trylock_shared,
-                                       mdbm_lock_smart, mdbm_trylock_smart,
-                                       mdbm_unlock_smart
+  Locking                           mdbm_islocked, mdbm_isowned,
+                                    mdbm_lock, mdbm_unlock,
+                                    mdbm_lock_reset,
+                                    mdbm_delete_lockfiles,
+                                    mdbm_get_lockmode, mdbm_trylock,
+                                    mdbm_plock, mdbm_punlock,
+                                    mdbm_tryplock, mdbm_lock_shared,
+                                    mdbm_trylock_shared,
+                                    mdbm_lock_smart,
+                                    mdbm_trylock_smart,
+                                    mdbm_unlock_smart
 
-  Data Management                      mdbm_compress_tree, mdbm_truncate,
-                                       mdbm_purge, mdbm_clean,
-                                       _~~mdbm_prune, mdbm_set_cleanfunc~~_
+  Data Management                   mdbm_compress_tree,
+                                    mdbm_truncate, mdbm_purge,
+                                    mdbm_clean, _~~mdbm_prune,
+                                    mdbm_set_cleanfunc~~_
 
-  Data Integrity                       mdbm_check, mdbm_chk_all_page,
-                                       mdbm_chk_page, mdbm_protect
+  Data Integrity                    mdbm_check, mdbm_chk_all_page,
+                                    mdbm_chk_page, mdbm_protect
 
-  Data Display                         mdbm_dump_all_page, mdbm_dump_page
+  Data Display                      mdbm_dump_all_page,
+                                    mdbm_dump_page
 
-  Statistics                           mdbm_count_records,
-                                       mdbm_count_pages, mdbm_get_stats,
-                                       mdbm_get_db_info,
-                                       mdbm_get_stat_counter,
-                                       mdbm_get_stat_time,
-                                       mdbm_reset_stat_operations,
-                                       mdbm_enable_stat_operations,
-                                       mdbm_set_stat_time_func,
-                                       _~~mdbm_get_stat_name,
-                                       mdbm_set_stats_func,
-                                       mdbm_chunk_iterate,
-                                       mdbm_get_db_stats,
-                                       mdbm_get_window_stats~~_
+  Statistics                        mdbm_count_records,
+                                    mdbm_count_pages, mdbm_get_stats,
+                                    mdbm_get_db_info,
+                                    mdbm_get_stat_counter,
+                                    mdbm_get_stat_time,
+                                    mdbm_reset_stat_operations,
+                                    mdbm_enable_stat_operations,
+                                    mdbm_set_stat_time_func,
+                                    _~~mdbm_get_stat_name,
+                                    mdbm_set_stats_func,
+                                    mdbm_chunk_iterate,
+                                    mdbm_get_db_stats,
+                                    mdbm_get_window_stats~~_
 
-  Cache and Backing Store              mdbm_set_cachemode,
-                                       mdbm_get_cachemode,
-                                       mdbm_get_cachemode_name,
-                                       _~~mdbm_set_backingstore~~_
+  Cache and Backing Store           mdbm_set_cachemode,
+                                    mdbm_get_cachemode,
+                                    mdbm_get_cachemode_name,
+                                    _~~mdbm_set_backingstore~~_
 
-  Import and Export                    _~~mdbm_cdbdump_to_file,
-                                       mdbm_cdbdump_trailer_and_close,
-                                       mdbm_cdbdump_add_record,
-                                       mdbm_dbdump_to_file,
-                                       mdbm_dbdump_trailer_and_close,
-                                       mdbm_dbdump_add_record,
-                                       mdbm_dbdump_export_header,
-                                       mdbm_dbdump_import_header,
-                                       mdbm_dbdump_import,
-                                       mdbm_cdbdump_import~~_
+  Import and Export                 _~~mdbm_cdbdump_to_file,
+                                    mdbm_cdbdump_trailer_and_close,
+                                    mdbm_cdbdump_add_record,
+                                    mdbm_dbdump_to_file,
+                                    mdbm_dbdump_trailer_and_close,
+                                    mdbm_dbdump_add_record,
+                                    mdbm_dbdump_export_header,
+                                    mdbm_dbdump_import_header,
+                                    mdbm_dbdump_import,
+                                    mdbm_cdbdump_import~~_
 
-  Miscellaneous                        mdbm_preload, mdbm_get_errno,
-                                       mdbm_get_page, mdbm_lock_pages,
-                                       mdbm_unlock_pages,
-                                       mdbm_get_hash_value
-  -------------------------------------------------------------------------
+  Miscellaneous                     mdbm_preload, mdbm_get_errno,
+                                    mdbm_get_page, mdbm_lock_pages,
+                                    mdbm_unlock_pages,
+                                    mdbm_get_hash_value
+  -------------------------------------------------------------------
 
 Deprecated APIs
 
-  --------------------------------------------------------------------------
-  _API_                    _STATUS_                 _COMMENT_
-  ------------------------ ------------------------ ------------------------
-  mdbm_save                DEPRECATED               mdbm_save is only
-                                                    supported for V2 MDBMs.
+  -----------------------------------------------------
+  _API_             _STATUS_          _COMMENT_
+  ----------------- ----------------- -----------------
+  mdbm_save         DEPRECATED        mdbm_save is only
+                                      supported for V2
+                                      MDBMs.
 
-  mdbm_restore             DEPRECATED               mdbm_restore is only
-                                                    supported for V2 MDBMs.
+  mdbm_restore      DEPRECATED        mdbm_restore is
+                                      only supported
+                                      for V2 MDBMs.
 
-  mdbm_sethash             DEPRECATED               Legacy version of
-                                                    mdbm_set_hash() This
-                                                    function has
-                                                    inconsistent naming, an
-                                                    error return value. It
-                                                    will be removed in a
-                                                    future version.
-  --------------------------------------------------------------------------
+  mdbm_sethash      DEPRECATED        Legacy version of
+                                      mdbm_set_hash()
+                                      This function has
+                                      inconsistent
+                                      naming, an error
+                                      return value. It
+                                      will be removed
+                                      in a future
+                                      version.
+  -----------------------------------------------------
 
 Only a V2 implementation
 
-  --------------------------------------------------------------------------
-  _API_                    _STATUS_                 _COMMENT_
-  ------------------------ ------------------------ ------------------------
-  mdbm_stat_all_page       V3 not supported         There is only a V2
-                                                    implementation. V3 not
-                                                    currently supported.
+  --------------------------------------------------------------
+  _API_                _STATUS_             _COMMENT_
+  -------------------- -------------------- --------------------
+  mdbm_stat_all_page   V3 not supported     There is only a V2
+                                            implementation. V3
+                                            not currently
+                                            supported.
 
-  mdbm_stat_header         V3 not supported         There is only a V2
-                                                    implementation. V3 not
-                                                    currently supported.
-  --------------------------------------------------------------------------
+  mdbm_stat_header     V3 not supported     There is only a V2
+                                            implementation. V3
+                                            not currently
+                                            supported.
+  --------------------------------------------------------------
 
 Has not been implemented
 
