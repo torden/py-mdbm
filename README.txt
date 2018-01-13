@@ -82,11 +82,11 @@ the following is list of support api on now.
                                        mdbm_reset_stat_operations,
                                        mdbm_enable_stat_operations,
                                        mdbm_set_stat_time_func,
+                                       mdbm_get_db_stats,
+                                       mdbm_get_window_stats,
                                        _~~mdbm_get_stat_name,
                                        mdbm_set_stats_func,
-                                       mdbm_chunk_iterate,
-                                       mdbm_get_db_stats,
-                                       mdbm_get_window_stats~~_
+                                       mdbm_chunk_iterate~~_
 
   Cache and Backing Store              mdbm_set_cachemode,
                                        mdbm_get_cachemode,

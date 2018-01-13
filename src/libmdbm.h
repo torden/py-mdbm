@@ -123,6 +123,7 @@ PyObject *pymdbm_reset_stat_operations(register MDBMObj *pmdbm_link, PyObject *u
 PyObject *pymdbm_enable_stat_operations(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_set_stat_time_func(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_get_db_stats(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_get_window_stats(register MDBMObj *pmdbm_link, PyObject *unused);
 
 #if PY_MAJOR_VERSION >= 3
 PyObject *pymdbm__enter(register MDBMObj *pmdbm_link, PyObject *unused);
@@ -797,6 +798,14 @@ PyMethodDef mdbm_methods[] = {
             "\t- MDBM_STAT_NOLOCK    - Do not lock for overall operation"
             "\t- MDBM_ITERATE_NOLOCK - Do no lock for page-based iteration"
     },  
+    {"get_window_stats", (PyCFunction)pymdbm_get_window_stats, METH_NOARGS,
+        "get_window_stats()"
+            "Used to retrieve statistics about windowing usage on the associated database."
+            "The V3 statistics structure is as follows.  It may be extended in later versions,"
+            "in which case the s_size parameter should be set to the sizeof the struct used for that version."
+            "NOTE: V3 API"
+    },  
+
 	{0,0}
 };
 
