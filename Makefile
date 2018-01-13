@@ -69,7 +69,7 @@ benchmark::
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 readme::
 	@$(CMD_PANDOC) -f markdown -t plain README.md > README.txt
-	@$(CMD_PANDOC) -f markdown -t rst -o README.rst README.md
+#	@$(CMD_PANDOC) -f markdown -t rst -o README.rst README.md
 
 setenv::
 	@$(CMD_ECHO) -e "\033[1;40;32mSet Debug mode enviroment..\033[01;m"
