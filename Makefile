@@ -60,13 +60,16 @@ clean::
 
 benchmark::
 	@$(CMD_ECHO)  -e "\033[1;40;32mBenchmark Testing.\033[01;m\x1b[0m"
-	@$(CMD_PYTEST) tests/test_benchmark.py -m store_loop_10000
-	@$(CMD_PYTEST) tests/test_benchmark.py -m store_loop_100000
-	@$(CMD_PYTEST) tests/test_benchmark.py -m random_fetch_loop_10000
-	@$(CMD_PYTEST) tests/test_benchmark.py -m random_fetch_loop_100000
+	@$(CMD_PYTEST) tests/test_benchmark.py -m store_loop_10000 
+	@$(CMD_PYTEST) tests/test_benchmark.py -m store_loop_100000 
+	@$(CMD_PYTEST) tests/test_benchmark.py -m store_loop_1000000 
+	@$(CMD_PYTEST) tests/test_benchmark.py -m random_fetch_loop_10000 
+	@$(CMD_PYTEST) tests/test_benchmark.py -m random_fetch_loop_100000 
+	@$(CMD_PYTEST) tests/test_benchmark.py -m random_fetch_loop_1000000
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 readme::
 	@$(CMD_PANDOC) -f markdown -t plain README.md > README.txt
+	@$(CMD_PANDOC) -f markdown -t rst -o README.rst README.md
 
 setenv::
 	@$(CMD_ECHO) -e "\033[1;40;32mSet Debug mode enviroment..\033[01;m"

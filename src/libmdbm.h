@@ -5,6 +5,8 @@
 #include <mdbm.h>
 #include <mdbm_log.h>
 
+#define PYMDBM_VERSION "0.0.2"
+
 typedef struct {
     PyObject_HEAD
     MDBM *pmdbm;
@@ -120,6 +122,7 @@ PyObject *pymdbm_get_stat_time(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_reset_stat_operations(register MDBMObj *pmdbm_link, PyObject *unused);
 PyObject *pymdbm_enable_stat_operations(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_set_stat_time_func(register MDBMObj *pmdbm_link, PyObject *args);
+PyObject *pymdbm_get_db_stats(register MDBMObj *pmdbm_link, PyObject *args);
 
 #if PY_MAJOR_VERSION >= 3
 PyObject *pymdbm__enter(register MDBMObj *pmdbm_link, PyObject *unused);
@@ -787,6 +790,13 @@ PyMethodDef mdbm_methods[] = {
             "flags == MDBM_CLOCK_TSC       Enables use of TSC"
             "flags == MDBM_CLOCK_STANDARD  Disables use of TSC"
     }, 
+    {"get_db_stats", (PyCFunction)pymdbm_get_db_stats, METH_VARARGS,
+        "get_db_stats(flags)"
+            "Gets overall database stats."
+            "Values for flags mask:"
+            "\t- MDBM_STAT_NOLOCK    - Do not lock for overall operation"
+            "\t- MDBM_ITERATE_NOLOCK - Do no lock for page-based iteration"
+    },  
 	{0,0}
 };
 

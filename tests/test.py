@@ -590,6 +590,10 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.get_stats()
         self.assertTrue(rv)
 
+    def test_999_mdbm_get_db_stats(self):
+        rv = self.dbm.get_db_stats(mdbm.MDBM_ITERATE_NOLOCK)
+        print(rv)
+
     def test_999_zzz_last_reset_stat_operations(self):
         self.dbm.reset_stat_operations() # none
 

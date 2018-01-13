@@ -1,1 +1,1 @@
-include README.md setup.py src/*
+include README.rst setup.py src/* example/* tests/*
