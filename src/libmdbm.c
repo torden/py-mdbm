@@ -1,3 +1,4 @@
+// https://github.com/torden
 #include <stdio.h>
 #include <Python.h>
 #include "libmdbm.h"
@@ -147,7 +148,7 @@ static inline int pymdbm_iter_handler(register MDBMObj *pmdbm_link, MDBM_ITER **
 
         previter_pageno = PyDict_GetItemString(previter, "m_pageno");
         if (previter_pageno == NULL) {
-            PyErr_SetString(MDBMError, "required iter must have a m_pageno field");
+            PyErr_SetString(MDBMError, "Error - There was a missing parameter: iter must have a m_pageno field");
             return -1;
         }
 
@@ -155,7 +156,7 @@ static inline int pymdbm_iter_handler(register MDBMObj *pmdbm_link, MDBM_ITER **
 
         previter_next = PyDict_GetItemString(previter, "m_next");
         if (previter_next == NULL) {
-            PyErr_SetString(MDBMError, "required iter must have a m_next field");
+            PyErr_SetString(MDBMError, "Error - There was a missing parameter: iter must have a m_next field");
             return -1;
         }
 
@@ -658,7 +659,7 @@ PyObject *pymdbm_open(PyObject *self, PyObject *args, PyObject *kwds) {
     static char *pkwlist[] = {"path", "flags", "mode", "psize", "presize", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "sii|ii", pkwlist, &pfn, &flags, &mode, &psize, &presize);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required filepath and flags and mode");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: filepath and flags and mode");
         return NULL;
     }
 
@@ -733,7 +734,7 @@ PyObject *pymdbm_log_minlevel(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &level);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required string(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: string(key)");
         return NULL;
     }
 
@@ -842,7 +843,7 @@ PyObject *pymdbm_set_cachemode(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &cachemode);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required int(cachemode)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: int(cachemode)");
         _RETURN_FALSE();
     }
 
@@ -887,7 +888,7 @@ PyObject *pymdbm_get_cachemode_name(register MDBMObj *unused, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &cachemode);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required int(cachemode)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: int(cachemode)");
         _RETURN_FALSE();
     }
 
@@ -922,7 +923,7 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     static char *pkwlist[] = {"key", "val", "flags", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "ss|i", pkwlist, &pkey, &pval, &flags);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required key and value");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: key and value");
         return NULL;
     }
 
@@ -967,7 +968,7 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     static char *pkwlist[] = {"key", "val", "flags", "iter", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "ss|iO", pkwlist, &pkey, &pval, &flags, &previter);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required key and value");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: key and value");
         return NULL;
     }
 
@@ -1017,7 +1018,7 @@ PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "s", &pkey);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required string(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: string(key)");
         return NULL;
     }
 
@@ -1054,7 +1055,7 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     static char *pkwlist[] = {"key", "iter", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|O", pkwlist, &pkey, &previter);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
         return NULL;
     }
 
@@ -1113,7 +1114,7 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
     static char *pkwlist[] = {"key", "iter", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|O", pkwlist, &pkey, &previter);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(key) and dict(iter{m_pageno,mnext})");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) and dict(iter{m_pageno,mnext})");
         return NULL;
     }
 
@@ -1179,7 +1180,7 @@ PyObject *pymdbm_fetch_info(register MDBMObj *pmdbm_link, PyObject *args, PyObje
     static char *pkwlist[] = {"key", "iter", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|O", pkwlist, &pkey, &previter);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(key) and dict(iter{m_pageno,mnext})");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) and dict(iter{m_pageno,mnext})");
         return NULL;
     }
 
@@ -1332,7 +1333,7 @@ PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "s", &pkey);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required string(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: string(key)");
         return NULL;
     }
 
@@ -1360,7 +1361,7 @@ PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "s", &pkey);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required string(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: string(key)");
         return NULL;
     }
 
@@ -1384,7 +1385,7 @@ PyObject *pymdbm_delete_r(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "O", &previter);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required dic(iter{m_pageno,m_next})");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: dic(iter{m_pageno,m_next})");
         return NULL;
     }
 
@@ -1428,7 +1429,7 @@ PyObject *pymdbm_set_hash(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &hash);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required key and value");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: key and value");
         _RETURN_FALSE();
     }
     if (hash < MDBM_HASH_CRC32 || hash > MDBM_MAX_HASH) {
@@ -1450,7 +1451,7 @@ PyObject *pymdbm_setspillsize(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &size);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required size");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: size");
         _RETURN_FALSE();
     }
     if (size < 0) {
@@ -1491,7 +1492,7 @@ PyObject *pymdbm_set_alignment(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &align);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required alignment(align)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: alignment(align)");
         _RETURN_FALSE();
     }
     if (align < MDBM_ALIGN_8_BITS || align > MDBM_ALIGN_64_BITS) {
@@ -1528,7 +1529,7 @@ PyObject *pymdbm_limit_dir_size(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &pages);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required pages");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: pages");
         _RETURN_FALSE();
     }
 
@@ -1748,7 +1749,7 @@ PyObject *pymdbm_lock_reset(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "s", &pfn);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required string(file_path)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: string(file_path)");
         return NULL;
     }
 
@@ -1766,7 +1767,7 @@ PyObject *pymdbm_delete_lockfiles(register MDBMObj *pmdbm_link, PyObject *args) 
 
     rv = PyArg_ParseTuple(args, "s", &pfn);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required string(file_path)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: string(file_path)");
         return NULL;
     }
 
@@ -1912,7 +1913,7 @@ PyObject *pymdbm_first_r(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "|O", &previter);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required dic(iter{m_pageno,m_next})");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: dic(iter{m_pageno,m_next})");
         return NULL;
     }
 
@@ -1982,7 +1983,7 @@ PyObject *pymdbm_next_r(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "|O", &previter);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required dic(iter{m_pageno,m_next})");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: dic(iter{m_pageno,m_next})");
         return NULL;
     }
 
@@ -2051,7 +2052,7 @@ PyObject *pymdbm_firstkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "|O", &previter);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required dic(iter{m_pageno,m_next})");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: dic(iter{m_pageno,m_next})");
         return NULL;
     }
 
@@ -2107,7 +2108,7 @@ PyObject *pymdbm_nextkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "|O", &previter);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required dic(iter{m_pageno,m_next})");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: dic(iter{m_pageno,m_next})");
         return NULL;
     }
 
@@ -2158,7 +2159,7 @@ PyObject *pymdbm_clean(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &pagenum);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required int(pagenum)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: int(pagenum)");
         return NULL;
     }
 
@@ -2179,7 +2180,7 @@ PyObject *pymdbm_check(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     static char *pkwlist[] = {"level", "verbose", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "i|i", pkwlist, &level, &verbose);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required level(10 >= level >= 0), [verbose(True | False)]");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: level(10 >= level >= 0), [verbose(True | False)]");
         return NULL;
     }
 
@@ -2214,7 +2215,7 @@ PyObject *pymdbm_chk_page(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &pagenum);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required int(pagenum)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: int(pagenum)");
         return NULL;
     }
 
@@ -2276,7 +2277,7 @@ PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     static char *pkwlist[] = {"key", "flags", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
         return NULL;
     }
 
@@ -2307,7 +2308,7 @@ PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     static char *pkwlist[] = {"key", "flags", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags); 
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
         return NULL;
     }
 
@@ -2338,7 +2339,7 @@ PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args, PyObject
     static char *pkwlist[] = {"key", "flags", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
         return NULL;
     }
 
@@ -2369,7 +2370,7 @@ PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObje
     static char *pkwlist[] = {"key", "flags", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
         return NULL;
     }
 
@@ -2400,7 +2401,7 @@ PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyO
     static char *pkwlist[] = {"key", "flags", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags); 
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
         return NULL;
     }
 
@@ -2432,7 +2433,7 @@ PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyOb
     static char *pkwlist[] = {"key", "flags", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
         return NULL;
     }
 
@@ -2460,7 +2461,7 @@ PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &protect);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
         return NULL;
     }
 
@@ -2483,7 +2484,7 @@ PyObject *pymdbm_replace_db(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "s", &pnewfile);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(new_file_path)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(new_file_path)");
         return NULL;
     }
 
@@ -2503,7 +2504,7 @@ PyObject *pymdbm_replace_file(register MDBMObj *unused, PyObject *args, PyObject
     static char *pkwlist[] = {"oldfile", "newfile", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "ss", pkwlist, &poldfile, &pnewfile);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(oldfile) and str(newfile)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(oldfile) and str(newfile)");
         return NULL;
     }
 
@@ -2523,7 +2524,7 @@ PyObject *pymdbm_fcopy(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
 
     rv = PyArg_ParseTuple(args, "s|i", &pnewfile, &flags);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(newfile)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(newfile)");
         return NULL;
     }
 
@@ -2547,7 +2548,7 @@ PyObject *pymdbm_get_hash_value(register MDBMObj *unused, PyObject *args, PyObje
     static char *pkwlist[] = {"key", "hashfunc", NULL};
     rv = PyArg_ParseTupleAndKeywords(args, kwds, "si", pkwlist, &pkey, &hashfunc);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required str(key) and mdbm.MDBM_HASH_XXX");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) and mdbm.MDBM_HASH_XXX");
         return NULL;
     }
 
@@ -2578,7 +2579,7 @@ PyObject *pymdbm_pre_split(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &split_size);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required int(N)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: int(N)");
         return NULL;
     }
 
@@ -2605,7 +2606,7 @@ PyObject *pymdbm_dump_page(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &pagenum);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required int(pagenum)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: int(pagenum)");
         return NULL;
     }
 
@@ -2780,7 +2781,7 @@ PyObject *pymdbm_get_stat_counter(register MDBMObj *pmdbm_link, PyObject *args) 
 
     rv = PyArg_ParseTuple(args, "i", &type);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required type");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: type");
         return NULL;
     }
 
@@ -2802,7 +2803,7 @@ PyObject *pymdbm_get_stat_time(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &type);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required type");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: type");
         return NULL;
     }
 
@@ -2838,7 +2839,7 @@ PyObject *pymdbm_enable_stat_operations(register MDBMObj *pmdbm_link, PyObject *
 
     rv = PyArg_ParseTuple(args, "i", &flags);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required flags");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: flags");
         return NULL;
     }
 
@@ -2866,7 +2867,7 @@ PyObject *pymdbm_set_stat_time_func(register MDBMObj *pmdbm_link, PyObject *args
 
     rv = PyArg_ParseTuple(args, "i", &flags);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required flags");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: flags");
         return NULL;
     }
 
@@ -2892,14 +2893,19 @@ PyObject *pymdbm_get_db_stats(register MDBMObj *pmdbm_link, PyObject *args) {
     int i = 0;
     mdbm_db_info_t info = {0x00,};
     mdbm_stat_info_t stats = {0x00,};
+
+    int listlen = -1;
+
+    PyObject *pretval = NULL;
     PyObject *pretdbinfo = NULL;
-    PyObject *pretstatinfo = NULL;
+    PyObject *pretstatsinfo = NULL;
     PyObject *pretbucket = NULL;
+    PyObject *ptempbucket = NULL;
 
 
     rv = PyArg_ParseTuple(args, "i", &flags);
     if (!rv) {
-        PyErr_SetString(MDBMError, "required flags");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: flags");
         return NULL;
     }
 
@@ -2915,188 +2921,389 @@ PyObject *pymdbm_get_db_stats(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
 
+    listlen = sizeof(stats.buckets)/sizeof(stats.buckets[0]);
+
     //mdbm_db_info_t to PyDict
     pretdbinfo = get_db_info_dict(&info);
 
     //mdbm_stat_info_t to PyDict
-    pretstatinfo = PyDict_New();
-    rv = PyDict_SetItemString(pretstatinfo, "flags", Py_BuildValue("k", stats.flags));
+    pretstatsinfo = PyDict_New();
+    rv = PyDict_SetItemString(pretstatsinfo, "flags", Py_BuildValue("k", stats.flags));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.flags)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "num_active_entries", Py_BuildValue("k", stats.num_active_entries));
+    rv = PyDict_SetItemString(pretstatsinfo, "num_active_entries", Py_BuildValue("k", stats.num_active_entries));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.num_active_entries)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "num_active_lob_entries", Py_BuildValue("k", stats.num_active_lob_entries));
+    rv = PyDict_SetItemString(pretstatsinfo, "num_active_lob_entries", Py_BuildValue("k", stats.num_active_lob_entries));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.num_active_lob_entries)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "sum_key_bytes", Py_BuildValue("k", stats.sum_key_bytes));
+    rv = PyDict_SetItemString(pretstatsinfo, "sum_key_bytes", Py_BuildValue("k", stats.sum_key_bytes));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.sum_key_bytes)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "sum_lob_val_bytes", Py_BuildValue("k", stats.sum_lob_val_bytes));
+    rv = PyDict_SetItemString(pretstatsinfo, "sum_lob_val_bytes", Py_BuildValue("k", stats.sum_lob_val_bytes));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.sum_lob_val_bytes)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "sum_normal_val_bytes", Py_BuildValue("k", stats.sum_normal_val_bytes));
+    rv = PyDict_SetItemString(pretstatsinfo, "sum_normal_val_bytes", Py_BuildValue("k", stats.sum_normal_val_bytes));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.sum_normal_val_bytes)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "sum_overhead_bytes", Py_BuildValue("k", stats.sum_overhead_bytes));
+    rv = PyDict_SetItemString(pretstatsinfo, "sum_overhead_bytes", Py_BuildValue("k", stats.sum_overhead_bytes));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.sum_overhead_bytes)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "min_entry_bytes", Py_BuildValue("l", stats.min_entry_bytes));
+    rv = PyDict_SetItemString(pretstatsinfo, "min_entry_bytes", Py_BuildValue("l", stats.min_entry_bytes));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.min_entry_bytes)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "max_entry_bytes", Py_BuildValue("l", stats.max_entry_bytes));
+    rv = PyDict_SetItemString(pretstatsinfo, "max_entry_bytes", Py_BuildValue("l", stats.max_entry_bytes));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.max_entry_bytes)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "min_key_bytes", Py_BuildValue("l", stats.min_key_bytes));
+    rv = PyDict_SetItemString(pretstatsinfo, "min_key_bytes", Py_BuildValue("l", stats.min_key_bytes));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.min_key_bytes)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "max_key_bytes", Py_BuildValue("l", stats.max_key_bytes));
+    rv = PyDict_SetItemString(pretstatsinfo, "max_key_bytes", Py_BuildValue("l", stats.max_key_bytes));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.max_key_bytes)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "min_val_bytes", Py_BuildValue("l", stats.min_val_bytes));
+    rv = PyDict_SetItemString(pretstatsinfo, "min_val_bytes", Py_BuildValue("l", stats.min_val_bytes));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.min_val_bytes)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "max_val_bytes", Py_BuildValue("l", stats.max_val_bytes));
+    rv = PyDict_SetItemString(pretstatsinfo, "max_val_bytes", Py_BuildValue("l", stats.max_val_bytes));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.max_val_bytes)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "min_lob_bytes", Py_BuildValue("l", stats.min_lob_bytes));
+    rv = PyDict_SetItemString(pretstatsinfo, "min_lob_bytes", Py_BuildValue("l", stats.min_lob_bytes));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.min_lob_bytes)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "max_lob_bytes", Py_BuildValue("l", stats.max_lob_bytes));
+    rv = PyDict_SetItemString(pretstatsinfo, "max_lob_bytes", Py_BuildValue("l", stats.max_lob_bytes));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.max_lob_bytes)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "max_page_used_space", Py_BuildValue("l", stats.max_page_used_space));
+    rv = PyDict_SetItemString(pretstatsinfo, "max_page_used_space", Py_BuildValue("l", stats.max_page_used_space));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.max_page_used_space)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "max_data_pages", Py_BuildValue("l", stats.max_data_pages));
+    rv = PyDict_SetItemString(pretstatsinfo, "max_data_pages", Py_BuildValue("l", stats.max_data_pages));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.max_data_pages)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "num_free_pages", Py_BuildValue("l", stats.num_free_pages));
+    rv = PyDict_SetItemString(pretstatsinfo, "num_free_pages", Py_BuildValue("l", stats.num_free_pages));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.num_free_pages)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "num_active_pages", Py_BuildValue("l", stats.num_active_pages));
+    rv = PyDict_SetItemString(pretstatsinfo, "num_active_pages", Py_BuildValue("l", stats.num_active_pages));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.num_active_pages)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "num_normal_pages", Py_BuildValue("l", stats.num_normal_pages));
+    rv = PyDict_SetItemString(pretstatsinfo, "num_normal_pages", Py_BuildValue("l", stats.num_normal_pages));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.num_normal_pages)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "num_oversized_pages", Py_BuildValue("l", stats.num_oversized_pages));
+    rv = PyDict_SetItemString(pretstatsinfo, "num_oversized_pages", Py_BuildValue("l", stats.num_oversized_pages));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.num_oversized_pages)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "num_lob_pages", Py_BuildValue("l", stats.num_lob_pages));
+    rv = PyDict_SetItemString(pretstatsinfo, "num_lob_pages", Py_BuildValue("l", stats.num_lob_pages));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.num_lob_pages)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "max_page_entries", Py_BuildValue("l", stats.max_page_entries));
+    rv = PyDict_SetItemString(pretstatsinfo, "max_page_entries", Py_BuildValue("l", stats.max_page_entries));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.max_page_entries)");
+        return NULL;
     }
 
-    rv = PyDict_SetItemString(pretstatinfo, "min_page_entries", Py_BuildValue("l", stats.min_page_entries));
+    rv = PyDict_SetItemString(pretstatsinfo, "min_page_entries", Py_BuildValue("l", stats.min_page_entries));
     if (rv == -1) {
-        Py_DECREF(pretstatinfo);
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
         PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.min_page_entries)");
+        return NULL;
     }
 
+    pretbucket = PyList_New(0);
+    for (i=0; i<listlen; i++) {
 
-    pretbucket = PyDict_New();
-    for (i=0; i<=(sizeof(stats.buckets)/sizeof(stats.buckets[0])); i++) {
+        ptempbucket = PyDict_New();
 
-        fprintf(stdout, "buckets[%d].num_pages(=%d)\n", i, stats.buckets[i].num_pages);
-stats.buckets[i].num_pages;
-stats.buckets[i].min_bytes;
-stats.buckets[i].max_bytes;
-stats.buckets[i].min_free_bytes;
-stats.buckets[i].max_free_bytes;
-stats.buckets[i].sum_entries;
-stats.buckets[i].sum_bytes;
-stats.buckets[i].sum_free_bytes;
+        rv = PyDict_SetItemString(ptempbucket, "num_pages", Py_BuildValue("l", stats.buckets[i].num_pages));
+        if (rv == -1) {
+            Py_DECREF(pretdbinfo);
+            Py_DECREF(pretstatsinfo);
+            Py_DECREF(ptempbucket);
+            Py_DECREF(pretbucket);
+            PyErr_Format(PyExc_IOError, "mdbm::get_db_stat() doest not make a resturn value(stats.buckets[%d].num_pages)", i);
+            return NULL;
+        }
+
+        rv = PyDict_SetItemString(ptempbucket, "min_bytes", Py_BuildValue("l", stats.buckets[i].min_bytes));
+        if (rv == -1) {
+            Py_DECREF(pretdbinfo);
+            Py_DECREF(pretstatsinfo);
+            Py_DECREF(ptempbucket);
+            Py_DECREF(pretbucket);
+            PyErr_Format(PyExc_IOError, "mdbm::get_db_stat() doest not make a resturn value(stats.buckets[%d].min_bytes)", i);
+            return NULL;
+        }
+
+        rv = PyDict_SetItemString(ptempbucket, "max_bytes", Py_BuildValue("l", stats.buckets[i].max_bytes));
+        if (rv == -1) {
+            Py_DECREF(pretdbinfo);
+            Py_DECREF(pretstatsinfo);
+            Py_DECREF(ptempbucket);
+            Py_DECREF(pretbucket);
+            PyErr_Format(PyExc_IOError, "mdbm::get_db_stat() doest not make a resturn value(stats.buckets[%d].max_bytes)", i);
+            return NULL;
+        }
+
+        rv = PyDict_SetItemString(ptempbucket, "min_free_bytes", Py_BuildValue("l", stats.buckets[i].min_free_bytes));
+        if (rv == -1) {
+            Py_DECREF(pretdbinfo);
+            Py_DECREF(pretstatsinfo);
+            Py_DECREF(ptempbucket);
+            Py_DECREF(pretbucket);
+            PyErr_Format(PyExc_IOError, "mdbm::get_db_stat() doest not make a resturn value(stats.buckets[%d].min_free_bytes)", i);
+            return NULL;
+        }
+
+        rv = PyDict_SetItemString(ptempbucket, "max_free_bytes", Py_BuildValue("l", stats.buckets[i].max_free_bytes));
+        if (rv == -1) {
+            Py_DECREF(pretdbinfo);
+            Py_DECREF(pretstatsinfo);
+            Py_DECREF(ptempbucket);
+            Py_DECREF(pretbucket);
+            PyErr_Format(PyExc_IOError, "mdbm::get_db_stat() doest not make a resturn value(stats.buckets[%d].max_free_bytes)", i);
+            return NULL;
+        }
+
+        rv = PyDict_SetItemString(ptempbucket, "sum_entries", Py_BuildValue("k", stats.buckets[i].sum_entries));
+        if (rv == -1) {
+            Py_DECREF(pretdbinfo);
+            Py_DECREF(pretstatsinfo);
+            Py_DECREF(ptempbucket);
+            Py_DECREF(pretbucket);
+            PyErr_Format(PyExc_IOError, "mdbm::get_db_stat() doest not make a resturn value(stats.buckets[%d].sum_entries)", i);
+            return NULL;
+        }
+
+        rv = PyDict_SetItemString(ptempbucket, "sum_bytes", Py_BuildValue("k", stats.buckets[i].sum_bytes));
+        if (rv == -1) {
+            Py_DECREF(pretdbinfo);
+            Py_DECREF(pretstatsinfo);
+            Py_DECREF(ptempbucket);
+            Py_DECREF(pretbucket);
+            PyErr_Format(PyExc_IOError, "mdbm::get_db_stat() doest not make a resturn value(stats.buckets[%d].sum_bytes)", i);
+            return NULL;
+        }
+
+        rv = PyDict_SetItemString(ptempbucket, "sum_free_bytes", Py_BuildValue("k", stats.buckets[i].sum_free_bytes));
+        if (rv == -1) {
+            Py_DECREF(pretdbinfo);
+            Py_DECREF(pretstatsinfo);
+            Py_DECREF(ptempbucket);
+            Py_DECREF(pretbucket);
+            PyErr_Format(PyExc_IOError, "mdbm::get_db_stat() doest not make a resturn value(stats.buckets[%d].sum_free_bytes)", i);
+            return NULL;
+        }
+
+        rv = PyList_Append(pretbucket, ptempbucket);
+        if (rv == -1) {
+            Py_DECREF(pretdbinfo);
+            Py_DECREF(pretstatsinfo);
+            Py_DECREF(ptempbucket);
+            Py_DECREF(pretbucket);
+            PyErr_Format(PyExc_IOError, "mdbm::get_db_stat() doest not make a resturn value(stats.buckets[%d])", i);
+            return NULL;
+        }
+
+        Py_DECREF(ptempbucket);
     }
-/*
-mdbm_bucket_stat_t buckets[MDBM_STAT_BUCKETS+1];
-typedef struct mdbm_bucket_stat {
-    uint32_t num_pages;
-    uint32_t min_bytes;
-    uint32_t max_bytes;
-    uint32_t min_free_bytes;
-    uint32_t max_free_bytes;
-    uint64_t sum_entries;
-    uint64_t sum_bytes;
-    uint64_t sum_free_bytes;
-} mdbm_bucket_stat_t;
 
-*/
+    // list of bucket into the statinfo
+    rv = PyDict_SetItemString(pretstatsinfo, "buckets", pretbucket);
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
+        Py_DECREF(pretbucket);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(stats.buckets)");
+        return NULL;
+    }
 
-    Py_INCREF(pretdbinfo);
-    return pretdbinfo;
+    // make a return value.
+    pretval = PyDict_New();
+    rv = PyDict_SetItemString(pretval, "db", pretdbinfo);
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
+        Py_DECREF(pretbucket);
+        Py_DECREF(pretval);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(returnValue.db)");
+        return NULL;
+    }
+
+    rv = PyDict_SetItemString(pretval, "stats", pretstatsinfo);
+    if (rv == -1) {
+        Py_DECREF(pretdbinfo);
+        Py_DECREF(pretstatsinfo);
+        Py_DECREF(pretbucket);
+        Py_DECREF(pretval);
+        PyErr_Format(PyExc_IOError, "mdbm::get_db_stats() does not make a return value(returnValue.stats)");
+        return NULL;
+    }
+
+    Py_DECREF(pretdbinfo);
+    Py_DECREF(pretstatsinfo);
+    Py_DECREF(pretbucket);
+
+    Py_INCREF(pretval);
+    return pretval;
 }
 
+PyObject *pymdbm_get_window_stats(register MDBMObj *pmdbm_link, PyObject *unused) {
+
+    int rv = -1;
+    mdbm_window_stats_t stats = {0x00,};
+    PyObject *pretstats = NULL;
+
+    CAPTURE_START();
+    rv = mdbm_get_window_stats(pmdbm_link->pmdbm, &stats, sizeof(stats));
+    CAPTURE_END();
+    if (rv == -1) {
+        _RETURN_FALSE();
+    }
+
+    //mdbm_window_stats_t to PyDict
+    pretstats = PyDict_New();
+    rv = PyDict_SetItemString(pretstats, "num_reused", Py_BuildValue("k", stats.w_num_reused));
+    if (rv == -1) {
+        Py_DECREF(pretstats);
+        PyErr_Format(PyExc_IOError, "mdbm::get_window_stats() does not make a return value(windows_stats.num_reused)");
+        return NULL;
+    }
+
+    rv = PyDict_SetItemString(pretstats, "num_remapped", Py_BuildValue("k", stats.w_num_remapped));
+    if (rv == -1) {
+        Py_DECREF(pretstats);
+        PyErr_Format(PyExc_IOError, "mdbm::get_window_stats() does not make a return value(windows_stats.num_remapped)");
+        return NULL;
+    }
+
+    rv = PyDict_SetItemString(pretstats, "window_size", Py_BuildValue("l", stats.w_window_size));
+    if (rv == -1) {
+        Py_DECREF(pretstats);
+        PyErr_Format(PyExc_IOError, "mdbm::get_window_stats() does not make a return value(windows_stats.window_size)");
+        return NULL;
+    }
+
+    rv = PyDict_SetItemString(pretstats, "max_window_used", Py_BuildValue("l", stats.w_max_window_used));
+    if (rv == -1) {
+        Py_DECREF(pretstats);
+        PyErr_Format(PyExc_IOError, "mdbm::get_window_stats() does not make a return value(windows_stats.max_window_used)");
+        return NULL;
+    }
+
+    Py_INCREF(pretstats);
+    return pretstats;
+}
 
 // -------------------------------------------------------------------
 

@@ -1,7 +1,9 @@
 import random
 import unittest
 import mdbm
+import pprint
 # import os
+pp = pprint.PrettyPrinter(indent=4)
 
 def initDefaultData(dbm):
     # warming up
@@ -16,6 +18,9 @@ def initDefaultData(dbm):
 
     v = str(random.randint(0, 2))
     dbm.delete(k)
+
+def printNotice():
+    print('\n\x1b[6;33;44m' + '[*] this following message is not error' + '\x1b[0m\n')
 
 class TestMDBMMethods(unittest.TestCase):
 
@@ -559,11 +564,11 @@ class TestMDBMMethods(unittest.TestCase):
         self.assertEqual(rv, mdbm.MDBM_CACHEMODE_GDSF)
 
     def test_999_dump_all_page(self):
-        print("\n[*] this following is not error, dump_all_page api dumps to stdout\n")
+        printNotice()
         self.dbm.dump_all_page()
 
     def test_999_dump_page(self):
-        print("\n[*] this following is not error, dump_page api dumps to stdout\n")
+        printNotice()
         self.dbm.dump_page(0)
 
     def test_999_fcopy(self):
@@ -592,7 +597,16 @@ class TestMDBMMethods(unittest.TestCase):
 
     def test_999_mdbm_get_db_stats(self):
         rv = self.dbm.get_db_stats(mdbm.MDBM_ITERATE_NOLOCK)
-        print(rv)
+        self.assertTrue(rv)
+        printNotice()
+        pp.pprint(rv)
+
+    def test_999_mdbm_get_window_stats(self):
+        rv = self.dbm.get_window_stats()
+        self.assertTrue(rv)
+        printNotice()
+        pp.pprint(rv)
+
 
     def test_999_zzz_last_reset_stat_operations(self):
         self.dbm.reset_stat_operations() # none

@@ -94,11 +94,11 @@ the following is list of support api on now.
 |                                   | mdbm_reset_stat_operations,       |
 |                                   | mdbm_enable_stat_operations,      |
 |                                   | mdbm_set_stat_time_func,          |
+|                                   | mdbm_get_db_stats,                |
+|                                   | mdbm_get_window_stats,            |
 |                                   | *[STRIKEOUT:mdbm_get_stat_name,   |
 |                                   | mdbm_set_stats_func,              |
-|                                   | mdbm_chunk_iterate,               |
-|                                   | mdbm_get_db_stats,                |
-|                                   | mdbm_get_window_stats]*           |
+|                                   | mdbm_chunk_iterate]*              |
 +-----------------------------------+-----------------------------------+
 | `Cache and Backing                | mdbm_set_cachemode,               |
 | Store <http://yahoo.github.io/mdb | mdbm_get_cachemode,               |
