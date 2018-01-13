@@ -36,6 +36,10 @@
 #define MDBM_PTYPE_DIR          2 // Page type directory
 #define MDBM_PTYPE_LOB          3 // Page type large object
 
+#define MDBM_LOG_TO_STDERR      0
+#define MDBM_LOG_TO_FILE        1
+#define MDBM_LOG_TO_SYSLOG      2
+
 static int loglevel = -1;
 /* -- conflict
 static int capture = 0;
@@ -44,20 +48,20 @@ static int org_stderr;
 
 #define CAPTURE_START() {\
     if (loglevel == -1) {\
-		fflush(stderr);\
-    	dev_null = open("/dev/null", O_RDWR);\
-    	org_stderr = dup(fileno(stderr));\
+        fflush(stderr);\
+        dev_null = open("/dev/null", O_RDWR);\
+        org_stderr = dup(fileno(stderr));\
         dup2(dev_null, fileno(stderr));\
-		capture = 1;\
+        capture = 1;\
     }\
 }
 
 #define CAPTURE_END() {\
     if (capture == 1) {\
-		fflush(stderr);\
+        fflush(stderr);\
         dup2(org_stderr, fileno(stderr));\
-		close(dev_null);\
-		capture = 0;\
+        close(dev_null);\
+        capture = 0;\
     }\
 }
 */
@@ -123,7 +127,7 @@ static inline char *copy_strptr(char *dptr, int dsize) {
 
     pretval = (char *) PyMem_Malloc(dsize+1);
     if (pretval == NULL) {
-		PyErr_NoMemory();
+        PyErr_NoMemory();
         return NULL;
     }
 
@@ -177,7 +181,7 @@ static inline int pymdbm_iter_handler(register MDBMObj *pmdbm_link, MDBM_ITER **
 
 static inline PyObject *get_iter_dict(MDBM_ITER *arg_iter) {
 
-	int rv = -1;
+    int rv = -1;
     PyObject *pretdic = NULL;
     PyObject *pretiter = NULL;
 
@@ -196,7 +200,7 @@ static inline PyObject *get_iter_dict(MDBM_ITER *arg_iter) {
     }
 
     pretdic = PyDict_New();
-	rv = PyDict_SetItemString(pretdic, "iter",  pretiter);
+    rv = PyDict_SetItemString(pretdic, "iter",  pretiter);
     if (rv == -1) {
         Py_DECREF(pretiter);
         Py_DECREF(pretdic);
@@ -207,7 +211,7 @@ static inline PyObject *get_iter_dict(MDBM_ITER *arg_iter) {
     Py_DECREF(pretiter);
     Py_INCREF(pretdic);
 
-	return pretdic;
+    return pretdic;
 }
 
 static inline PyObject *get_db_info_dict(mdbm_db_info_t *info) {
@@ -432,7 +436,7 @@ PyMODINIT_FUNC initmdbm(void) {
     d = PyModule_GetDict(m);
     if (MDBMError == NULL) {
         MDBMError = PyErr_NewException("mdbm.error", PyExc_IOError, NULL);
-		Py_INCREF(MDBMError);
+        Py_INCREF(MDBMError);
     }
 
     s = _PYUNICODE("The MDBM");
@@ -500,9 +504,9 @@ PyMODINIT_FUNC initmdbm(void) {
     PyModule_AddIntMacro(m, MDBM_ALIGN_16_BITS);
     PyModule_AddIntMacro(m, MDBM_ALIGN_32_BITS);
     PyModule_AddIntMacro(m, MDBM_ALIGN_64_BITS);
-	PyModule_AddIntMacro(m, _MDBM_MAGIC);
-	PyModule_AddIntMacro(m, _MDBM_MAGIC_NEW);
-	PyModule_AddIntMacro(m, _MDBM_MAGIC_NEW2);
+    PyModule_AddIntMacro(m, _MDBM_MAGIC);
+    PyModule_AddIntMacro(m, _MDBM_MAGIC_NEW);
+    PyModule_AddIntMacro(m, _MDBM_MAGIC_NEW2);
     PyModule_AddIntMacro(m, MDBM_MAGIC);
     PyModule_AddIntMacro(m, MDBM_FETCH_FLAG_DIRTY);
     PyModule_AddIntMacro(m, MDBM_INSERT);
@@ -612,6 +616,10 @@ PyMODINIT_FUNC initmdbm(void) {
     PyModule_AddIntMacro(m, MDBM_PTYPE_DIR);
     PyModule_AddIntMacro(m, MDBM_PTYPE_LOB);
 
+    PyModule_AddIntMacro(m, MDBM_LOG_TO_STDERR);
+    PyModule_AddIntMacro(m, MDBM_LOG_TO_FILE);
+    PyModule_AddIntMacro(m, MDBM_LOG_TO_SYSLOG);
+
 #if PY_MAJOR_VERSION >= 3
     return m;
 #endif
@@ -667,28 +675,28 @@ PyObject *pymdbm_open(PyObject *self, PyObject *args, PyObject *kwds) {
 
     pmdbm_link = PyObject_New(MDBMObj, &MDBMType);
     if (pmdbm_link == NULL) {
-        PyErr_SetString(MDBMError, "failed to create a mdbm link");
+        PyErr_SetString(MDBMError, "Error - failed to create a mdbm link");
         return NULL;
     }
 
-	//protect : sigfault
-	if (flags == (flags | MDBM_O_CREAT) && flags == (flags | MDBM_PROTECT)) {
+    //protect : sigfault
+    if (flags == (flags | MDBM_O_CREAT) && flags == (flags | MDBM_PROTECT)) {
         Py_DECREF(pmdbm_link);
-	    PyErr_SetString(MDBMError, "failed to open the MDBM, not support create flags with MDBM_PROTECT");
+        PyErr_SetString(MDBMError, "Error - failed to open the MDBM, not support create flags with MDBM_PROTECT");
         return NULL;
-	}
+    }
 
-	if (flags == (flags | MDBM_O_ASYNC) && flags == (flags | MDBM_O_FSYNC)) {
+    if (flags == (flags | MDBM_O_ASYNC) && flags == (flags | MDBM_O_FSYNC)) {
         Py_DECREF(pmdbm_link);
-	    PyErr_SetString(MDBMError, "failed to open the MDBM, not support mixed sync flags (MDBM_O_FSYNC, MDBM_O_ASYNC)");
+        PyErr_SetString(MDBMError, "Error - failed to open the MDBM, not support mixed sync flags (MDBM_O_FSYNC, MDBM_O_ASYNC)");
         return NULL;
-	}
+    }
 
-	if (flags == (flags | MDBM_O_RDONLY) && flags == (flags | MDBM_O_WRONLY)) {
+    if (flags == (flags | MDBM_O_RDONLY) && flags == (flags | MDBM_O_WRONLY)) {
         Py_DECREF(pmdbm_link);
-	    PyErr_SetString(MDBMError, "failed to open the MDBM, not support mixed access flags (MDBM_O_RDONLY, MDBM_O_WRONLY, MDBM_O_RDWR)");
+        PyErr_SetString(MDBMError, "Error - failed to open the MDBM, not support mixed access flags (MDBM_O_RDONLY, MDBM_O_WRONLY, MDBM_O_RDWR)");
         return NULL;
-	}
+    }
 
     mdbm_log_minlevel(-1);
     MDBM_ITER_INIT(&(*pmdbm_link).iter);
@@ -718,7 +726,7 @@ PyObject *pymdbm_dup_handle(register MDBMObj *pmdbm_link, PyObject *args) {
     CAPTURE_END();
 
     if (pmdbm_dup_link->pmdbm == NULL) {
-	    PyErr_Format(MDBMError, "failed to returns the duplicated an existing database handle (errno=%d, errmsg=%s)", errno, strerror(errno));
+        PyErr_Format(MDBMError, "Error - failed to returns the duplicated an existing database handle (errno=%d, errmsg=%s)", errno, strerror(errno));
         Py_DECREF(pmdbm_dup_link);
         return NULL;
     }
@@ -738,10 +746,10 @@ PyObject *pymdbm_log_minlevel(register MDBMObj *pmdbm_link, PyObject *args) {
         return NULL;
     }
 
-	if (level < MDBM_LOG_OFF || level > MDBM_LOG_DEBUG) {
-        PyErr_Format(MDBMError, "mdbm::log_minlevel does not support level(=%d)", level);
+    if (level < MDBM_LOG_OFF || level > MDBM_LOG_DEBUG) {
+        PyErr_Format(MDBMError, "Error - mdbm::log_minlevel does not support level(=%d)", level);
         return NULL;
-	}
+    }
 
     loglevel = level;
 
@@ -758,7 +766,7 @@ PyObject *pymdbm_close(register MDBMObj *pmdbm_link, PyObject *unused) {
         mdbm_close(pmdbm_link->pmdbm);
         pmdbm_link->pmdbm = NULL;
     } else {
-        PyErr_SetString(MDBMError, "failed to close an existing MDBM");
+        PyErr_SetString(MDBMError, "Error - failed to close an existing MDBM");
     }
 
     _RETURN_NONE();
@@ -770,7 +778,7 @@ PyObject *pymdbm_close_fd(register MDBMObj *pmdbm_link, PyObject *unused) {
         mdbm_close_fd(pmdbm_link->pmdbm);
         pmdbm_link->pmdbm = NULL;
     } else {
-        PyErr_SetString(MDBMError, "failed to close an existing MDBM");
+        PyErr_SetString(MDBMError, "Error - failed to close an existing MDBM");
     }
 
     _RETURN_NONE();
@@ -847,8 +855,8 @@ PyObject *pymdbm_set_cachemode(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
 
-	if (cachemode < MDBM_CACHEMODE_NONE || cachemode > MDBM_CACHEMODE_MAX ) {
-        PyErr_Format(MDBMError, "mdbm::set_hash does not support cachemode(=%d)", cachemode);
+    if (cachemode < MDBM_CACHEMODE_NONE || cachemode > MDBM_CACHEMODE_MAX ) {
+        PyErr_Format(MDBMError, "Error - mdbm::set_hash does not support cachemode(=%d)", cachemode);
         _RETURN_FALSE();
     }
 
@@ -856,7 +864,7 @@ PyObject *pymdbm_set_cachemode(register MDBMObj *pmdbm_link, PyObject *args) {
     rv = mdbm_set_cachemode(pmdbm_link->pmdbm, cachemode);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::set_cachemode() does not set cachemode");
+        PyErr_SetString(MDBMError, "Error - mdbm::set_cachemode() does not set cachemode");
         _RETURN_FALSE();
     }
  
@@ -871,7 +879,7 @@ PyObject *pymdbm_get_cachemode(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_get_cachemode(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::get_cachemode() does not obtain the cachemode of current MDBM");
+        PyErr_SetString(MDBMError, "Error - mdbm::get_cachemode() does not obtain the cachemode of current MDBM");
         _RETURN_FALSE();
     }
  
@@ -880,11 +888,11 @@ PyObject *pymdbm_get_cachemode(register MDBMObj *pmdbm_link, PyObject *unused) {
 
 PyObject *pymdbm_get_cachemode_name(register MDBMObj *unused, PyObject *args) {
 
-	int rv = -1;
+    int rv = -1;
     int cachemode = -1;
-	const char *pcachename = NULL;
-	char *pretval = NULL;
-	int retval_len = 0;
+    const char *pcachename = NULL;
+    char *pretval = NULL;
+    int retval_len = 0;
 
     rv = PyArg_ParseTuple(args, "i", &cachemode);
     if (!rv) {
@@ -897,17 +905,17 @@ PyObject *pymdbm_get_cachemode_name(register MDBMObj *unused, PyObject *args) {
     CAPTURE_END();
 
     if (pcachename == NULL) {
-        PyErr_Format(MDBMError, "mdbm::get_cachemode_name() does not set name of cachemode(=%d)", cachemode);
+        PyErr_Format(MDBMError, "Error - mdbm::get_cachemode_name() does not set name of cachemode(=%d)", cachemode);
         _RETURN_FALSE();
     }
 
-	retval_len = (int)strlen(pcachename);
+    retval_len = (int)strlen(pcachename);
     pretval = copy_strptr((char *)pcachename, retval_len);
     if (pretval == NULL) {
         _RETURN_FALSE();
     }
 
-	return _PYUNICODE_ANDSIZE(pretval, retval_len);
+    return _PYUNICODE_ANDSIZE(pretval, retval_len);
 }
 
 PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
@@ -937,10 +945,10 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     rv = mdbm_store(pmdbm_link->pmdbm, key, val, (int)flags);
     CAPTURE_END();
 
-	if (rv == MDBM_STORE_ENTRY_EXISTS  && flags == (flags | MDBM_INSERT)) { //the key already exists
-        PyErr_Format(MDBMError, "the key(=%s) already exists", pkey);
+    if (rv == MDBM_STORE_ENTRY_EXISTS  && flags == (flags | MDBM_INSERT)) { //the key already exists
+        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", pkey);
         return NULL;
-	}
+    }
 
     if (rv != MDBM_STORE_SUCCESS) {
         _RETURN_FALSE();
@@ -955,7 +963,7 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     char *pkey = NULL;
     char *pval = NULL;
     int flags = MDBM_INSERT;
-	PyObject *previter = NULL;
+    PyObject *previter = NULL;
     PyObject *pretdic = NULL;
 
     MDBM_ITER arg_iter;
@@ -972,11 +980,11 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
         return NULL;
     }
 
-	//pass to iter handler
-	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
-	if (rv < 0 && rv != -2) { //optional previter
-		return NULL;
-	}
+    //pass to iter handler
+    rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+    if (rv < 0 && rv != -2) { //optional previter
+        return NULL;
+    }
 
     //make a datum
     key.dptr = pkey;
@@ -988,18 +996,18 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     rv = mdbm_store_r(pmdbm_link->pmdbm, &key, &val, (int)flags, parg_iter);
     CAPTURE_END();
 
-	if (rv == MDBM_STORE_ENTRY_EXISTS  && flags == (flags | MDBM_INSERT)) { //the key already exists
-        PyErr_Format(MDBMError, "the key(=%s) already exists", pkey);
+    if (rv == MDBM_STORE_ENTRY_EXISTS  && flags == (flags | MDBM_INSERT)) { //the key already exists
+        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", pkey);
         return NULL;
-	}
+    }
 
     if (rv != MDBM_STORE_SUCCESS) {
         _RETURN_FALSE();
     }
 
-	//make a return value include iter
+    //make a return value include iter
     pretdic = get_iter_dict(parg_iter);
-	if (pretdic == NULL) {
+    if (pretdic == NULL) {
         _RETURN_FALSE();
     }
 
@@ -1059,11 +1067,11 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
         return NULL;
     }
 
-	//pass to iter handler
-	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
-	if (rv < 0 && rv != -2) { //optional previter
-		return NULL;
-	}
+    //pass to iter handler
+    rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+    if (rv < 0 && rv != -2) { //optional previter
+        return NULL;
+    }
 
     //make a datum
     key.dptr = pkey;
@@ -1081,9 +1089,9 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
         _RETURN_FALSE();
     }
 
-	//make a return value include iter
+    //make a return value include iter
     pretdic = get_iter_dict(parg_iter);
-	if (pretdic == NULL) {
+    if (pretdic == NULL) {
         _RETURN_FALSE();
     }
 
@@ -1118,11 +1126,11 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
         return NULL;
     }
 
-	//pass to iter handler
-	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
-	if (rv < 0 && rv != -2) { //optional previter
-		return NULL;
-	}
+    //pass to iter handler
+    rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+    if (rv < 0 && rv != -2) { //optional previter
+        return NULL;
+    }
 
     //make a datum
     key.dptr = pkey;
@@ -1140,9 +1148,9 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
         _RETURN_FALSE();
     }
 
-	//make a return value include iter
+    //make a return value include iter
     pretdic = get_iter_dict(parg_iter);
-	if (pretdic == NULL) {
+    if (pretdic == NULL) {
         _RETURN_FALSE();
     }
 
@@ -1184,11 +1192,11 @@ PyObject *pymdbm_fetch_info(register MDBMObj *pmdbm_link, PyObject *args, PyObje
         return NULL;
     }
 
-	//pass to iter handler
-	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter, previter);
-	if (rv < 0 && rv != -2) { //optional previter
-		return NULL;
-	}
+    //pass to iter handler
+    rv = pymdbm_iter_handler(pmdbm_link, &parg_iter, previter);
+    if (rv < 0 && rv != -2) { //optional previter
+        return NULL;
+    }
 
     //make a datum
     key.dptr = pkey;
@@ -1264,9 +1272,9 @@ PyObject *pymdbm_fetch_info(register MDBMObj *pmdbm_link, PyObject *args, PyObje
         return NULL;
     }
 
-	//make a return value include iter
+    //make a return value include iter
     pretdic = get_iter_dict(parg_iter);
-	if (pretdic == NULL) {
+    if (pretdic == NULL) {
         _RETURN_FALSE();
     }
 
@@ -1293,33 +1301,33 @@ PyObject *pymdbm_fetch_info(register MDBMObj *pmdbm_link, PyObject *args, PyObje
 
 PyObject *pymdbm_get_magic_number(register MDBMObj *pmdbm_link, PyObject *unused) {
 
-	int rv = -1;
-	uint32_t magic = 0;
+    int rv = -1;
+    uint32_t magic = 0;
 
     CAPTURE_START();
     rv = mdbm_get_magic_number(pmdbm_link->pmdbm, &magic);
     CAPTURE_END();
 
-	switch(rv) {
+    switch(rv) {
 
-	case -3:
-		PyErr_SetString(MDBMError, "mdbm::get_magic_number() cannot read all of the magic number");
+    case -3:
+        PyErr_SetString(MDBMError, "Error - mdbm::get_magic_number() cannot read all of the magic number");
         _RETURN_FALSE();
-		break;
+        break;
  
-	case -2:
-		PyErr_SetString(MDBMError, "mdbm::get_magic_number() cannot read data, db is truncated (empty)");
+    case -2:
+        PyErr_SetString(MDBMError, "Error - mdbm::get_magic_number() cannot read data, db is truncated (empty)");
         _RETURN_FALSE();
-		break;
+        break;
 
-	case -1:
-		PyErr_SetString(MDBMError, "mdbm::get_magic_number() cannot read db");
+    case -1:
+        PyErr_SetString(MDBMError, "Error - mdbm::get_magic_number() cannot read db");
         _RETURN_FALSE();
-		break;
+        break;
 
-	default:
-		break;
-	}
+    default:
+        break;
+    }
 
     return Py_BuildValue("l", magic);
 }
@@ -1389,16 +1397,16 @@ PyObject *pymdbm_delete_r(register MDBMObj *pmdbm_link, PyObject *args) {
         return NULL;
     }
 
-	//pass to iter handler
-	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
-	if (rv == -2) {
-        PyErr_SetString(MDBMError, "failed to read to dic(iter{m_pageno,m_next})");
+    //pass to iter handler
+    rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+    if (rv == -2) {
+        PyErr_SetString(MDBMError, "Error - failed to read to dic(iter{m_pageno,m_next})");
         return NULL;
-	}
+    }
 
-	if (rv < 0) {
-		return NULL;
-	}
+    if (rv < 0) {
+        return NULL;
+    }
 
 
     CAPTURE_START();
@@ -1415,7 +1423,7 @@ PyObject *pymdbm_get_hash(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_get_hash(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::get_hash() does not obtain the current MDBM's hash func code");
+        PyErr_SetString(MDBMError, "Error - mdbm::get_hash() does not obtain the current MDBM's hash func code");
         _RETURN_FALSE();
     }
  
@@ -1433,7 +1441,7 @@ PyObject *pymdbm_set_hash(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
     if (hash < MDBM_HASH_CRC32 || hash > MDBM_MAX_HASH) {
-        PyErr_Format(MDBMError, "mdbm::set_hash does not support hash(=%d)", hash);
+        PyErr_Format(MDBMError, "Error - mdbm::set_hash does not support hash(=%d)", hash);
         _RETURN_FALSE();
     }
 
@@ -1455,7 +1463,7 @@ PyObject *pymdbm_setspillsize(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
     if (size < 0) {
-        PyErr_Format(MDBMError, "mdbm::setspillsize does not support size(=%d)", size);
+        PyErr_Format(MDBMError, "Error - mdbm::setspillsize does not support size(=%d)", size);
         _RETURN_FALSE();
     }
 
@@ -1463,7 +1471,7 @@ PyObject *pymdbm_setspillsize(register MDBMObj *pmdbm_link, PyObject *args) {
     rv = mdbm_setspillsize(pmdbm_link->pmdbm, size);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::setspillsize() does not set the size of item data value which will be put on the large-object heap rather then inline");
+        PyErr_SetString(MDBMError, "Error - mdbm::setspillsize() does not set the size of item data value which will be put on the large-object heap rather then inline");
         _RETURN_FALSE();
     }
  
@@ -1478,7 +1486,7 @@ PyObject *pymdbm_get_alignment(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_get_alignment(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::get_alignment() does not obtain the MDBM's record byte-alignment.");
+        PyErr_SetString(MDBMError, "Error - mdbm::get_alignment() does not obtain the MDBM's record byte-alignment.");
         _RETURN_FALSE();
     }
  
@@ -1496,7 +1504,7 @@ PyObject *pymdbm_set_alignment(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
     if (align < MDBM_ALIGN_8_BITS || align > MDBM_ALIGN_64_BITS) {
-        PyErr_Format(MDBMError, "mdbm::set_alignment does not support align(=%d)", align);
+        PyErr_Format(MDBMError, "Error - mdbm::set_alignment does not support align(=%d)", align);
         _RETURN_FALSE();
     }
 
@@ -1505,7 +1513,7 @@ PyObject *pymdbm_set_alignment(register MDBMObj *pmdbm_link, PyObject *args) {
     rv = mdbm_set_alignment(pmdbm_link->pmdbm, align);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::set_alignment() does not set the MDBM's record byte-alignment.");
+        PyErr_SetString(MDBMError, "Error - mdbm::set_alignment() does not set the MDBM's record byte-alignment.");
         _RETURN_FALSE();
     }
  
@@ -1537,7 +1545,7 @@ PyObject *pymdbm_limit_dir_size(register MDBMObj *pmdbm_link, PyObject *args) {
     rv = mdbm_limit_dir_size(pmdbm_link->pmdbm, pages);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::limit_dir_size() does not set limits the internal page directory size to a number of pages");
+        PyErr_SetString(MDBMError, "Error - mdbm::limit_dir_size() does not set limits the internal page directory size to a number of pages");
         _RETURN_FALSE();
     }
  
@@ -1551,7 +1559,7 @@ PyObject *pymdbm_get_version(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_get_version(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == 0) {
-        PyErr_SetString(MDBMError, "mdbm::get_version() does not obtain the on-disk format version number of an MDBM.");
+        PyErr_SetString(MDBMError, "Error - mdbm::get_version() does not obtain the on-disk format version number of an MDBM.");
         _RETURN_FALSE();
     }
  
@@ -1565,7 +1573,7 @@ PyObject *pymdbm_get_size(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_get_size(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == 0) {
-        PyErr_SetString(MDBMError, "mdbm::get_size() does not obtain the current MDBM's size");
+        PyErr_SetString(MDBMError, "Error - mdbm::get_size() does not obtain the current MDBM's size");
         _RETURN_FALSE();
     }
  
@@ -1579,7 +1587,7 @@ PyObject *pymdbm_get_page_size(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_get_page_size(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::get_page_size() does not obtain the current MDBM's size");
+        PyErr_SetString(MDBMError, "Error - mdbm::get_page_size() does not obtain the current MDBM's size");
         _RETURN_FALSE();
     }
  
@@ -1593,7 +1601,7 @@ PyObject *pymdbm_get_lockmode(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_get_lockmode(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == (uint32_t)-1) {
-        PyErr_SetString(MDBMError, "mdbm::get_lockmode() does not obtain the current MDBM's lock info.");
+        PyErr_SetString(MDBMError, "Error - mdbm::get_lockmode() does not obtain the current MDBM's lock info.");
         _RETURN_FALSE();
     }
  
@@ -1608,7 +1616,7 @@ PyObject *pymdbm_lock(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_lock(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::lock() does not obtain the current MDBM's lock info.");
+        PyErr_SetString(MDBMError, "Error - mdbm::lock() does not obtain the current MDBM's lock info.");
         _RETURN_FALSE();
     }
  
@@ -1622,7 +1630,7 @@ PyObject *pymdbm_unlock(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_unlock(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::unlock() does not obtain the current MDBM's lock info.");
+        PyErr_SetString(MDBMError, "Error - mdbm::unlock() does not obtain the current MDBM's lock info.");
         _RETURN_FALSE();
     }
  
@@ -1636,7 +1644,7 @@ PyObject *pymdbm_trylock(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_trylock(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::trylock() does not obtain the current MDBM's lock info.");
+        PyErr_SetString(MDBMError, "Error - mdbm::trylock() does not obtain the current MDBM's lock info.");
         _RETURN_FALSE();
     }
  
@@ -1650,7 +1658,7 @@ PyObject *pymdbm_lock_shared(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_lock_shared(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::lock_shared() does not obtain the current MDBM's lock info.");
+        PyErr_SetString(MDBMError, "Error - mdbm::lock_shared() does not obtain the current MDBM's lock info.");
         _RETURN_FALSE();
     }
  
@@ -1664,7 +1672,7 @@ PyObject *pymdbm_trylock_shared(register MDBMObj *pmdbm_link, PyObject *unused) 
     rv = mdbm_trylock_shared(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::trylock_shared() does not obtain the current MDBM's lock info.");
+        PyErr_SetString(MDBMError, "Error - mdbm::trylock_shared() does not obtain the current MDBM's lock info.");
         _RETURN_FALSE();
     }
  
@@ -1678,7 +1686,7 @@ PyObject *pymdbm_lock_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_lock_pages(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::lock_pages() does not obtain the current MDBM's lock info.");
+        PyErr_SetString(MDBMError, "Error - mdbm::lock_pages() does not obtain the current MDBM's lock info.");
         _RETURN_FALSE();
     }
  
@@ -1692,7 +1700,7 @@ PyObject *pymdbm_unlock_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
     rv = mdbm_unlock_pages(pmdbm_link->pmdbm);
     CAPTURE_END();
     if (rv == -1) {
-        PyErr_SetString(MDBMError, "mdbm::unlock_pages() does not obtain the current MDBM's lock info.");
+        PyErr_SetString(MDBMError, "Error - mdbm::unlock_pages() does not obtain the current MDBM's lock info.");
         _RETURN_FALSE();
     }
  
@@ -1705,19 +1713,19 @@ PyObject *pymdbm_islocked(register MDBMObj *pmdbm_link, PyObject *unused) {
     CAPTURE_START();
     rv = mdbm_islocked(pmdbm_link->pmdbm);
     CAPTURE_END();
-	switch(rv) {
-		case 0:
-			_RETURN_FALSE();
-			break;
-		case 1:
-			_RETURN_TRUE();
-			break;
-		default:
-        	PyErr_SetString(MDBMError, "mdbm::islocked() does not obtain the current MDBM's lock.");
-			break;
+    switch(rv) {
+        case 0:
+            _RETURN_FALSE();
+            break;
+        case 1:
+            _RETURN_TRUE();
+            break;
+        default:
+            PyErr_SetString(MDBMError, "Error - mdbm::islocked() does not obtain the current MDBM's lock.");
+            break;
     }
 
-	_RETURN_NONE();
+    _RETURN_NONE();
 }
 
 PyObject *pymdbm_isowned(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1726,26 +1734,26 @@ PyObject *pymdbm_isowned(register MDBMObj *pmdbm_link, PyObject *unused) {
     CAPTURE_START();
     rv = mdbm_isowned(pmdbm_link->pmdbm);
     CAPTURE_END();
-	switch(rv) {
-		case 0:
-			_RETURN_FALSE();
-			break;
-		case 1:
-			_RETURN_TRUE();
-			break;
-		default:
-        	PyErr_SetString(MDBMError, "mdbm::islocked() does not obtain the current MDBM's lock owner.");
-			break;
+    switch(rv) {
+        case 0:
+            _RETURN_FALSE();
+            break;
+        case 1:
+            _RETURN_TRUE();
+            break;
+        default:
+            PyErr_SetString(MDBMError, "Error - mdbm::islocked() does not obtain the current MDBM's lock owner.");
+            break;
     }
 
-	_RETURN_NONE();
+    _RETURN_NONE();
 }
 
 PyObject *pymdbm_lock_reset(register MDBMObj *pmdbm_link, PyObject *args) {
 
-	char *pfn = NULL;
+    char *pfn = NULL;
     int rv = -1;
-	int flags = 0;
+    int flags = 0;
 
     rv = PyArg_ParseTuple(args, "s", &pfn);
     if (!rv) {
@@ -1757,12 +1765,12 @@ PyObject *pymdbm_lock_reset(register MDBMObj *pmdbm_link, PyObject *args) {
     rv = mdbm_lock_reset(pfn, flags); // flags Reserved for future use, and must be 0.
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_delete_lockfiles(register MDBMObj *pmdbm_link, PyObject *args) {
 
-	char *pfn = NULL;
+    char *pfn = NULL;
     int rv = -1;
 
     rv = PyArg_ParseTuple(args, "s", &pfn);
@@ -1775,7 +1783,7 @@ PyObject *pymdbm_delete_lockfiles(register MDBMObj *pmdbm_link, PyObject *args) 
     rv = mdbm_delete_lockfiles(pfn);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_first(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -1806,8 +1814,8 @@ PyObject *pymdbm_first(register MDBMObj *pmdbm_link, PyObject *unused) {
     PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
     PyTuple_SetItem(retval, 1, _PYUNICODE(pretval));
 
-	PyMem_Free(pretkey);
-	PyMem_Free(pretval);
+    PyMem_Free(pretkey);
+    PyMem_Free(pretval);
 
     return retval;
 }
@@ -1839,9 +1847,9 @@ PyObject *pymdbm_next(register MDBMObj *pmdbm_link, PyObject *unused) {
     retval = PyTuple_New(2);
     PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
     PyTuple_SetItem(retval, 1, _PYUNICODE(pretval));
-	
-	PyMem_Free(pretkey);
-	PyMem_Free(pretval);
+    
+    PyMem_Free(pretkey);
+    PyMem_Free(pretval);
     return retval;
 }
 
@@ -1867,8 +1875,8 @@ PyObject *pymdbm_firstkey(register MDBMObj *pmdbm_link, PyObject *unused) {
     retval = PyTuple_New(1);
     PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
 
-	PyMem_Free(pretkey);
-	//Py_DECREF(retval);
+    PyMem_Free(pretkey);
+    //Py_DECREF(retval);
 
     return retval;
 }
@@ -1894,8 +1902,8 @@ PyObject *pymdbm_nextkey(register MDBMObj *pmdbm_link, PyObject *unused) {
 
     retval = PyTuple_New(1);
     PyTuple_SetItem(retval, 0, _PYUNICODE(pretkey));
-	PyMem_Free(pretkey);
-	//Py_DECREF(retval);
+    PyMem_Free(pretkey);
+    //Py_DECREF(retval);
 
     return retval;
 }
@@ -1917,16 +1925,16 @@ PyObject *pymdbm_first_r(register MDBMObj *pmdbm_link, PyObject *args) {
         return NULL;
     }
 
-	//pass to iter handler
-	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
-	if (rv == -2) {
-        PyErr_SetString(MDBMError, "failed to read to dic(iter{m_pageno,m_next})");
+    //pass to iter handler
+    rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+    if (rv == -2) {
+        PyErr_SetString(MDBMError, "Error - failed to read to dic(iter{m_pageno,m_next})");
         return NULL;
-	}
+    }
 
-	if (rv < 0) {
-		return NULL;
-	}
+    if (rv < 0) {
+        return NULL;
+    }
 
     CAPTURE_START();
     kv = mdbm_first_r(pmdbm_link->pmdbm, parg_iter);
@@ -1946,9 +1954,9 @@ PyObject *pymdbm_first_r(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
 
-	//make a return value include iter
+    //make a return value include iter
     pretdic = get_iter_dict(parg_iter);
-	if (pretdic == NULL) {
+    if (pretdic == NULL) {
         _RETURN_FALSE();
     }
 
@@ -1987,16 +1995,16 @@ PyObject *pymdbm_next_r(register MDBMObj *pmdbm_link, PyObject *args) {
         return NULL;
     }
 
-	//pass to iter handler
-	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
-	if (rv == -2) {
-        PyErr_SetString(MDBMError, "failed to read to dic(iter{m_pageno,m_next})");
+    //pass to iter handler
+    rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+    if (rv == -2) {
+        PyErr_SetString(MDBMError, "Error - failed to read to dic(iter{m_pageno,m_next})");
         return NULL;
-	}
+    }
 
-	if (rv < 0) {
-		return NULL;
-	}
+    if (rv < 0) {
+        return NULL;
+    }
 
     CAPTURE_START();
     kv = mdbm_next_r(pmdbm_link->pmdbm, parg_iter);
@@ -2016,9 +2024,9 @@ PyObject *pymdbm_next_r(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
 
-	//make a return value include iter
+    //make a return value include iter
     pretdic = get_iter_dict(parg_iter);
-	if (pretdic == NULL) {
+    if (pretdic == NULL) {
         _RETURN_FALSE();
     }
 
@@ -2056,16 +2064,16 @@ PyObject *pymdbm_firstkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
         return NULL;
     }
 
-	//pass to iter handler
-	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
-	if (rv == -2) {
-        PyErr_SetString(MDBMError, "failed to read to dic(iter{m_pageno,m_next})");
+    //pass to iter handler
+    rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+    if (rv == -2) {
+        PyErr_SetString(MDBMError, "Error - failed to read to dic(iter{m_pageno,m_next})");
         return NULL;
-	}
+    }
 
-	if (rv < 0) {
-		return NULL;
-	}
+    if (rv < 0) {
+        return NULL;
+    }
 
     CAPTURE_START();
     key = mdbm_firstkey_r(pmdbm_link->pmdbm, parg_iter);
@@ -2080,9 +2088,9 @@ PyObject *pymdbm_firstkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
 
-	//make a return value include iter
+    //make a return value include iter
     pretdic = get_iter_dict(parg_iter);
-	if (pretdic == NULL) {
+    if (pretdic == NULL) {
         _RETURN_FALSE();
     }
 
@@ -2112,16 +2120,16 @@ PyObject *pymdbm_nextkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
         return NULL;
     }
 
-	//pass to iter handler
-	rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
-	if (rv == -2) {
-        PyErr_SetString(MDBMError, "failed to read to dic(iter{m_pageno,m_next})");
+    //pass to iter handler
+    rv = pymdbm_iter_handler(pmdbm_link, &parg_iter,  previter);
+    if (rv == -2) {
+        PyErr_SetString(MDBMError, "Error - failed to read to dic(iter{m_pageno,m_next})");
         return NULL;
-	}
+    }
 
-	if (rv < 0) {
-		return NULL;
-	}
+    if (rv < 0) {
+        return NULL;
+    }
 
     CAPTURE_START();
     key = mdbm_nextkey_r(pmdbm_link->pmdbm, parg_iter);
@@ -2136,9 +2144,9 @@ PyObject *pymdbm_nextkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
         _RETURN_FALSE();
     }
 
-	//make a return value include iter
+    //make a return value include iter
     pretdic = get_iter_dict(parg_iter);
-	if (pretdic == NULL) {
+    if (pretdic == NULL) {
         _RETURN_FALSE();
     }
 
@@ -2154,7 +2162,7 @@ PyObject *pymdbm_nextkey_r(register MDBMObj *pmdbm_link, PyObject *args) {
 
 PyObject *pymdbm_clean(register MDBMObj *pmdbm_link, PyObject *args) {
 
-	int pagenum = -1;
+    int pagenum = -1;
     int rv = -1;
 
     rv = PyArg_ParseTuple(args, "i", &pagenum);
@@ -2167,13 +2175,13 @@ PyObject *pymdbm_clean(register MDBMObj *pmdbm_link, PyObject *args) {
     rv = mdbm_clean(pmdbm_link->pmdbm, pagenum, 0); // flags Ignored
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_check(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-	int level = -1;
-	int verbose = -1;
+    int level = -1;
+    int verbose = -1;
 
     int rv = -1;
 
@@ -2184,32 +2192,32 @@ PyObject *pymdbm_check(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
         return NULL;
     }
 
-	/*
-	MDBM_CHECK_HEADER    //< Check MDBM header for integrity
-	MDBM_CHECK_CHUNKS    //< Check MDBM header and chunks (page structure)
-	MDBM_CHECK_DIRECTORY //< Check MDBM header, chunks, and directory
-	MDBM_CHECK_ALL       //< Check MDBM header, chunks, directory, and data
-	*/
-	if (level < 0 || level > 10) {
-        PyErr_Format(MDBMError, "mdbm::check does not support level(=%d)", level);
+    /*
+    MDBM_CHECK_HEADER    //< Check MDBM header for integrity
+    MDBM_CHECK_CHUNKS    //< Check MDBM header and chunks (page structure)
+    MDBM_CHECK_DIRECTORY //< Check MDBM header, chunks, and directory
+    MDBM_CHECK_ALL       //< Check MDBM header, chunks, directory, and data
+    */
+    if (level < 0 || level > 10) {
+        PyErr_Format(MDBMError, "Error - mdbm::check does not support level(=%d)", level);
         return NULL;
-	}
+    }
 
-	if (verbose < 0 || verbose > 1) {
-        PyErr_Format(MDBMError, "mdbm::check does not support verbose(=%d)", verbose);
+    if (verbose < 0 || verbose > 1) {
+        PyErr_Format(MDBMError, "Error - mdbm::check does not support verbose(=%d)", verbose);
         return NULL;
-	}
+    }
 
     CAPTURE_START();
     rv = mdbm_check(pmdbm_link->pmdbm, level, verbose);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_chk_page(register MDBMObj *pmdbm_link, PyObject *args) {
 
-	int pagenum = -1;
+    int pagenum = -1;
 
     int rv = -1;
 
@@ -2223,22 +2231,22 @@ PyObject *pymdbm_chk_page(register MDBMObj *pmdbm_link, PyObject *args) {
     rv = mdbm_chk_page(pmdbm_link->pmdbm, pagenum);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_chk_all_page(register MDBMObj *pmdbm_link, PyObject *unused) {
 
-	int rv = -1;
+    int rv = -1;
     CAPTURE_START();
     rv = mdbm_chk_all_page(pmdbm_link->pmdbm);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_count_records(register MDBMObj *pmdbm_link, PyObject *unused) {
 
-	uint64_t rv = -1;
+    uint64_t rv = -1;
     CAPTURE_START();
     rv = mdbm_count_records(pmdbm_link->pmdbm);
     CAPTURE_END();
@@ -2248,7 +2256,7 @@ PyObject *pymdbm_count_records(register MDBMObj *pmdbm_link, PyObject *unused) {
 
 PyObject *pymdbm_count_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
 
-	mdbm_ubig_t rv = -1;
+    mdbm_ubig_t rv = -1;
     CAPTURE_START();
     rv = mdbm_count_pages(pmdbm_link->pmdbm);
     CAPTURE_END();
@@ -2258,7 +2266,7 @@ PyObject *pymdbm_count_pages(register MDBMObj *pmdbm_link, PyObject *unused) {
 
 PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused) {
 
-	mdbm_ubig_t rv = -1;
+    mdbm_ubig_t rv = -1;
     CAPTURE_START();
     rv = mdbm_get_errno(pmdbm_link->pmdbm);
     CAPTURE_END();
@@ -2268,8 +2276,8 @@ PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused) {
 
 PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-	char *pkey = NULL;
-	int flags = 0;
+    char *pkey = NULL;
+    int flags = 0;
 
     datum key = {0x00,};
     int rv = -1;
@@ -2281,10 +2289,10 @@ PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
         return NULL;
     }
 
-	if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
-        PyErr_Format(MDBMError, "mdbm::plock does not support flags(=%d)", flags);
+    if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
+        PyErr_Format(MDBMError, "Error - mdbm::plock does not support flags(=%d)", flags);
         return NULL;
-	}
+    }
 
     //make a datum
     key.dptr = pkey;
@@ -2294,13 +2302,13 @@ PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     rv = mdbm_plock(pmdbm_link->pmdbm, &key, flags);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-	char *pkey = NULL;
-	int flags = 0;
+    char *pkey = NULL;
+    int flags = 0;
 
     datum key = {0x00,};
     int rv = -1;
@@ -2312,10 +2320,10 @@ PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
         return NULL;
     }
 
-	if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
-        PyErr_Format(MDBMError, "mdbm::punlock does not support flags(=%d)", flags);
+    if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
+        PyErr_Format(MDBMError, "Error - mdbm::punlock does not support flags(=%d)", flags);
         return NULL;
-	}
+    }
 
     //make a datum
     key.dptr = pkey;
@@ -2325,13 +2333,13 @@ PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     rv = mdbm_punlock(pmdbm_link->pmdbm, &key, flags);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-	char *pkey = NULL;
-	int flags = 0;
+    char *pkey = NULL;
+    int flags = 0;
 
     datum key ={0x00,};
     int rv = -1;
@@ -2343,10 +2351,10 @@ PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args, PyObject
         return NULL;
     }
 
-	if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
-        PyErr_Format(MDBMError, "mdbm::tryplock does not support flags(=%d)", flags);
+    if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
+        PyErr_Format(MDBMError, "Error - mdbm::tryplock does not support flags(=%d)", flags);
         return NULL;
-	}
+    }
 
     //make a datum
     key.dptr = pkey;
@@ -2356,13 +2364,13 @@ PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args, PyObject
     rv = mdbm_tryplock(pmdbm_link->pmdbm, &key, flags);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-	char *pkey = NULL;
-	int flags = 0;
+    char *pkey = NULL;
+    int flags = 0;
 
     datum key = {0x00,};
     int rv = -1;
@@ -2374,10 +2382,10 @@ PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObje
         return NULL;
     }
 
-	if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
-        PyErr_Format(MDBMError, "mdbm::lock_smart does not support flags(=%d)", flags);
+    if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
+        PyErr_Format(MDBMError, "Error - mdbm::lock_smart does not support flags(=%d)", flags);
         return NULL;
-	}
+    }
 
     //make a datum
     key.dptr = pkey;
@@ -2387,13 +2395,13 @@ PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObje
     rv = mdbm_lock_smart(pmdbm_link->pmdbm, &key, flags);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-	char *pkey = NULL;
-	int flags = 0;
+    char *pkey = NULL;
+    int flags = 0;
 
     datum key = {0x00,};
     int rv = -1;
@@ -2405,10 +2413,10 @@ PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyO
         return NULL;
     }
 
-	if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
-        PyErr_Format(MDBMError, "mdbm::trylock_smart does not support flags(=%d)", flags);
+    if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
+        PyErr_Format(MDBMError, "Error - mdbm::trylock_smart does not support flags(=%d)", flags);
         return NULL;
-	}
+    }
 
     //make a datum
     key.dptr = pkey;
@@ -2418,13 +2426,13 @@ PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyO
     rv = mdbm_trylock_smart(pmdbm_link->pmdbm, &key, flags);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-	char *pkey = NULL;
-	int flags = 0;
+    char *pkey = NULL;
+    int flags = 0;
 
     datum key = {0x00,};
     int rv = -1;
@@ -2437,10 +2445,10 @@ PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyOb
         return NULL;
     }
 
-	if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
-        PyErr_Format(MDBMError, "mdbm::unlock_smart does not support flags(=%d)", flags);
+    if (flags != 0 && flags != MDBM_PARTITIONED_LOCKS && flags != MDBM_RW_LOCKS && flags != MDBM_O_RDWR) {
+        PyErr_Format(MDBMError, "Error - mdbm::unlock_smart does not support flags(=%d)", flags);
         return NULL;
-	}
+    }
 
     //make a datum
     key.dptr = pkey;
@@ -2450,12 +2458,12 @@ PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyOb
     rv = mdbm_unlock_smart(pmdbm_link->pmdbm, &key, flags);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *args) {
 
-	int protect = -1;
+    int protect = -1;
 
     int rv = -1;
 
@@ -2465,21 +2473,21 @@ PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *args) {
         return NULL;
     }
 
-	if (protect < MDBM_PROT_NONE || protect > MDBM_PROT_ACCESS) {
-        PyErr_Format(MDBMError, "mdbm::protect does not support protect(=%d)", protect);
+    if (protect < MDBM_PROT_NONE || protect > MDBM_PROT_ACCESS) {
+        PyErr_Format(MDBMError, "Error - mdbm::protect does not support protect(=%d)", protect);
         return NULL;
-	}
+    }
 
     CAPTURE_START();
     rv = mdbm_protect(pmdbm_link->pmdbm, protect);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_replace_db(register MDBMObj *pmdbm_link, PyObject *args) {
 
-	char *pnewfile = NULL;
+    char *pnewfile = NULL;
     int rv = -1;
 
     rv = PyArg_ParseTuple(args, "s", &pnewfile);
@@ -2492,13 +2500,13 @@ PyObject *pymdbm_replace_db(register MDBMObj *pmdbm_link, PyObject *args) {
     rv = mdbm_replace_db(pmdbm_link->pmdbm, pnewfile);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_replace_file(register MDBMObj *unused, PyObject *args, PyObject *kwds) {
 
-	char *poldfile = NULL;
-	char *pnewfile = NULL;
+    char *poldfile = NULL;
+    char *pnewfile = NULL;
     int rv = -1;
 
     static char *pkwlist[] = {"oldfile", "newfile", NULL};
@@ -2512,12 +2520,12 @@ PyObject *pymdbm_replace_file(register MDBMObj *unused, PyObject *args, PyObject
     rv = mdbm_replace_file(poldfile, pnewfile);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_fcopy(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-	char *pnewfile = NULL;
+    char *pnewfile = NULL;
     int flags = 0;
     int rv = -1;
     int fd = -1;
@@ -2534,13 +2542,13 @@ PyObject *pymdbm_fcopy(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     rv = mdbm_fcopy(pmdbm_link->pmdbm, fd, flags);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_get_hash_value(register MDBMObj *unused, PyObject *args, PyObject *kwds) {
 
     int rv = -1;
-	char *pkey = NULL;
+    char *pkey = NULL;
     int hashfunc = -1;
     datum key = {0x00,};
     uint32_t hashval = -1;
@@ -2553,7 +2561,7 @@ PyObject *pymdbm_get_hash_value(register MDBMObj *unused, PyObject *args, PyObje
     }
 
     if (hashfunc < MDBM_HASH_CRC32 || hashfunc > MDBM_MAX_HASH) {
-        PyErr_Format(MDBMError, "mdbm::get_hash_value does not support hashfunc(=%d)", hashfunc);
+        PyErr_Format(MDBMError, "Error - mdbm::get_hash_value does not support hashfunc(=%d)", hashfunc);
         return NULL;
     }
 
@@ -2574,7 +2582,7 @@ PyObject *pymdbm_get_hash_value(register MDBMObj *unused, PyObject *args, PyObje
 
 PyObject *pymdbm_pre_split(register MDBMObj *pmdbm_link, PyObject *args) {
 
-	mdbm_ubig_t split_size = 0;
+    mdbm_ubig_t split_size = 0;
     int rv = -1;
 
     rv = PyArg_ParseTuple(args, "i", &split_size);
@@ -2587,7 +2595,7 @@ PyObject *pymdbm_pre_split(register MDBMObj *pmdbm_link, PyObject *args) {
     rv = mdbm_pre_split(pmdbm_link->pmdbm, split_size);
     CAPTURE_END();
 
-	_RETURN_RV_BOOLEN(rv);
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_dump_all_page(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -2596,12 +2604,12 @@ PyObject *pymdbm_dump_all_page(register MDBMObj *pmdbm_link, PyObject *unused) {
     mdbm_dump_all_page(pmdbm_link->pmdbm);
     CAPTURE_END();
 
-	_RETURN_NONE();
+    _RETURN_NONE();
 }
 
 PyObject *pymdbm_dump_page(register MDBMObj *pmdbm_link, PyObject *args) {
 
-	int pagenum = 0;
+    int pagenum = 0;
     int rv = -1;
 
     rv = PyArg_ParseTuple(args, "i", &pagenum);
@@ -2614,7 +2622,7 @@ PyObject *pymdbm_dump_page(register MDBMObj *pmdbm_link, PyObject *args) {
     mdbm_dump_page(pmdbm_link->pmdbm, pagenum);
     CAPTURE_END();
 
-	_RETURN_NONE();
+    _RETURN_NONE();
 }
 
 PyObject *pymdbm_get_stats(register MDBMObj *pmdbm_link, PyObject *unused) {
@@ -2775,8 +2783,8 @@ PyObject *pymdbm_get_db_info(register MDBMObj *pmdbm_link, PyObject *unused) {
 
 PyObject *pymdbm_get_stat_counter(register MDBMObj *pmdbm_link, PyObject *args) {
 
-	mdbm_stat_type type = 0;
-	mdbm_counter_t value = 0;
+    mdbm_stat_type type = 0;
+    mdbm_counter_t value = 0;
     int rv = -1;
 
     rv = PyArg_ParseTuple(args, "i", &type);
@@ -2797,8 +2805,8 @@ PyObject *pymdbm_get_stat_counter(register MDBMObj *pmdbm_link, PyObject *args) 
 
 PyObject *pymdbm_get_stat_time(register MDBMObj *pmdbm_link, PyObject *args) {
 
-	mdbm_stat_type type = 0;
-	time_t value = 0;
+    mdbm_stat_type type = 0;
+    time_t value = 0;
     int rv = -1;
 
     rv = PyArg_ParseTuple(args, "i", &type);
@@ -2808,7 +2816,7 @@ PyObject *pymdbm_get_stat_time(register MDBMObj *pmdbm_link, PyObject *args) {
     }
 
     if (type != MDBM_STAT_TYPE_FETCH && type != MDBM_STAT_TYPE_STORE && type != MDBM_STAT_TYPE_DELETE) {
-        PyErr_Format(MDBMError, "mdbm::get_stat_time does not support type(=%d)", type);
+        PyErr_Format(MDBMError, "Error - mdbm::get_stat_time does not support type(=%d)", type);
         return NULL;
     }
 
@@ -2834,7 +2842,7 @@ PyObject *pymdbm_reset_stat_operations(register MDBMObj *pmdbm_link, PyObject *u
 
 PyObject *pymdbm_enable_stat_operations(register MDBMObj *pmdbm_link, PyObject *args) {
 
-	int flags = 0;
+    int flags = 0;
     int rv = -1;
 
     rv = PyArg_ParseTuple(args, "i", &flags);
@@ -2845,7 +2853,7 @@ PyObject *pymdbm_enable_stat_operations(register MDBMObj *pmdbm_link, PyObject *
 
     if (flags != MDBM_STATS_BASIC && flags != MDBM_STATS_TIMED &&
         flags != (MDBM_STATS_BASIC | MDBM_STATS_TIMED) && flags != 0) {
-        PyErr_Format(MDBMError, "mdbm::enable_stat_operations does not support flags(=%d)", flags);
+        PyErr_Format(MDBMError, "Error - mdbm::enable_stat_operations does not support flags(=%d)", flags);
         return NULL;
     }
 
@@ -2862,7 +2870,7 @@ PyObject *pymdbm_enable_stat_operations(register MDBMObj *pmdbm_link, PyObject *
 
 PyObject *pymdbm_set_stat_time_func(register MDBMObj *pmdbm_link, PyObject *args) {
 
-	int flags = 0;
+    int flags = 0;
     int rv = -1;
 
     rv = PyArg_ParseTuple(args, "i", &flags);
@@ -2872,7 +2880,7 @@ PyObject *pymdbm_set_stat_time_func(register MDBMObj *pmdbm_link, PyObject *args
     }
 
     if (flags != MDBM_CLOCK_TSC && flags != MDBM_CLOCK_STANDARD) {
-        PyErr_Format(MDBMError, "mdbm::set_stat_time_func does not support flags(=%d)", flags);
+        PyErr_Format(MDBMError, "Error - mdbm::set_stat_time_func does not support flags(=%d)", flags);
         return NULL;
     }
 
@@ -2888,7 +2896,7 @@ PyObject *pymdbm_set_stat_time_func(register MDBMObj *pmdbm_link, PyObject *args
 
 PyObject *pymdbm_get_db_stats(register MDBMObj *pmdbm_link, PyObject *args) {
 
-	int flags = 0;
+    int flags = 0;
     int rv = -1;
     int i = 0;
     mdbm_db_info_t info = {0x00,};
@@ -2910,7 +2918,7 @@ PyObject *pymdbm_get_db_stats(register MDBMObj *pmdbm_link, PyObject *args) {
     }
 
     if (flags != MDBM_STAT_NOLOCK && flags != MDBM_ITERATE_NOLOCK) {
-        PyErr_Format(MDBMError, "mdbm::get_db_stats does not support flags(=%d)", flags);
+        PyErr_Format(MDBMError, "Error - mdbm::get_db_stats does not support flags(=%d)", flags);
         return NULL;
     }
 
@@ -3305,6 +3313,68 @@ PyObject *pymdbm_get_window_stats(register MDBMObj *pmdbm_link, PyObject *unused
     return pretstats;
 }
 
+PyObject *pymdbm_select_log_plugin(register MDBMObj *unused, PyObject *args) {
+
+    int type = 0;
+    int rv = -1;
+	char buf[10] = {0x00,};
+
+    rv = PyArg_ParseTuple(args, "i", &type);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: int(type)");
+        return NULL;
+    }
+
+	if (type < MDBM_LOG_TO_STDERR || type > MDBM_LOG_TO_SYSLOG) {
+        PyErr_Format(MDBMError, "Error - mdbm::select_log_plugin does not support type(=%d)", type);
+        return NULL;
+    }
+
+	switch (type) {
+
+		case MDBM_LOG_TO_STDERR:
+			strncpy(buf, "stderr", 9);
+			break;
+		case MDBM_LOG_TO_FILE:
+			strncpy(buf, "file", 9);
+			break;
+
+		case MDBM_LOG_TO_SYSLOG:
+			strncpy(buf, "syslog", 9);
+			break;
+
+		default:
+        	PyErr_Format(MDBMError, "Bug - Failed to run to mdbm::select_log_plugin");
+        return NULL;
+
+	}
+
+    CAPTURE_START();
+    rv = mdbm_select_log_plugin((const char *)&buf);
+    CAPTURE_END();
+
+    _RETURN_RV_BOOLEN(rv);
+}
+
+
+PyObject *pymdbm_set_log_filename(register MDBMObj *unused, PyObject *args) {
+
+    char *plogfile = NULL;
+    int rv = -1;
+
+    rv = PyArg_ParseTuple(args, "s", &plogfile);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: logfile)");
+        return NULL;
+    }
+
+    CAPTURE_START();
+    rv = mdbm_set_log_filename((const char *)plogfile);
+    CAPTURE_END();
+
+    _RETURN_RV_BOOLEN(rv);
+}
+
 // -------------------------------------------------------------------
 
 
@@ -3329,7 +3399,7 @@ PyObject *pymdbm__exit(register MDBMObj *pmdbm_link, PyObject *args) {
         PyObject_CallMethod((PyObject*)pmdbm_link, (char *)"close", "");
     } else {
         // - debug
-        //PyErr_Format(MDBMError, "mdbm::__exit__ does not work");
+        //PyErr_Format(MDBMError, "Error - mdbm::__exit__ does not work");
         _RETURN_NONE();
     }
 
