@@ -4,14 +4,15 @@ import os
 from distutils.core import setup, Extension
 #from mdbm import __version__
 
+
 # read a desc
-f = open(os.path.join(os.path.dirname(__file__), 'README.txt'))
+f = open(os.path.join(os.path.dirname(__file__), 'README.rst'))
 long_description = f.read()
 f.close()
 
 setup(name = "py-mdbm",
     #version = __version__,
-    version = "0.0.2",
+    version = "0.0.5b",
     author="Torden",
     author_email="torden@myself.com",
     maintainer='Torden',

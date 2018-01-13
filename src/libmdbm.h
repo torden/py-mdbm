@@ -5,7 +5,7 @@
 #include <mdbm.h>
 #include <mdbm_log.h>
 
-#define PYMDBM_VERSION "0.0.2"
+#define PYMDBM_VERSION "0.0.5"
 
 typedef struct {
     PyObject_HEAD
