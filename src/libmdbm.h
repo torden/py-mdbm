@@ -810,18 +810,18 @@ PyMethodDef mdbm_methods[] = {
             "NOTE: V3 API"
     },  
 
-	{"select_log_plugin", (PyCFunction)pymdbm_select_log_plugin, METH_VARARGS,
-		"select_log_plugin(type)"
-			"select a logging plugin by name, default type is stderr"
-			"type:"
-			"\tMDBM_LOG_TO_STDERR        STDERR (default)"
-			"\tMDBM_LOG_TO_FILE          FILE (must be use with set_log_filename())"
-			"\tMDBM_LOG_TO_SYSLOG        SYSLOG"
-	},
-	{"set_log_filename", (PyCFunction)pymdbm_set_log_filename, METH_VARARGS,
-		"set_log_filename(file)"
-			"select a filename for the `file` log plugin."
-	},
+    {"select_log_plugin", (PyCFunction)pymdbm_select_log_plugin, METH_VARARGS,
+        "select_log_plugin(type)"
+            "select a logging plugin by name, default type is stderr"
+            "type:"
+            "\tMDBM_LOG_TO_STDERR        STDERR (default)"
+            "\tMDBM_LOG_TO_FILE          FILE (must be use with set_log_filename())"
+            "\tMDBM_LOG_TO_SYSLOG        SYSLOG"
+    },
+    {"set_log_filename", (PyCFunction)pymdbm_set_log_filename, METH_VARARGS,
+        "set_log_filename(file)"
+            "select a filename for the `file` log plugin."
+    },
     {0,0}
 };
 

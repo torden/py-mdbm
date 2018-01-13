@@ -435,7 +435,7 @@ PyMODINIT_FUNC initmdbm(void) {
 
     d = PyModule_GetDict(m);
     if (MDBMError == NULL) {
-        MDBMError = PyErr_NewException("mdbm.error", PyExc_IOError, NULL);
+        MDBMError = PyErr_NewException("mdbm.Error", PyExc_StandardError, NULL);
         Py_INCREF(MDBMError);
     }
 
@@ -445,9 +445,11 @@ PyMODINIT_FUNC initmdbm(void) {
         Py_DECREF(s);
     }
 
+
     if (MDBMError != NULL) {
         PyDict_SetItemString(d, "error", MDBMError);
     }
+
 
     if (PyErr_Occurred()) {
         Py_DECREF(m);

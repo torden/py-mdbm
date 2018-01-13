@@ -111,7 +111,7 @@ $ python
 
 ```shell
 cd py-mdbm
-`which pip` install -r requirements.txt
+`which pip` install -r for-benchmark-py26_or_higher-requirements.txt
 CMD_PYTHON=`which python` CMD_PYTEST=`which pytest` make benchmark
 ```
 
