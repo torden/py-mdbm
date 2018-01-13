@@ -3121,7 +3121,7 @@ PyObject *pymdbm_get_db_stats(register MDBMObj *pmdbm_link, PyObject *args) {
     }
 
     pretbucket = PyList_New(0);
-    for (i=0; i<=listlen; i++) {
+    for (i=0; i<listlen; i++) {
 
         ptempbucket = PyDict_New();
 
