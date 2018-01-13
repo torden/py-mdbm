@@ -5,22 +5,25 @@ import pprint
 # import os
 pp = pprint.PrettyPrinter(indent=4)
 
+
 def initDefaultData(dbm):
     # warming up
-    for i in range(0,100):
+    for i in range(0, 100):
         k = str(i)
         v = str(random.randint(0, 65535))
         dbm.store(k, v, mdbm.MDBM_REPLACE)
 
-    for i in range(0,100):
+    for i in range(0, 100):
         v = str(random.randint(0, 65535))
         dbm.fetch(k)
 
     v = str(random.randint(0, 2))
     dbm.delete(k)
 
+
 def printNotice():
-    print('\n\x1b[6;33;44m' + '[*] this following message is not error' + '\x1b[0m\n')
+    print('\n\x1b[6;33;44m[*] this following message is not error\x1b[0m\n')
+
 
 class TestMDBMMethods(unittest.TestCase):
 
@@ -515,7 +518,6 @@ class TestMDBMMethods(unittest.TestCase):
         rv = mdbm.get_hash_value("I hope this will be helpful for you", mdbm.MDBM_HASH_HSIEH)
         self.assertEqual(rv, 4291882138)
 
-
     def test_99_alignment(self):
         rv = self.dbm.get_alignment()
         self.assertEqual(rv, mdbm.MDBM_ALIGN_8_BITS)
@@ -595,21 +597,33 @@ class TestMDBMMethods(unittest.TestCase):
         rv = self.dbm.get_stats()
         self.assertTrue(rv)
 
-    def test_999_mdbm_get_db_stats(self):
+    def test_999_get_db_stats(self):
         rv = self.dbm.get_db_stats(mdbm.MDBM_ITERATE_NOLOCK)
         self.assertTrue(rv)
         printNotice()
         pp.pprint(rv)
 
-    def test_999_mdbm_get_window_stats(self):
+    def test_999_get_window_stats(self):
         rv = self.dbm.get_window_stats()
         self.assertTrue(rv)
         printNotice()
         pp.pprint(rv)
 
+    def test_999_select_log(self):
+        rv = self.dbm.select_log_plugin(mdbm.MDBM_LOG_TO_STDERR)
+        self.assertTrue(rv)
 
+        rv = self.dbm.select_log_plugin(mdbm.MDBM_LOG_TO_SYSLOG)
+        self.assertTrue(rv)
+
+        rv = self.dbm.select_log_plugin(mdbm.MDBM_LOG_TO_FILE)
+        self.assertTrue(rv)
+
+        rv = self.dbm.set_log_filename("/tmp/test_py.log")
+        self.assertTrue(rv)
+ 
     def test_999_zzz_last_reset_stat_operations(self):
-        self.dbm.reset_stat_operations() # none
+        self.dbm.reset_stat_operations()  # none
 
     def test_999_misc(self):
         pass

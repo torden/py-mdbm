@@ -52,6 +52,7 @@ def mdbm_store(limit):
     dbm.close()
     return True
 
+
 def mdbm_store_clock_time_tsc(limit):
     path = "/tmp/test_py_benchmark_tsc_%s.mdbm" % limit
     flags = mdbm.MDBM_O_RDWR
@@ -73,7 +74,6 @@ def mdbm_store_clock_time_tsc(limit):
 
     dbm.close()
     return True
-
 
 
 def mdbm_fetch(limit):
@@ -109,6 +109,7 @@ def mdbm_fetch_after_preload(limit):
     dbm.close()
     return True
 
+
 def mdbm_fetch_after_preload_tsc(limit):
     path = "/tmp/test_py_benchmark_tsc_%s.mdbm" % limit
     flags = mdbm.MDBM_O_RDWR
@@ -125,7 +126,6 @@ def mdbm_fetch_after_preload_tsc(limit):
 
     dbm.close()
     return True
-
 
 
 def anydbm_store(limit):
@@ -257,7 +257,7 @@ def sqlite3_fetch(limit):
 
 
 def tinydb_store(limit):
-    path = "/tmp/test_py_benchmark_%s.json"  % limit
+    path = "/tmp/test_py_benchmark_%s.json" % limit
 
     try:
         os.remove(path)
@@ -302,6 +302,7 @@ def test_mdbm_store_10000(benchmark):
     result = benchmark(mdbm_store, 10000)
     assert result
 
+
 @pytest.mark.store_loop_10000
 def test_mdbm_store_tsc_10000(benchmark):
     result = benchmark(mdbm_store_clock_time_tsc, 10000)
@@ -313,10 +314,12 @@ def test_anydbm_store_10000(benchmark):
     result = benchmark(anydbm_store, 10000)
     assert result
 
+
 @pytest.mark.store_loop_10000
 def test_kyotocabinet_kch_store_10000(benchmark):
     result = benchmark(kyotocabinet_store, 10000)
     assert result
+
 
 """ FAIL
 @pytest.mark.store_loop_10000
@@ -331,16 +334,19 @@ def test_sqlite3_store_10000(benchmark):
     result = benchmark(sqlite3_store, 10000)
     assert result
 
+
 # STORE 10,0000 -----------------------------------------------
 @pytest.mark.store_loop_100000
 def test_mdbm_store_100000(benchmark):
     result = benchmark(mdbm_store, 100000)
     assert result
 
+
 @pytest.mark.store_loop_100000
 def test_mdbm_store_tsc_100000(benchmark):
     result = benchmark(mdbm_store_clock_time_tsc, 100000)
     assert result
+
 
 @pytest.mark.store_loop_100000
 def test_anydbm_store_100000(benchmark):
@@ -367,16 +373,19 @@ def test_sqlite3_store_100000(benchmark):
     result = benchmark(sqlite3_store, 100000)
     assert result
 
+
 # STORE 1,000,000 -----------------------------------------------
 @pytest.mark.store_loop_1000000
 def test_mdbm_store_1000000(benchmark):
     result = benchmark(mdbm_store, 1000000)
     assert result
 
+
 @pytest.mark.store_loop_1000000
 def test_mdbm_store_tsc_1000000(benchmark):
     result = benchmark(mdbm_store_clock_time_tsc, 1000000)
     assert result
+
 
 @pytest.mark.store_loop_1000000
 def test_anydbm_store_1000000(benchmark):
@@ -404,7 +413,6 @@ def test_sqlite3_store_1000000(benchmark):
     assert result
 
 
-
 # FETCH : 10,000 -----------------------------------------------
 @pytest.mark.random_fetch_loop_10000
 def test_mdbm_random_fetch_10000(benchmark):
@@ -417,10 +425,12 @@ def test_mdbm_preload_random_fetch_10000(benchmark):
     result = benchmark(mdbm_fetch_after_preload, 10000)
     assert result
 
+
 @pytest.mark.random_fetch_loop_10000
 def test_mdbm_preload_random_fetch_tsc_10000(benchmark):
     result = benchmark(mdbm_fetch_after_preload_tsc, 10000)
     assert result
+
 
 @pytest.mark.random_fetch_loop_10000
 def test_anydbm_random_fetch_10000(benchmark):
@@ -432,6 +442,7 @@ def test_anydbm_random_fetch_10000(benchmark):
 def test_kyotocabinet_random_fetch_10000(benchmark):
     result = benchmark(kyotocabinet_fetch, 10000)
     assert result
+
 
 """ FAIL
 @pytest.mark.random_fetch_loop_10000
@@ -459,10 +470,12 @@ def test_mdbm_preload_random_fetch_100000(benchmark):
     result = benchmark(mdbm_fetch_after_preload, 100000)
     assert result
 
+
 @pytest.mark.random_fetch_loop_100000
 def test_mdbm_preload_random_fetch_tsc_100000(benchmark):
     result = benchmark(mdbm_fetch_after_preload_tsc, 100000)
     assert result
+
 
 @pytest.mark.random_fetch_loop_100000
 def test_anydbm_random_fetch_100000(benchmark):
@@ -475,6 +488,7 @@ def test_kyotocabinet_random_fetch_100000(benchmark):
     result = benchmark(kyotocabinet_fetch, 100000)
     assert result
 
+
 """ FAIL
 @pytest.mark.random_fetch_loop_100000
 def test_tinydb_random_fetch_100000(benchmark):
@@ -485,13 +499,16 @@ def test_tinydb_random_fetch_100000(benchmark):
 """ FAIL
 read(8, "\0\0\0\2\0\0\7H\0\0\0\0\0\0\0\0", 16) = 16
 fstat(8, {st_mode=S_IFREG|0644, st_size=1908736, ...}) = 0
-access("/tmp/test_py_benchmark1.db-wal", F_OK) = -1 ENOENT (No such file or directory)
+access("/tmp/test_py_benchmark1.db-wal", F_OK)\
+= -1 ENOENT (No such file or directory)
 fstat(8, {st_mode=S_IFREG|0644, st_size=1908736, ...}) = 0
 fcntl(8, F_SETLK, {type=F_UNLCK, whence=SEEK_SET, start=0, len=0}) = 0
 fcntl(8, F_SETLK, {type=F_RDLCK, whence=SEEK_SET, start=1073741824, len=1}) = 0
-fcntl(8, F_SETLK, {type=F_RDLCK, whence=SEEK_SET, start=1073741826, len=510}) = 0
+fcntl(8, F_SETLK, {type=F_RDLCK, whence=SEEK_SET,\
+start=1073741826, len=510}) = 0
 fcntl(8, F_SETLK, {type=F_UNLCK, whence=SEEK_SET, start=1073741824, len=1}) = 0
-access("/tmp/test_py_benchmark1.db-journal", F_OK) = -1 ENOENT (No such file or directory)
+access("/tmp/test_py_benchmark1.db-journal", F_OK)\
+= -1 ENOENT (No such file or directory)
 fstat(8, {st_mode=S_IFREG|0644, st_size=1908736, ...}) = 0
 lseek(8, 24, SEEK_SET)                  = 24
 
@@ -500,6 +517,7 @@ def test_sqlite3_random_fetch_100000(benchmark):
     result = benchmark(sqlite3_fetch, 100000)
     assert result
 """
+
 
 # FETCH 1,000,000 -----------------------------------------------
 @pytest.mark.random_fetch_loop_1000000
@@ -513,10 +531,12 @@ def test_mdbm_preload_random_fetch_1000000(benchmark):
     result = benchmark(mdbm_fetch_after_preload, 1000000)
     assert result
 
+
 @pytest.mark.random_fetch_loop_1000000
 def test_mdbm_preload_random_fetch_tsc_1000000(benchmark):
     result = benchmark(mdbm_fetch_after_preload_tsc, 1000000)
     assert result
+
 
 @pytest.mark.random_fetch_loop_1000000
 def test_anydbm_random_fetch_1000000(benchmark):
@@ -528,5 +548,3 @@ def test_anydbm_random_fetch_1000000(benchmark):
 def test_kyotocabinet_random_fetch_1000000(benchmark):
     result = benchmark(kyotocabinet_fetch, 1000000)
     assert result
-
-
