@@ -628,6 +628,5 @@ class TestMDBMMethods(unittest.TestCase):
     def test_999_misc(self):
         pass
 
-
 if __name__ == '__main__':
     unittest.main()

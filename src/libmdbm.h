@@ -20,6 +20,9 @@ typedef struct {
 
 PyObject *MDBMError = NULL;
 PyObject *pymdbm_init_iter(register MDBMObj *pmdbm_link, PyObject *unused);
+PyObject *pymdbm_get_global_iter(register MDBMObj *pmdbm_link, PyObject *unsed);
+PyObject *pymdbm_reset_global_iter(register MDBMObj *pmdbm_link, PyObject *unsed);
+PyObject *pymdbm_set_global_iter(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds);
 PyObject *pymdbm_open(PyObject *self, PyObject *args, PyObject *kwds);
 PyObject *pymdbm_dup_handle(register MDBMObj *pmdbm_link, PyObject *args);
 PyObject *pymdbm_log_minlevel(register MDBMObj *pmdbm_link, PyObject *unused);
@@ -153,6 +156,19 @@ PyMethodDef mdbm_methods[] = {
     {"init_iter", (PyCFunction)pymdbm_init_iter, METH_NOARGS, 
         "init_iter()"
             "Returns Initialized an MDBM iterator."
+    },
+    {"reset_global_iter", (PyCFunction)pymdbm_reset_global_iter, METH_NOARGS, 
+        "reset_global_iter()"
+            "Resets the MDBM iterator."
+    },
+
+    {"get_global_iter", (PyCFunction)pymdbm_get_global_iter, METH_NOARGS, 
+        "get_global_iter()"
+            "Returns Initialized the MDBM's Global Iterator."
+    },
+    {"set_global_iter", (PyCFunction)pymdbm_set_global_iter, METH_VARARGS | METH_KEYWORDS, 
+        "set_global_iter(m_pageno, m_next)"
+            "Sets pageno and next to the MDBM's Global Iterator."
     },
     {"open", (PyCFunction)pymdbm_open, METH_VARARGS | METH_KEYWORDS, 
         "open(path, flags, mode, [psize, presize])"

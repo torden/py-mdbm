@@ -38,6 +38,7 @@ the following is list of support api on now.
 |[Cache and Backing Store](http://yahoo.github.io/mdbm/api/group__CacheAndBackingStoreGroup.html)|mdbm_set_cachemode, mdbm_get_cachemode, mdbm_get_cachemode_name, *~~mdbm_set_backingstore~~*|
 |[Import and Export](http://yahoo.github.io/mdbm/api/group__ImportExportGroup.html)|*~~mdbm_cdbdump_to_file, mdbm_cdbdump_trailer_and_close, mdbm_cdbdump_add_record, mdbm_dbdump_to_file, mdbm_dbdump_trailer_and_close, mdbm_dbdump_add_record, mdbm_dbdump_export_header, mdbm_dbdump_import_header, mdbm_dbdump_import, mdbm_cdbdump_import~~*|
 |[Miscellaneous](http://yahoo.github.io/mdbm/api/group__MiscellaneousGroup.html)|mdbm_preload, mdbm_get_errno,  mdbm_get_page, mdbm_lock_pages, mdbm_unlock_pages, mdbm_get_hash_value, mdbm_select_log_plugin, mdbm_set_log_filename|
+|[Additional](https://github.com/torden/py-mdbm/tree/master/example)|init_iter(), reset_global_iter(), get_global_iter(), set_global_iter(m_pageno=uint32, m_next=int)|
 
 ### Deprecated APIs
 

@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <signal.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #ifndef __PYMDBM_HINC__
 #define __PYMDBM_HINC__
@@ -642,17 +643,65 @@ PyObject *pymdbm_init_iter(register MDBMObj *pmdbm_link, PyObject *unsed) {
     pretiter = PyDict_New();
     rv = PyDict_SetItemString(pretiter, "m_pageno", Py_BuildValue("i", iter.m_pageno));
     if (rv == -1) {
-        PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (iter.m_pageno)");
+        PyErr_Format(PyExc_IOError, "mdbm::init_iter does not make a return value (iter.m_pageno)");
         _RETURN_FALSE();
     }
     rv = PyDict_SetItemString(pretiter, "m_next", Py_BuildValue("i", iter.m_next));
     if (rv == -1) {
-        PyErr_Format(PyExc_IOError, "mdbm::fetch_r does not make a return value (iter.m_next)");
+        PyErr_Format(PyExc_IOError, "mdbm::init_iter does not make a return value (iter.m_next)");
         _RETURN_FALSE();
     }
 
     Py_INCREF(pretiter);
     return pretiter;
+}
+
+PyObject *pymdbm_reset_global_iter(register MDBMObj *pmdbm_link, PyObject *unsed) {
+
+    MDBM_ITER_INIT(&(*pmdbm_link).iter);
+    _RETURN_NONE();
+}
+
+PyObject *pymdbm_get_global_iter(register MDBMObj *pmdbm_link, PyObject *unsed) {
+
+    int rv = -1;
+    PyObject *pretiter = NULL;
+
+    pretiter = PyDict_New();
+    rv = PyDict_SetItemString(pretiter, "m_pageno", Py_BuildValue("i", (*pmdbm_link).iter.m_pageno));
+    if (rv == -1) {
+        Py_DECREF(pretiter);
+        PyErr_Format(PyExc_IOError, "mdbm::get_global_iter does not make a return value (m_pageno)");
+        return NULL;
+    }
+    rv = PyDict_SetItemString(pretiter, "m_next", Py_BuildValue("i", (*pmdbm_link).iter.m_next));
+    if (rv == -1) {
+        Py_DECREF(pretiter);
+        PyErr_Format(PyExc_IOError, "mdbm::get_global_iter does not make a return value (m_next)");
+        return NULL;
+    }
+
+    Py_INCREF(pretiter);
+    return pretiter;
+}
+
+PyObject *pymdbm_set_global_iter(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
+
+    long m_pageno = -1;
+    int m_next = -1;
+    int rv = -1;
+
+    static char *pkwlist[] = {"m_pageno", "m_next", NULL};
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "li", pkwlist, &m_pageno, &m_next);
+    if (!rv) {
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: key and value");
+        return NULL;
+    }
+
+    pmdbm_link->iter.m_pageno = (mdbm_ubig_t)m_pageno;
+    pmdbm_link->iter.m_next = (int)m_next;
+
+    _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_open(PyObject *self, PyObject *args, PyObject *kwds) {
