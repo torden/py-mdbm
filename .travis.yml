@@ -1,0 +1,27 @@
+language: python
+sudo: required
+#env:
+#  - CMD_PYTHON=`which python`
+python:
+  - "2.6"
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "pypy"
+  - "pypy3"
+before_install:
+    - sudo apt-get update -qq
+    - sudo apt-get install -y openssl libcppunit-dev libreadline6 libreadline6-dev valgrind realpath libmodule-install-perl
+    - wget https://github.com/torden/go-mdbm/raw/master/pkg/ubuntu/mdbm-Precise_Pangolin.deb
+    - sudo dpkg -i mdbm-Precise_Pangolin.deb
+    - sudo apt-get install -y gdb
+    #- git clone https://github.com/yahoo/mdbm.git src_mdbm
+before_script:
+    - ulimit -c unlimited -S 
+    - ulimit -s unlimited
+script:
+    - CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" make
+after_failure:
+    - CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" gdb -ex "thread apply all bt" -ex "set pagination 0" -batch --args `which python` tests/test.py 
