@@ -12,7 +12,7 @@ f.close()
 
 setup(name = "py-mdbm",
     #version = __version__,
-    version = "0.0.5b",
+    version = "0.1.0a",
     author="Torden",
     author_email="torden@myself.com",
     maintainer='Torden',
