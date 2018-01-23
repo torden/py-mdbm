@@ -12,17 +12,9 @@ PY-MDBM
 -   The records stored in a mdbm database may have keys and values of
     arbitrary and variable lengths.
 
-|Build Stats|Py-mdbm ver.|License|Y! mdbm ver.| |:-:|:-:|:-:||:-:}
-|[Build Status]|[GitHub version]| [License: MIT]|[GitHub version]|
-
-
-Table of Contents
-
--   API
--   Install
--   Example
--   Benchmark
--   Link
+    Build Stats       Py-mdbm ver.       Y! mdbm ver.
+  ---------------- ------------------ ------------------
+   [Build Status]   [GitHub version]   [GitHub version]
 
 
 API
@@ -120,9 +112,7 @@ the following is list of support api on now.
   Miscellaneous                     mdbm_preload, mdbm_get_errno,
                                     mdbm_get_page, mdbm_lock_pages,
                                     mdbm_unlock_pages,
-                                    mdbm_get_hash_value,
-                                    mdbm_select_log_plugin,
-                                    mdbm_set_log_filename
+                                    mdbm_get_hash_value
   -------------------------------------------------------------------
 
 Deprecated APIs
@@ -222,7 +212,7 @@ Check
 Benchmark
 
     cd py-mdbm
-    `which pip` install -r for-benchmark-py26_or_higher-requirements.txt
+    `which pip` install -r requirements.txt
     CMD_PYTHON=`which python` CMD_PYTEST=`which pytest` make benchmark
 
 
@@ -660,7 +650,6 @@ Link
 -   MDBM::Macro(const)
 -   Go-mdbm
 -   PHP-mdbm
--   Py-mdbm in Pypi
 
 ------------------------------------------------------------------------
 

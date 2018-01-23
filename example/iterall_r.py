@@ -31,42 +31,13 @@ while mval:
 
 print("|-------|-------|--------|------|")
 print("")
-print("|-------|-------|--------|------|")
-print("|  after reset the global iter  |")
-print("|-------|-------|--------|------|")
-dbm.reset_global_iter()
-
-loop = 0
-mval = dbm.next_r()
-while mval:
-
-    print("|%07s|%07s|%8d|%6d|" % (mval['key'], mval['val'], mval['iter']['m_pageno'], mval['iter']['m_next']))
-    loop = loop + 1
-    if loop > maxloop:
-        break
-    mval = dbm.next_r()
-
-print("|-------|-------|--------|------|")
-print("")
-
-
-
-print("[+] Local Iter")
-localiter = dbm.init_iter()
-print("|--------|------|")
-print("| pageno | next |")
-print("|--------|------|")
-print("|%8d|%6d|" % (localiter['m_pageno'], localiter['m_next']))
-print("|--------|------|")
-print("")
-
-
 print("[+] Uses the Local Iter")
 print("|-------|-------|--------|------|")
 print("|  key  |  val  | pageno | next |")
 print("|-------|-------|--------|------|")
 
 
+localiter = dbm.init_iter()
 mval = dbm.first_r(localiter)
 
 loop = 0
@@ -81,6 +52,7 @@ while mval:
 
 print("|-------|-------|--------|------|")
 print("[*] count of records : %d" % dbm.count_records())
+
 
 dbm.close()
 
