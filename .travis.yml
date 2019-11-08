@@ -13,8 +13,8 @@ python:
 before_install:
     - sudo apt-get update -y
     - sudo apt-get install -y openssl libcppunit-dev libreadline6 libreadline6-dev valgrind realpath libmodule-install-perl
-    - wget https://github.com/torden/go-mdbm/raw/master/pkg/ubuntu/mdbm-4.13.0-Xenial_Xerus.deb
-    - sudo dpkg -i mdbm-4.13.0-Xenial_Xerus.deb
+    - wget https://github.com/torden/go-mdbm/raw/master/pkg/ubuntu/mdbm-4.13.0-Precise_Pangolin.deb
+    - sudo dpkg -i mdbm-4.13.0-Precise_Pangolin.deb
     - sudo apt-get install -y gdb
     #- git clone https://github.com/yahoo/mdbm.git src_mdbm
 before_script:
