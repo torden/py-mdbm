@@ -1,5 +1,6 @@
 language: python
 sudo: required
+dist: xenial
 #env:
 #  - CMD_PYTHON=`which python`
 python:
@@ -10,7 +11,7 @@ python:
   - "pypy"
   - "pypy3"
 before_install:
-    - sudo apt-get update -qq
+    - sudo apt-get update -y
     - sudo apt-get install -y openssl libcppunit-dev libreadline6 libreadline6-dev valgrind realpath libmodule-install-perl
     - wget https://github.com/torden/go-mdbm/raw/master/pkg/ubuntu/mdbm-4.13.0-Precise_Pangolin.deb
     - sudo dpkg -i mdbm-4.13.0-Precise_Pangolin.deb
