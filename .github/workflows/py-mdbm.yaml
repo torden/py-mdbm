@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["2.7", "3.4", "3.5", "3.6", "3.7","3.8", "3.9", "3.10"]
+        python-version: ["2.7", "3.4", "3.5", "3.6", "3.7","3.8", "3.9", "3.10", "pypy3"]
 
     steps:
     - uses: actions/checkout@v3
@@ -31,11 +31,9 @@ jobs:
 
     - name: Build_Test
       run: |
-        cd src
         CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" make
 
     - name: Job fail
       continue-on-error: true
       run: |
-        cd src
         CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" gdb -ex "thread apply all bt" -ex "set pagination 0" -batch --args `which python` tests/test.py 
