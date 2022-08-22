@@ -49,11 +49,11 @@ jobs:
         cd tmp
         sudo curl -ss -O https://www.python.org/ftp/python/2.7.2/Python-2.7.2.tgz
         sudo tar xvzf Python-2.7.2.tgz
-        sudo cd Python-2.7.2
+        cd Python-2.7.2
         sudo ./configure --prefix=/tmp/python2 --without-pymalloc --with-pydebug --with-valgrind
         sudo make OPT=-g -j4
         sudo make install
-        sudo cd ../../
+        cd ../../
 
     - name: Build_Test
       run: |
@@ -69,11 +69,11 @@ jobs:
         cd tmp
         sudo curl -ss -O https://www.python.org/ftp/python/3.10.6/Python-3.10.6.tgz
         sudo tar xvzf Python-3.10.6.tgz
-        sudo cd Python-3.10.6
+        cd Python-3.10.6
         sudo ./configure --prefix=/tmp/python3 --without-pymalloc --with-pydebug --with-valgrind
         sudo make OPT=-g -j4
         sudo make install
-        sudo cd ../../
+        cd ../../
 
     - name: Build_Test
       run: |
