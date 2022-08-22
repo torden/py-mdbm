@@ -30,7 +30,6 @@ tinydb==3.7.0
 virtualenv==13.1.2
 """
 
-
 def mdbm_store(limit):
     path = "/tmp/test_py_benchmark_%s.mdbm" % limit
     flags = mdbm.MDBM_O_RDWR
