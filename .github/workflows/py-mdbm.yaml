@@ -45,13 +45,13 @@ jobs:
     - uses: actions/checkout@v3
     - name: Install dependencies
       run: |
-        sudo mkdir tmp
+        mkdir tmp
         cd tmp
-        sudo curl -ss -O https://www.python.org/ftp/python/2.7.2/Python-2.7.2.tgz
-        sudo tar xvzf Python-2.7.2.tgz
+        curl -ss -O https://www.python.org/ftp/python/2.7.2/Python-2.7.2.tgz
+        tar xvzf Python-2.7.2.tgz
         cd Python-2.7.2
-        sudo ./configure --prefix=/tmp/python2 --without-pymalloc --with-pydebug --with-valgrind
-        sudo make OPT=-g -j4
+        ./configure --prefix=/tmp/python2 --without-pymalloc --with-pydebug --with-valgrind
+        make OPT=-g -j4
         sudo make install
         cd ../../
 
@@ -65,13 +65,13 @@ jobs:
     - uses: actions/checkout@v3
     - name: Install dependencies
       run: |
-        sudo mkdir tmp
+        mkdir tmp
         cd tmp
-        sudo curl -ss -O https://www.python.org/ftp/python/3.10.6/Python-3.10.6.tgz
-        sudo tar xvzf Python-3.10.6.tgz
+        curl -ss -O https://www.python.org/ftp/python/3.10.6/Python-3.10.6.tgz
+        tar xvzf Python-3.10.6.tgz
         cd Python-3.10.6
-        sudo ./configure --prefix=/tmp/python3 --without-pymalloc --with-pydebug --with-valgrind
-        sudo make OPT=-g -j4
+        ./configure --prefix=/tmp/python3 --without-pymalloc --with-pydebug --with-valgrind
+        make OPT=-g -j4
         sudo make install
         cd ../../
 
