@@ -2,13 +2,11 @@ name: py-mdbm
 on: ["push", "pull_request"]
 jobs:
   build:
-
     runs-on: ubuntu-18.04
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.4", "3.5", "3.6", "3.7","3.8", "3.9", "3.10", "pypy3.7", "pypy3.8", "pypy3.9"]
-
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -32,11 +30,53 @@ jobs:
 
     - name: Build_Test
       run: |
-        CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" make
-        CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" make test
+        #CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" make
+        #CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" make test
+        make clean build test
         
-
     - name: Job fail
       continue-on-error: true
       run: |
         CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" gdb -ex "thread apply all bt" -ex "set pagination 0" -batch --args `which python` tests/test.py 
+
+  memory_leak_python2:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        sudo mkdir tmp
+        cd tmp
+        sudo curl -ss -O https://www.python.org/ftp/python/2.7.2/Python-2.7.2.tgz
+        sudo tar xvzf Python-2.7.2.tgz
+        sudo cd Python-2.7.2
+        sudo ./configure --prefix=/tmp/python2 --without-pymalloc --with-pydebug --with-valgrind
+        sudo make OPT=-g -j4
+        sudo make install
+        sudo cd ../../
+
+    - name: Build_Test
+      run: |
+        CMD_PYTHON=/tmp/python2/bin/python make clean build testleak
+
+  memory_leak_python3:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        sudo mkdir tmp
+        cd tmp
+        sudo curl -ss -O https://www.python.org/ftp/python/3.10.6/Python-3.10.6.tgz
+        sudo tar xvzf Python-3.10.6.tgz
+        sudo cd Python-3.10.6
+        sudo ./configure --prefix=/tmp/python3 --without-pymalloc --with-pydebug --with-valgrind
+        sudo make OPT=-g -j4
+        sudo make install
+        sudo cd ../../
+
+    - name: Build_Test
+      run: |
+        CMD_PYTHON=/tmp/python3/bin/python make clean build testleak
+
+

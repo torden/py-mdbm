@@ -99,19 +99,19 @@ class TestMDBMMethods(unittest.TestCase):
         v = convertToByte(str(random.randint(0, 65535)))
         rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
         self.assertTrue(rv, "failred to store, \
-        rv=%d, key=%s, val=%s" % (rv, str(k, 'utf-8'), str(v, 'utf-8')))
+        rv=%d, key=%s, val=%s" % (rv, str(k), str(v)))
 
         k = convertToByte(str(2))
         v = convertToByte(str(random.randint(0, 65535)))
         rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
         self.assertTrue(rv, "failred to store, \
-        rv=%d, key=%s, val=%s" % (rv, str(k, 'utf-8'), str(v, 'utf-8')))
+        rv=%d, key=%s, val=%s" % (rv, str(k), str(v)))
 
         k = convertToByte(str(3))
         v = convertToByte(str(random.randint(0, 65535)))
         rv = self.dbm.store(k, v, mdbm.MDBM_REPLACE)
         self.assertTrue(rv, "failred to store, \
-        rv=%d, key=%s, val=%s" % (rv, str(k, 'utf-8'), str(v, 'utf-8')))
+        rv=%d, key=%s, val=%s" % (rv, str(k), str(v)))
 
     def test_02_byte_store_r_fetch_r(self):
         k = convertToByte("02")

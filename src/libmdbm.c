@@ -962,7 +962,7 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     PY_RELEASE_BUFFER(pval);
 
     if (rv == MDBM_STORE_ENTRY_EXISTS  && flags == (flags | MDBM_INSERT)) { //the key already exists
-        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", &(pkey).buf);
+        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", (const char *)&(pkey).buf);
         return NULL;
     }
 
@@ -1017,7 +1017,7 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     PY_RELEASE_BUFFER(pval);
 
     if (rv == MDBM_STORE_ENTRY_EXISTS  && flags == (flags | MDBM_INSERT)) { //the key already exists
-        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", &(pkey).buf);
+        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", (const char *)&(pkey).buf);
         return NULL;
     }
 

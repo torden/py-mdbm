@@ -2,7 +2,7 @@ MDBM_PATH 			?=/usr/local/mdbm/
 CMD_PYTHON			?=$(shell which python)
 CMD_PIP				?=$(shell which pip)
 CMD_PYTEST			?=$(shell which pytest)
-DATE				:=$(shell date -u '+%Y-%m-%d-%H%M UTC')
+TODAY				:=$(shell date -u '+%Y-%m-%d-%H%M UTC')
 CMD_ECHO			:=$(shell which echo)
 CMD_RM				:=$(shell which rm)
 CMD_LN          	:=$(shell which ln)
@@ -14,6 +14,7 @@ CMD_SED				:=$(shell which sed)
 CMD_VALGRIND		:=$(shell which valgrind)
 CMD_PANDOC			:=$(shell which pandoc)
 
+CFLAGS				?="-Wl,-rpath=/usr/local/mdbm/lib64/"
 PY_VER=$(shell $(CMD_PYTHON) -c "import sys;t='{v[0]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
 
 all: clean build test
@@ -25,14 +26,14 @@ init::
 
 build::
 	@$(CMD_ECHO)  -e "\033[1;40;32mBuild Source.\033[01;m\x1b[0m"
-	@$(CMD_PYTHON) setup.py build_ext
+	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) setup.py build_ext
 	@$(CMD_SUDO) $(CMD_PYTHON) setup.py install
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 dev::
 	@$(CMD_ECHO)  -e "\033[1;40;32mBuild Source.\033[01;m\x1b[0m"
 	@$(CMD_PYTHON) setup.py clean
-	@$(CMD_PYTHON) setup.py build_ext --inplace
+	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) setup.py build_ext --inplace
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 sdist::
@@ -42,15 +43,24 @@ sdist::
 
 test::
 ifeq ($(PY_VER),2)
-	@$(CMD_ECHO)  -e "\033[1;40;32mTesting Memory Leak and Unit-test.\033[01;m\x1b[0m"
-	@$(CMD_VALGRIND)  --leak-check=full --tool=memcheck --dsymutil=yes --track-origins=yes --show-leak-kinds=all --trace-children=yes --suppressions=tests/.valgrind-python.supp $(CMD_PYTHON) -E -tt tests/test.py -v
-#	@$(CMD_PYTHON) -E tests/test.py -v
+	@$(CMD_ECHO)  -e "\033[1;40;32mUnit-Testing.\033[01;m\x1b[0m"
+	@$(CMD_PYTHON) -E tests/test.py -v
 else
 	@$(CMD_ECHO)  -e "\033[1;40;32mUnit-Testing.\033[01;m\x1b[0m"
-#	@$(CMD_VALGRIND) --tool=memcheck --suppressions=tests/.valgrind-python3.supp $(PYTHON) -E test.py -v
 	@$(CMD_PYTHON) -E tests/test.py -v
 endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
+
+testleak::
+	@$(CMD_ECHO)  -e "\033[1;40;32mCheckt the Memory Leak.\033[01;m\x1b[0m"
+ifeq ($(PY_VER),2)
+	@$(CMD_VALGRIND) --tool=memcheck --suppressions=tests/.valgrind-python.supp $(CMD_PYTHON) -E -tt tests/test.py -v
+else
+	@$(CMD_ECHO)  -e "\033[1;40;32mUnit-Testing.\033[01;m\x1b[0m"
+	@$(CMD_VALGRIND) --tool=memcheck --suppressions=tests/.valgrind-python3.supp $(CMD_PYTHON) -E -tt tests/test.py -v
+endif
+	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
+
 
 clean::
 	@$(CMD_ECHO)  -e "\033[1;40;32mRemoving Crumbs.\033[01;m\x1b[0m"
