@@ -69,7 +69,7 @@ jobs:
 
     - name: Build_Test
       run: |
-        CMD_PYTHON=/tmp/python2/bin/python make clean build testleak
+        sudo CMD_PYTHON=/tmp/python2/bin/python make clean build testleak
 
   memory_leak_python3:
     runs-on: ubuntu-18.04
@@ -101,6 +101,6 @@ jobs:
 
     - name: Build_Test
       run: |
-        CMD_PYTHON=/tmp/python3/bin/python make clean build testleak
+        sudo CMD_PYTHON=/tmp/python3/bin/python make clean build testleak
 
 
