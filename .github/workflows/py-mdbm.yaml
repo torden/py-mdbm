@@ -69,6 +69,9 @@ jobs:
 
     - name: Build_Test
       run: |
+        ulimit -c unlimited -S 
+        ulimit -s unlimited
+
         sudo CMD_PYTHON=/tmp/python2/bin/python make clean build testleak
 
   memory_leak_python3:
@@ -101,6 +104,9 @@ jobs:
 
     - name: Build_Test
       run: |
+        ulimit -c unlimited -S 
+        ulimit -s unlimited
+
         sudo CMD_PYTHON=/tmp/python3/bin/python3 make clean build testleak
 
 
