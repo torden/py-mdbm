@@ -37,4 +37,4 @@ jobs:
     - name: Job fail
       continue-on-error: true
       run: |
-        CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" gdb -ex "thread apply all bt" -ex "set pagination 0" -batch --args `which python` tests/test.py 
+        CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" gdb -ex "thread apply all bt" -ex "set pagination 0" -batch --args `which python`  --leak-check=full  tests/test.py 
