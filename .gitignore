@@ -65,3 +65,7 @@ build
 *.pyo
 __pycache__
 .*
+
+# Temp.
+tmp
+build
