@@ -24,7 +24,6 @@ init::
 	@$(CMD_ECHO)  -e "\033[1;40;32mInstall Packages.\033[01;m\x1b[0m"
 ifeq ($(shell expr $(PY_VER) \<= 306), 1)
 	@$(CMD_PIP) install --upgrade pip
-	@$(CMD_PIP) install --upgrade -r for-benchmark-py2X_37under6_or_higher-requirements.txt
 else
 	@$(CMD_PIP) install --upgrade pip
 	@$(CMD_PIP) install --upgrade build
