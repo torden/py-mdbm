@@ -74,37 +74,37 @@ jobs:
 
         sudo CMD_PYTHON=/tmp/python2/bin/python make init build testleak
 
-#  memory_leak_python3:
-#    runs-on: ubuntu-18.04
-#    steps:
-#    - uses: actions/checkout@v3
-#    - name: Install dependencies
-#      run: |
-#        sudo apt update -qq -y
-#        DEBIAN_FRONTEND=noninteractive sudo apt-get install -y --no-install-recommends tzdata
-#        sudo apt install -qq -y openssl libcppunit-dev libreadline7 libreadline-dev valgrind libmodule-install-perl gdb php-dev git
-#        curl -ss -L -O https://github.com/torden/go-mdbm/raw/master/pkg/ubuntu/mdbm-4.13.0-Bionic_Beaver.deb
-#        sudo dpkg -i mdbm-4.13.0-Bionic_Beaver.deb
-#        sudo dd of=/etc/ld.so.conf <<EOF
-#        include /etc/ld.so.conf.d/*.conf
-#        /usr/local/mdbm/lib64
-#        /usr/lib/php
-#        EOF
-#        sudo ldconfig -v
-#
-#        mkdir tmp
-#        cd tmp
-#        curl -ss -O https://www.python.org/ftp/python/3.9.13/Python-3.9.13.tgz
-#        tar xvzf Python-3.9.13.tgz
-#        cd Python-3.9.13
-#        ./configure --prefix=/tmp/python3 --without-pymalloc --with-pydebug --with-valgrind
-#        make OPT=-g -j4
-#        sudo make install
-#        cd ../../
-#
-#    - name: Build_Test
-#      run: |
-#        ulimit -c unlimited -S 
-#        ulimit -s unlimited
-#
-#        sudo CMD_PYTHON=/tmp/python3/bin/python3 make clean build testleak
+  memory_leak_python3:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        sudo apt update -qq -y
+        DEBIAN_FRONTEND=noninteractive sudo apt-get install -y --no-install-recommends tzdata
+        sudo apt install -qq -y openssl libcppunit-dev libreadline7 libreadline-dev valgrind libmodule-install-perl gdb php-dev git
+        curl -ss -L -O https://github.com/torden/go-mdbm/raw/master/pkg/ubuntu/mdbm-4.13.0-Bionic_Beaver.deb
+        sudo dpkg -i mdbm-4.13.0-Bionic_Beaver.deb
+        sudo dd of=/etc/ld.so.conf <<EOF
+        include /etc/ld.so.conf.d/*.conf
+        /usr/local/mdbm/lib64
+        /usr/lib/php
+        EOF
+        sudo ldconfig -v
+
+        mkdir tmp
+        cd tmp
+        curl -ss -O https://www.python.org/ftp/python/3.9.13/Python-3.9.13.tgz
+        tar xvzf Python-3.9.13.tgz
+        cd Python-3.9.13
+        ./configure --prefix=/tmp/python3 --without-pymalloc --with-pydebug --with-valgrind
+        make OPT=-g -j4
+        sudo make install
+        cd ../../
+
+    - name: Build_Test
+      run: |
+        ulimit -c unlimited -S 
+        ulimit -s unlimited
+
+        sudo CMD_PYTHON=/tmp/python3/bin/python3 make clean build testleak
