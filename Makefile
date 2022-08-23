@@ -37,6 +37,7 @@ ifeq ($(PY_VER),2)
 	@$(CMD_SUDO) $(CMD_PYTHON) setup.py2 install
 else
 	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) -m build
+	@$(CMD_PYTHON) -m pip install dist/py-mdbm-0.1.1.tar.gz
 endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
@@ -46,6 +47,7 @@ ifeq ($(PY_VER),2)
 	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) setup.py2 build_ext --inplace
 else
 	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) -m build
+	@$(CMD_PYTHON) -m pip install dist/py-mdbm-0.1.1.tar.gz
 endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
