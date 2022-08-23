@@ -15,15 +15,16 @@ CMD_VALGRIND		:=$(shell which valgrind)
 CMD_PANDOC			:=$(shell which pandoc)
 
 CFLAGS				?="-Wl,-rpath=/usr/local/mdbm/lib64/"
-PY_VER=$(shell $(CMD_PYTHON) -c "import sys;t='{v[0]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
+PY_MAJOR_VER		=$(shell $(CMD_PYTHON) -c "import sys;t='{v[0]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
+PY_VER				=$(shell $(CMD_PYTHON) -c "import sys;sys.stdout.write('%d%02d' % (sys.version_info[0],sys.version_info[1]))")
 
 all: clean build test
 
 init::
 	@$(CMD_ECHO)  -e "\033[1;40;32mInstall Packages.\033[01;m\x1b[0m"
-ifeq ($(PY_VER),2)
+ifeq ($(shell expr $(PY_VER) \<= 306), 1)
 	@$(CMD_PIP) install --upgrade pip
-	@$(CMD_PIP) install --upgrade -r for-benchmark-py26_or_higher-requirements.txt
+	@$(CMD_PIP) install --upgrade -r for-benchmark-py2X_37under6_or_higher-requirements.txt
 else
 	@$(CMD_PIP) install --upgrade pip
 	@$(CMD_PIP) install --upgrade build
@@ -32,9 +33,9 @@ endif
 
 build::
 	@$(CMD_ECHO)  -e "\033[1;40;32mBuild Source.\033[01;m\x1b[0m"
-ifeq ($(PY_VER),2)
-	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) setup.py2 build_ext
-	@$(CMD_SUDO) $(CMD_PYTHON) setup.py2 install
+ifeq ($(shell expr $(PY_VER) \<= 306), 1)
+	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) setup.py2X_37under build_ext
+	@$(CMD_SUDO) $(CMD_PYTHON) setup.py2X_37under install
 else
 	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) -m build
 	@$(CMD_PYTHON) -m pip install dist/py-mdbm-0.1.1.tar.gz
@@ -43,8 +44,8 @@ endif
 
 dev::
 	@$(CMD_ECHO)  -e "\033[1;40;32mBuild Source.\033[01;m\x1b[0m"
-ifeq ($(PY_VER),2)
-	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) setup.py2 build_ext --inplace
+ifeq ($(shell expr $(PY_VER) \<= 306), 1)
+	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) setup.py2X_37under build_ext --inplace
 else
 	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) -m build
 	@$(CMD_PYTHON) -m pip install dist/py-mdbm-0.1.1.tar.gz
@@ -53,15 +54,15 @@ endif
 
 sdist::
 	@$(CMD_ECHO)  -e "\033[1;40;32mDist install to pypi.\033[01;m\x1b[0m"
-ifeq ($(PY_VER),2)
-	@$(CMD_PYTHON) setup.py2 sdist upload -r pypi
+ifeq ($(shell expr $(PY_VER) \<= 306), 1)
+	@$(CMD_PYTHON) setup.py2X_37under sdist upload -r pypi
 else
 	@$(CMD_PYTHON) -m twine upload --repository pypi dist/* --verbose
 endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 test::
-ifeq ($(PY_VER),2)
+ifeq ($(shell expr $(PY_VER) \<= 306), 1)
 	@$(CMD_ECHO)  -e "\033[1;40;32mUnit-Testing.\033[01;m\x1b[0m"
 	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) -E tests/test.py -v
 else
@@ -72,7 +73,7 @@ endif
 
 testleak::
 	@$(CMD_ECHO)  -e "\033[1;40;32mCheckt the Memory Leak.\033[01;m\x1b[0m"
-ifeq ($(PY_VER),2)
+ifeq ($(shell expr $(PY_VER) \<= 306), 1)
 	@CFLAGS=$(CFLAGS) $(CMD_VALGRIND) --tool=memcheck --suppressions=tests/.valgrind-python.supp $(CMD_PYTHON) -E -tt tests/test.py -v
 else
 	@$(CMD_ECHO)  -e "\033[1;40;32mUnit-Testing.\033[01;m\x1b[0m"
@@ -83,8 +84,8 @@ endif
 
 clean::
 	@$(CMD_ECHO)  -e "\033[1;40;32mRemoving Crumbs.\033[01;m\x1b[0m"
-ifeq ($(PY_VER),2)
-	@$(CMD_PYTHON) setup.py2 clean
+ifeq ($(shell expr $(PY_VER) \<= 306), 1)
+	@$(CMD_PYTHON) setup.py2X_37under clean
 else
 	@$(CMD_RM) -rf dist
 endif
