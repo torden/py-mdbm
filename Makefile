@@ -22,11 +22,11 @@ all: clean build test
 init::
 	@$(CMD_ECHO)  -e "\033[1;40;32mInstall Packages.\033[01;m\x1b[0m"
 ifeq ($(PY_VER),2)
-	@$(CMD_PYTHON) -m pip install --upgrade pip
-	@$(CMD_PYTHON) -m pip install --upgrade -r for-benchmark-py26_or_higher-requirements.txt
+	@$(CMD_PIP) install --upgrade pip
+	@$(CMD_PIP) install --upgrade -r for-benchmark-py26_or_higher-requirements.txt
 else
-	@$(CMD_PYTHON) -m pip install --upgrade pip
-	@$(CMD_PYTHON) -m pip install --upgrade build
+	@$(CMD_PIP) install --upgrade pip
+	@$(CMD_PIP) install --upgrade build
 endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
@@ -61,20 +61,20 @@ endif
 test::
 ifeq ($(PY_VER),2)
 	@$(CMD_ECHO)  -e "\033[1;40;32mUnit-Testing.\033[01;m\x1b[0m"
-	@$(CMD_PYTHON) -E tests/test.py -v
+	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) -E tests/test.py -v
 else
 	@$(CMD_ECHO)  -e "\033[1;40;32mUnit-Testing.\033[01;m\x1b[0m"
-	@$(CMD_PYTHON) -E tests/test.py -v
+	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) -E tests/test.py -v
 endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 testleak::
 	@$(CMD_ECHO)  -e "\033[1;40;32mCheckt the Memory Leak.\033[01;m\x1b[0m"
 ifeq ($(PY_VER),2)
-	@$(CMD_VALGRIND) --tool=memcheck --suppressions=tests/.valgrind-python.supp $(CMD_PYTHON) -E -tt tests/test.py -v
+	@CFLAGS=$(CFLAGS) $(CMD_VALGRIND) --tool=memcheck --suppressions=tests/.valgrind-python.supp $(CMD_PYTHON) -E -tt tests/test.py -v
 else
 	@$(CMD_ECHO)  -e "\033[1;40;32mUnit-Testing.\033[01;m\x1b[0m"
-	@$(CMD_VALGRIND) --tool=memcheck --suppressions=tests/.valgrind-python3.supp $(CMD_PYTHON) -E -tt tests/test.py -v
+	@CFLAGS=$(CFLAGS) $(CMD_VALGRIND) --tool=memcheck --suppressions=tests/.valgrind-python3.supp $(CMD_PYTHON) -E -tt tests/test.py -v
 endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
