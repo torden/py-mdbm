@@ -21,8 +21,12 @@ all: clean build test
 
 init::
 	@$(CMD_ECHO)  -e "\033[1;40;32mInstall Packages.\033[01;m\x1b[0m"
+ifeq ($(PY_VER),2)
 	@$(CMD_PYTHON) -m pip install --upgrade pip
 	@$(CMD_PYTHON) -m pip install --upgrade -r for-benchmark-py26_or_higher-requirements.txt
+else
+	@$(CMD_PYTHON) -m pip install --upgrade build
+endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 build::

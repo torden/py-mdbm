@@ -32,7 +32,7 @@ jobs:
       run: |
         #CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" make
         #CFLAGS="-Wl,-rpath=/usr/local/mdbm/lib64/" make test
-        make clean build test
+        make clean init build test
         
     - name: Job fail
       continue-on-error: true
@@ -72,7 +72,7 @@ jobs:
         ulimit -c unlimited -S 
         ulimit -s unlimited
 
-        sudo CMD_PYTHON=/tmp/python2/bin/python make clean build testleak
+        sudo CMD_PYTHON=/tmp/python2/bin/python make clean init build testleak
 
 #  memory_leak_python3:
 #    runs-on: ubuntu-18.04
