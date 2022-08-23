@@ -108,6 +108,16 @@ static int org_stderr;
     #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 #endif
 
+#if PY_MAJOR_VERSION >= 3
+	#define PARAM_S "y*"
+#else
+	#define PARAM_S "s*"
+#endif
+#define PARAM_V(n) &(n)
+
+#define PY_DEFINE_BUFFER(n) Py_buffer n; (n).buf = 0; (n).len = 0; (n).obj = 0
+#define PY_RELEASE_BUFFER(n) if (n.obj) {PyBuffer_Release(&n);}
+
 
 #endif // __PYMDBM_HINC__
 
@@ -922,8 +932,9 @@ PyObject *pymdbm_get_cachemode_name(register MDBMObj *unused, PyObject *args) {
 
 PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-    char *pkey = NULL;
-    char *pval = NULL;
+    PY_DEFINE_BUFFER(pkey);
+	PY_DEFINE_BUFFER(pval);
+
     int flags = MDBM_INSERT;
 
     int rv = -1;
@@ -931,24 +942,27 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     datum val = {0x00,};
 
     static char *pkwlist[] = {"key", "val", "flags", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "ss|i", pkwlist, &pkey, &pval, &flags);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s*s*|i", (char**)pkwlist, &(pkey), &(pval), &flags);
     if (!rv) {
         PyErr_SetString(MDBMError, "Error - There was a missing parameter: key and value");
         return NULL;
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
-    val.dptr = pval;
-    val.dsize = (int)strlen(pval);
+    key.dptr = (char *) (pkey).buf;
+    key.dsize = (size_t)(pkey).len;
+    val.dptr = (char *) (pval).buf;
+    val.dsize = (size_t)(pval).len;
 
     CAPTURE_START();
     rv = mdbm_store(pmdbm_link->pmdbm, key, val, (int)flags);
     CAPTURE_END();
 
+    PY_RELEASE_BUFFER(pkey);
+    PY_RELEASE_BUFFER(pval);
+
     if (rv == MDBM_STORE_ENTRY_EXISTS  && flags == (flags | MDBM_INSERT)) { //the key already exists
-        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", pkey);
+        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", (const char *)&(pkey).buf);
         return NULL;
     }
 
@@ -962,8 +976,9 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
 
 PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-    char *pkey = NULL;
-    char *pval = NULL;
+    PY_DEFINE_BUFFER(pkey);
+	PY_DEFINE_BUFFER(pval);
+
     int flags = MDBM_INSERT;
     PyObject *previter = NULL;
     PyObject *pretdic = NULL;
@@ -976,7 +991,7 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     datum val = {0x00,};
 
     static char *pkwlist[] = {"key", "val", "flags", "iter", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "ss|iO", pkwlist, &pkey, &pval, &flags, &previter);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s*s*|iO", pkwlist, &(pkey), &(pval), &flags, &previter);
     if (!rv) {
         PyErr_SetString(MDBMError, "Error - There was a missing parameter: key and value");
         return NULL;
@@ -989,17 +1004,20 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
-    val.dptr = pval;
-    val.dsize = (int)strlen(pval);
+    key.dptr = (char *) (pkey).buf;
+    key.dsize = (size_t)(pkey).len;
+    val.dptr = (char *) (pval).buf;
+    val.dsize = (size_t)(pval).len;
 
     CAPTURE_START();
     rv = mdbm_store_r(pmdbm_link->pmdbm, &key, &val, (int)flags, parg_iter);
     CAPTURE_END();
 
+    PY_RELEASE_BUFFER(pkey);
+    PY_RELEASE_BUFFER(pval);
+
     if (rv == MDBM_STORE_ENTRY_EXISTS  && flags == (flags | MDBM_INSERT)) { //the key already exists
-        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", pkey);
+        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", (const char *)&(pkey).buf);
         return NULL;
     }
 
@@ -1020,26 +1038,27 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
 
 PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
 
-    char *pkey = NULL;
+    PY_DEFINE_BUFFER(pkey);
 
     int rv = -1;
     datum key = {0x00,};
     datum val = {0x00,};
 
-    rv = PyArg_ParseTuple(args, "s", &pkey);
+    rv = PyArg_ParseTuple(args, "s*", &(pkey));
     if (!rv) {
         PyErr_SetString(MDBMError, "Error - There was a missing parameter: string(key)");
         return NULL;
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
+    key.dptr = (char *) (pkey).buf;
+    key.dsize = (size_t)(pkey).len;
 
     CAPTURE_START();
     val = mdbm_fetch(pmdbm_link->pmdbm, key);
     CAPTURE_END();
 
+    PY_RELEASE_BUFFER(pkey);
     if (val.dptr == NULL) {
         _RETURN_FALSE();
     }
@@ -1050,7 +1069,7 @@ PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
 
 PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-    char *pkey = NULL;
+    PY_DEFINE_BUFFER(pkey);
 
     int rv = -1;
     datum key = {0x00,};
@@ -1063,9 +1082,9 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     PyObject *pretdic = NULL;
 
     static char *pkwlist[] = {"key", "iter", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|O", pkwlist, &pkey, &previter);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s*|O", pkwlist, &(pkey), &previter);
     if (!rv) {
-        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) or byte(key)");
         return NULL;
     }
 
@@ -1076,12 +1095,14 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
+    key.dptr = (char *)(pkey).buf;
+    key.dsize = (size_t)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_fetch_r(pmdbm_link->pmdbm, &key, &val, parg_iter);
     CAPTURE_END();
+
+    PY_RELEASE_BUFFER(pkey);
 
     if (rv == -1) {
         _RETURN_FALSE();
@@ -1110,7 +1131,7 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
 
 PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-    char *pkey = NULL;
+    PY_DEFINE_BUFFER(pkey);
 
     int rv = -1;
     datum key = {0x00,};
@@ -1122,9 +1143,9 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
     PyObject *pretdic = NULL;
 
     static char *pkwlist[] = {"key", "iter", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|O", pkwlist, &pkey, &previter);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s*|O", pkwlist, &(pkey), &previter);
     if (!rv) {
-        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) and dict(iter{m_pageno,mnext})");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) or byte(key) and dict(iter{m_pageno,mnext})");
         return NULL;
     }
 
@@ -1135,13 +1156,14 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
+    key.dptr = (char *)(pkey).buf;
+    key.dsize = (size_t)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_fetch_dup_r(pmdbm_link->pmdbm, &key, &val, parg_iter);
     CAPTURE_END();
 
+    PY_RELEASE_BUFFER(pkey);
     if (rv == -1) {
         _RETURN_FALSE();
     }
@@ -1169,7 +1191,7 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
 
 PyObject *pymdbm_fetch_info(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-    char *pkey = NULL;
+    PY_DEFINE_BUFFER(pkey);
 
     int rv = -1;
     char locbuf[8192] = {0x00,};
@@ -1188,9 +1210,9 @@ PyObject *pymdbm_fetch_info(register MDBMObj *pmdbm_link, PyObject *args, PyObje
     PyObject *x_flags, *x_cna, *x_cat;
 
     static char *pkwlist[] = {"key", "iter", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|O", pkwlist, &pkey, &previter);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s*|O", pkwlist, &(pkey), &previter);
     if (!rv) {
-        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) and dict(iter{m_pageno,mnext})");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) or byte(key) and dict(iter{m_pageno,mnext})");
         return NULL;
     }
 
@@ -1201,8 +1223,8 @@ PyObject *pymdbm_fetch_info(register MDBMObj *pmdbm_link, PyObject *args, PyObje
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
+    key.dptr = (char *)(pkey).buf;
+    key.dsize = (size_t)(pkey).len;
 
     //init.
     val.dptr = 0;
@@ -1217,6 +1239,7 @@ PyObject *pymdbm_fetch_info(register MDBMObj *pmdbm_link, PyObject *args, PyObje
     rv = mdbm_fetch_info(pmdbm_link->pmdbm, &key, &val, &buf, &info, parg_iter);
     CAPTURE_END();
 
+    PY_RELEASE_BUFFER(pkey);
     if (rv == -1) {
         _RETURN_FALSE();
     }
@@ -1337,24 +1360,25 @@ PyObject *pymdbm_get_magic_number(register MDBMObj *pmdbm_link, PyObject *unused
 
 PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
 
-    char *pkey = NULL;
+    PY_DEFINE_BUFFER(pkey);
     mdbm_ubig_t rv = -1;
     datum key = {0x00,};
 
-    rv = PyArg_ParseTuple(args, "s", &pkey);
+    rv = PyArg_ParseTuple(args, "s*", &(pkey));
     if (!rv) {
         PyErr_SetString(MDBMError, "Error - There was a missing parameter: string(key)");
         return NULL;
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
+    key.dptr = (char*)(pkey).buf;
+    key.dsize = (size_t)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_get_page(pmdbm_link->pmdbm, &key);
     CAPTURE_END();
 
+    PY_RELEASE_BUFFER(pkey);
     if (rv == (mdbm_ubig_t)-1) {
         _RETURN_FALSE();
     }
@@ -1364,24 +1388,25 @@ PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
 
 PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args) {
 
-    char *pkey = NULL;
+    PY_DEFINE_BUFFER(pkey);
 
     int rv = -1;
     datum key = {0x00,};
 
-    rv = PyArg_ParseTuple(args, "s", &pkey);
+    rv = PyArg_ParseTuple(args, "s*", &(pkey));
     if (!rv) {
         PyErr_SetString(MDBMError, "Error - There was a missing parameter: string(key)");
         return NULL;
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
+    key.dptr = (char*)(pkey).buf;
+    key.dsize = (size_t)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_delete(pmdbm_link->pmdbm, key);
     CAPTURE_END();
+    PY_RELEASE_BUFFER(pkey);
 
     _RETURN_RV_BOOLEN(rv);
 }
@@ -2278,16 +2303,16 @@ PyObject *pymdbm_get_errno(register MDBMObj *pmdbm_link, PyObject *unused) {
 
 PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-    char *pkey = NULL;
+    PY_DEFINE_BUFFER(pkey);
     int flags = 0;
 
     datum key = {0x00,};
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s*|i", pkwlist, &(pkey), &flags);
     if (!rv) {
-        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) or byte(key)");
         return NULL;
     }
 
@@ -2297,28 +2322,29 @@ PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
+    key.dptr = (char*)(pkey).buf;
+    key.dsize = (size_t)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_plock(pmdbm_link->pmdbm, &key, flags);
     CAPTURE_END();
+    PY_RELEASE_BUFFER(pkey);
 
     _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-    char *pkey = NULL;
+    PY_DEFINE_BUFFER(pkey);
     int flags = 0;
 
     datum key = {0x00,};
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags); 
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s*|i", pkwlist, &(pkey), &flags); 
     if (!rv) {
-        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) or byte(key)");
         return NULL;
     }
 
@@ -2328,8 +2354,8 @@ PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
+    key.dptr = (char*)(pkey).buf;
+    key.dsize = (size_t)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_punlock(pmdbm_link->pmdbm, &key, flags);
@@ -2340,16 +2366,16 @@ PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
 
 PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-    char *pkey = NULL;
+    PY_DEFINE_BUFFER(pkey);
     int flags = 0;
 
     datum key ={0x00,};
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s*|i", pkwlist, &pkey, &flags);
     if (!rv) {
-        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) or byte(key)");
         return NULL;
     }
 
@@ -2359,28 +2385,29 @@ PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args, PyObject
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
+    key.dptr = (char*)(pkey).buf;
+    key.dsize = (size_t)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_tryplock(pmdbm_link->pmdbm, &key, flags);
     CAPTURE_END();
+    PY_RELEASE_BUFFER(pkey);
 
     _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-    char *pkey = NULL;
+    PY_DEFINE_BUFFER(pkey);
     int flags = 0;
 
     datum key = {0x00,};
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s*|i", pkwlist, &(pkey), &flags);
     if (!rv) {
-        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) or byte(key)");
         return NULL;
     }
 
@@ -2390,28 +2417,29 @@ PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObje
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
+    key.dptr = (char*)(pkey).buf;
+    key.dsize = (size_t)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_lock_smart(pmdbm_link->pmdbm, &key, flags);
     CAPTURE_END();
+    PY_RELEASE_BUFFER(pkey);
 
     _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-    char *pkey = NULL;
+    PY_DEFINE_BUFFER(pkey);
     int flags = 0;
 
     datum key = {0x00,};
     int rv = -1;
 
     static char *pkwlist[] = {"key", "flags", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags); 
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s*|i", pkwlist, &(pkey), &flags); 
     if (!rv) {
-        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) or byte(key)");
         return NULL;
     }
 
@@ -2421,29 +2449,29 @@ PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyO
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
+    key.dptr = (char*)(pkey).buf;
+    key.dsize = (size_t)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_trylock_smart(pmdbm_link->pmdbm, &key, flags);
     CAPTURE_END();
+    PY_RELEASE_BUFFER(pkey);
 
     _RETURN_RV_BOOLEN(rv);
 }
 
 PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObject *kwds) {
 
-    char *pkey = NULL;
+    PY_DEFINE_BUFFER(pkey);
     int flags = 0;
 
     datum key = {0x00,};
     int rv = -1;
 
-    
     static char *pkwlist[] = {"key", "flags", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s|i", pkwlist, &pkey, &flags);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s*|i", pkwlist, &(pkey), &flags);
     if (!rv) {
-        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) or byte(key)");
         return NULL;
     }
 
@@ -2453,12 +2481,13 @@ PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyOb
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
+    key.dptr = (char*)(pkey).buf;
+    key.dsize = (size_t)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_unlock_smart(pmdbm_link->pmdbm, &key, flags);
     CAPTURE_END();
+    PY_RELEASE_BUFFER(pkey);
 
     _RETURN_RV_BOOLEN(rv);
 }
@@ -2471,7 +2500,7 @@ PyObject *pymdbm_protect(register MDBMObj *pmdbm_link, PyObject *args) {
 
     rv = PyArg_ParseTuple(args, "i", &protect);
     if (!rv) {
-        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key)");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) or byte(key)");
         return NULL;
     }
 
@@ -2549,16 +2578,16 @@ PyObject *pymdbm_fcopy(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
 
 PyObject *pymdbm_get_hash_value(register MDBMObj *unused, PyObject *args, PyObject *kwds) {
 
+    PY_DEFINE_BUFFER(pkey);
     int rv = -1;
-    char *pkey = NULL;
     int hashfunc = -1;
     datum key = {0x00,};
     uint32_t hashval = -1;
 
     static char *pkwlist[] = {"key", "hashfunc", NULL};
-    rv = PyArg_ParseTupleAndKeywords(args, kwds, "si", pkwlist, &pkey, &hashfunc);
+    rv = PyArg_ParseTupleAndKeywords(args, kwds, "s*i", pkwlist, &pkey, &hashfunc);
     if (!rv) {
-        PyErr_SetString(MDBMError, "Error - There was a missing parameter: str(key) and mdbm.MDBM_HASH_XXX");
+        PyErr_SetString(MDBMError, "Error - There was a missing parameter: (str(key) or byte(key)) with mdbm.MDBM_HASH_XXX");
         return NULL;
     }
 
@@ -2568,13 +2597,14 @@ PyObject *pymdbm_get_hash_value(register MDBMObj *unused, PyObject *args, PyObje
     }
 
     //make a datum
-    key.dptr = pkey;
-    key.dsize = (int)strlen(pkey);
+    key.dptr = (char*)(pkey).buf;
+    key.dsize = (size_t)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_get_hash_value(key, hashfunc, &hashval);
     CAPTURE_END();
 
+    PY_RELEASE_BUFFER(pkey);
     if (rv == -1) {
         _RETURN_FALSE();
     }
