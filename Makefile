@@ -5,10 +5,10 @@ CMD_PYTEST			?=$(shell which pytest)
 TODAY				:=$(shell date -u '+%Y-%m-%d-%H%M UTC')
 CMD_ECHO			:=$(shell which echo)
 CMD_RM				:=$(shell which rm)
-CMD_LN          	:=$(shell which ln)
-CMD_AR          	:=$(shell which ar)
-CMD_RANLIB      	:=$(shell which ranlib)
-CMD_MV          	:=$(shell which mv)
+CMD_LN				:=$(shell which ln)
+CMD_AR				:=$(shell which ar)
+CMD_RANLIB			:=$(shell which ranlib)
+CMD_MV				:=$(shell which mv)
 CMD_AWK				:=$(shell which awk)
 CMD_SED				:=$(shell which sed)
 CMD_VALGRIND		:=$(shell which valgrind)
@@ -21,24 +21,36 @@ all: clean build test
 
 init::
 	@$(CMD_ECHO)  -e "\033[1;40;32mInstall Packages.\033[01;m\x1b[0m"
-	@$(CMD_PIP) install --upgrade -r requirements.txt
+	@$(CMD_PYTHON) -m pip install --upgrade pip
+	@$(CMD_PYTHON) -m pip install --upgrade -r for-benchmark-py26_or_higher-requirements.txt
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 build::
 	@$(CMD_ECHO)  -e "\033[1;40;32mBuild Source.\033[01;m\x1b[0m"
-	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) setup.py build_ext
-	@$(CMD_SUDO) $(CMD_PYTHON) setup.py install
+ifeq ($(PY_VER),2)
+	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) setup.py2 build_ext
+	@$(CMD_SUDO) $(CMD_PYTHON) setup.py2 install
+else
+	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) -m build
+endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 dev::
 	@$(CMD_ECHO)  -e "\033[1;40;32mBuild Source.\033[01;m\x1b[0m"
-	@$(CMD_PYTHON) setup.py clean
-	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) setup.py build_ext --inplace
+ifeq ($(PY_VER),2)
+	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) setup.py2 build_ext --inplace
+else
+	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) -m build
+endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 sdist::
 	@$(CMD_ECHO)  -e "\033[1;40;32mDist install to pypi.\033[01;m\x1b[0m"
-	@$(CMD_PYTHON) setup.py sdist upload -r pypi
+ifeq ($(PY_VER),2)
+	@$(CMD_PYTHON) setup.py2 sdist upload -r pypi
+else
+	@$(CMD_PYTHON) -m twine upload --repository pypi dist/* --verbose
+endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 test::
@@ -64,7 +76,11 @@ endif
 
 clean::
 	@$(CMD_ECHO)  -e "\033[1;40;32mRemoving Crumbs.\033[01;m\x1b[0m"
-	@$(CMD_PYTHON) setup.py clean
+ifeq ($(PY_VER),2)
+	@$(CMD_PYTHON) setup.py2 clean
+else
+	@$(CMD_RM) -rf dist
+endif
 	@rm -rf *.out *.bin *.exe *.o *.a *.so test build dist *core* *.swp *.bak .benchmarks .cache __py*__
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 

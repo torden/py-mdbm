@@ -1,8 +1,8 @@
 LICENSE
 MANIFEST.in
 README.rst
+pyproject.toml
 setup.py
-example/.byte_store_fetch.py3.swp
 example/byte_store_fetch.py3
 example/delete.py
 example/delete_r.py
@@ -15,13 +15,13 @@ example/iterall_r.py
 example/iterkey.py
 example/store.py
 example/store_dup_fetch_all_value.py3
-py_mdbm.egg-info/PKG-INFO
-py_mdbm.egg-info/SOURCES.txt
-py_mdbm.egg-info/dependency_links.txt
-py_mdbm.egg-info/top_level.txt
 src/.libmdbm.c.swp
 src/libmdbm.c
 src/libmdbm.h
+src/py_mdbm.egg-info/PKG-INFO
+src/py_mdbm.egg-info/SOURCES.txt
+src/py_mdbm.egg-info/dependency_links.txt
+src/py_mdbm.egg-info/top_level.txt
 tests/.valgrind-python.supp
 tests/.valgrind-python3.supp
 tests/test.py
