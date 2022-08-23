@@ -1,0 +1,49 @@
+Metadata-Version: 2.1
+Name: py-mdbm
+Version: 0.1.0a0
+Summary: The Python interface to the MDBM key-value store.
+Home-page: https://github.com/torden/py-mdbm
+Author: Torden
+Author-email: torden@myself.com
+Maintainer: Torden
+Maintainer-email: torden@myself.com
+License: MIT
+Keywords: mdbm,key-value store,pymdbm,py-mdbm,database,nosql,key-value
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Topic :: Database
+Classifier: Topic :: Database :: Database Engines/Servers
+Classifier: Topic :: Utilities
+Classifier: Programming Language :: C
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Operating System :: POSIX :: Linux
+License-File: LICENSE
+
+Py-mdbm
+========
+
+-  Py-mdbm is a Python binds to Yahoo! MDBM C API
+-  MDBM is a super-fast memory-mapped key/value store.
+-  MDBM is an ndbm work-alike hashed database library based on sdbm
+   which is based on Per-Aake Larson’s Dynamic Hashing algorithms.
+-  MDBM is a high-performance, memory-mapped hash database similar to
+   the homegrown libhash.
+-  The records stored in a mdbm database may have keys and values of
+   arbitrary and variable lengths.
+
+.. image:: https://api.travis-ci.org/torden/py-mdbm.png?branch=master
+        :target: http://travis-ci.org/torden/py-mdbm
+
+Installation
+------------
+
+See the Py-mdbm's `Documents
+<http://github.com/torden/py-mdbm>`_ for installation instructions.

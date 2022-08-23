@@ -167,12 +167,13 @@ print("done")
 #### Python 3 or higher
 
 ```python
+# encoding: utf-8
 import mdbm
 import random
 
 print("[*] Creating and populating a database")
 
-path = "/tmp/test1.mdbm"
+path = "/tmp/test1-byte.mdbm"
 flags = mdbm.MDBM_O_RDWR
 flags = flags | mdbm.MDBM_O_CREAT
 flags = flags | mdbm.MDBM_LARGE_OBJECTS
@@ -180,21 +181,44 @@ flags = flags | mdbm.MDBM_ANY_LOCKS
 flags = flags | mdbm.MDBM_O_TRUNC
 mode = 0o644  # means 0644
 
-with mdbm.open(path, flags, mode) as dbm:
-    for i in range(0, 65535):
-        k = str(i)
-        v = str(random.randrange(0, 65535))
+dbm = mdbm.open(path, flags, mode)
 
-        rv = dbm.store(k, v, mdbm.MDBM_INSERT)
-        if not rv:
-            print("[-] failed to data store to ", path)
-            break
+print("|--------|-------|")
+print("|  key   |  val  |")
+print("|--------|-------|")
 
-    print("[*] count of records : %d" % dbm.count_records())
+# byte
+for i in range(0, 10):
+    k = bytes(str(i), 'utf-8')
+    v = bytes(str(random.randrange(0, 65535)), 'utf-8')
 
-print("done")
+    print("|%08s|%08s|" % (k, v))
+    rv = dbm.store(k, v, mdbm.MDBM_INSERT|mdbm.MDBM_CACHE_MODIFY)
+    if not rv:
+        print("[-] failed to data store to ", path)
+        break
+
+# string
+for i in range(10, 20):
+    k = str(i)
+    v = str(random.randrange(0, 65535))
+
+    print("|%08s|%08s|" % (k, v))
+
+
+    rv = dbm.store(k, v, mdbm.MDBM_INSERT|mdbm.MDBM_CACHE_MODIFY)
+    if not rv:
+        print("[-] failed to data store to ", path)
+        break
+
+
+print("|--------|--------|")
+print("[*] count of records : %d" % dbm.count_records())
+print("\n")
+
+dbm.close()
+
 ```
-
 
 ### Fetching records in-place
 

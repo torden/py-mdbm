@@ -79,7 +79,7 @@ static int org_stderr;
 #if PY_MAJOR_VERSION >= 3
     #define _PYUNICODE PyUnicode_FromFormat
     #define _PYUNICODEV PyUnicode_FromFormt
-    #define _PYUNICODE_ANDSIZE PyUnicode_FromStringAndSize
+    #define _PYUNICODE_ANDSIZE PyByteArray_FromStringAndSize
 #else
     #define _PYUNICODE  PyString_FromString
     #define _PYUNICODEV  PyString_FromFormatV
@@ -962,7 +962,7 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
     PY_RELEASE_BUFFER(pval);
 
     if (rv == MDBM_STORE_ENTRY_EXISTS  && flags == (flags | MDBM_INSERT)) { //the key already exists
-        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", (const char *)&(pkey).buf);
+        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", (char *)pkey.buf);
         return NULL;
     }
 
@@ -1017,7 +1017,7 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
     PY_RELEASE_BUFFER(pval);
 
     if (rv == MDBM_STORE_ENTRY_EXISTS  && flags == (flags | MDBM_INSERT)) { //the key already exists
-        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", (const char *)&(pkey).buf);
+        PyErr_Format(MDBMError, "Error - the key(=%s) already exists", (char *)pkey.buf);
         return NULL;
     }
 
