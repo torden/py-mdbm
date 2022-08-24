@@ -97,6 +97,8 @@ jobs:
         ./configure --prefix=/tmp/python3 --without-pymalloc --with-pydebug --with-valgrind
         make OPT=-g -j4
         sudo make install
+        curl -ss -O https://bootstrap.pypa.io/pip/2.7/get-pip.py
+        /tmp/python3/bin/python get-pip.py
         /tmp/python3/bin/pip3 install --upgrade pip
         cd ../../
 
