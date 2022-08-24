@@ -11,12 +11,13 @@ CMD_RANLIB			:=$(shell which ranlib)
 CMD_MV				:=$(shell which mv)
 CMD_AWK				:=$(shell which awk)
 CMD_SED				:=$(shell which sed)
-CMD_VALGRIND		:=$(shell which valgrind)
+CMD_VALGRIND			:=$(shell which valgrind)
 CMD_PANDOC			:=$(shell which pandoc)
 
 CFLAGS				?="-Wl,-rpath=/usr/local/mdbm/lib64/"
-PY_MAJOR_VER		=$(shell $(CMD_PYTHON) -c "import sys;t='{v[0]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
-PY_VER				=$(shell $(CMD_PYTHON) -c "import sys;sys.stdout.write('%d%02d' % (sys.version_info[0],sys.version_info[1]))")
+PY_MAJOR_VER			:=$(shell $(CMD_PYTHON) -c "import sys;t='{v[0]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
+PY_VER				:=$(shell $(CMD_PYTHON) -c "import sys;sys.stdout.write('%d%02d' % (sys.version_info[0],sys.version_info[1]))")
+PYPI_REPO			?=testpypi
 
 all: clean build test
 
@@ -26,7 +27,7 @@ ifeq ($(shell expr $(PY_VER) \<= 306), 1)
 	@$(CMD_PIP) install --upgrade pip
 else
 	@$(CMD_PIP) install --upgrade pip
-	@$(CMD_PIP) install --upgrade build
+	@$(CMD_PIP) install --upgrade build setuptools wheel twine auditwheel
 endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
@@ -37,7 +38,7 @@ ifeq ($(shell expr $(PY_VER) \<= 306), 1)
 	@$(CMD_SUDO) $(CMD_PYTHON) setup.py2X_37under install
 else
 	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) -m build
-	@$(CMD_PYTHON) -m pip install dist/py-mdbm-0.1.1.tar.gz
+	@$(CMD_PYTHON) -m pip install dist/py-mdbm-*.tar.gz
 endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
@@ -47,7 +48,7 @@ ifeq ($(shell expr $(PY_VER) \<= 306), 1)
 	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) setup.py2X_37under build_ext --inplace
 else
 	@CFLAGS=$(CFLAGS) $(CMD_PYTHON) -m build
-	@$(CMD_PYTHON) -m pip install dist/py-mdbm-0.1.1.tar.gz
+	@$(CMD_PYTHON) -m pip install dist/py-mdbm-*.tar.gz
 endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
@@ -56,7 +57,11 @@ sdist::
 ifeq ($(shell expr $(PY_VER) \<= 306), 1)
 	@$(CMD_PYTHON) setup.py2X_37under sdist upload -r pypi
 else
-	@$(CMD_PYTHON) -m twine upload --repository pypi dist/* --verbose
+	@$(CMD_PYTHON) -m auditwheel repair dist/py_mdbm-*.whl
+	@$(CMD_RM) -rf dist/py_mdbm-*.whl
+	@$(CMD_MV) wheelhouse/py_mdbm-*.whl dist/
+	@$(CMD_RM) -rf wheelhouse
+	@$(CMD_PYTHON) -m twine upload --repository $(PYPI_REPO) dist/* --verbose
 endif
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
@@ -88,7 +93,7 @@ ifeq ($(shell expr $(PY_VER) \<= 306), 1)
 else
 	@$(CMD_RM) -rf dist
 endif
-	@rm -rf *.out *.bin *.exe *.o *.a *.so test build dist *core* *.swp *.bak .benchmarks .cache __py*__
+	@rm -rf *.out *.bin *.exe *.o *.a *.so test build dist *core* *.swp *.bak .benchmarks .cache __py*__ wheelhouse src/py_mdbm.egg-info
 	@$(CMD_ECHO) -e "\033[1;40;36mDone\033[01;m\x1b[0m"
 
 benchmark::
