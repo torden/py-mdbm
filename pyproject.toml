@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py-mdbm"
-version = "0.1.1"
+version = "0.1.1a1"
 authors = [
   { name="Torden", email="ioemen@gmail.com" },
 ]
