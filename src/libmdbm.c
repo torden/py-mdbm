@@ -950,7 +950,7 @@ PyObject *pymdbm_store(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
 
     //make a datum
     key.dptr = (char *) (pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
     val.dptr = (char *) (pval).buf;
     val.dsize = (size_t)(pval).len;
 
@@ -1005,7 +1005,7 @@ PyObject *pymdbm_store_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
 
     //make a datum
     key.dptr = (char *) (pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
     val.dptr = (char *) (pval).buf;
     val.dsize = (size_t)(pval).len;
 
@@ -1052,7 +1052,7 @@ PyObject *pymdbm_fetch(register MDBMObj *pmdbm_link, PyObject *args) {
 
     //make a datum
     key.dptr = (char *) (pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
 
     CAPTURE_START();
     val = mdbm_fetch(pmdbm_link->pmdbm, key);
@@ -1096,7 +1096,7 @@ PyObject *pymdbm_fetch_r(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
 
     //make a datum
     key.dptr = (char *)(pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_fetch_r(pmdbm_link->pmdbm, &key, &val, parg_iter);
@@ -1157,7 +1157,7 @@ PyObject *pymdbm_fetch_dup_r(register MDBMObj *pmdbm_link, PyObject *args, PyObj
 
     //make a datum
     key.dptr = (char *)(pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_fetch_dup_r(pmdbm_link->pmdbm, &key, &val, parg_iter);
@@ -1224,7 +1224,7 @@ PyObject *pymdbm_fetch_info(register MDBMObj *pmdbm_link, PyObject *args, PyObje
 
     //make a datum
     key.dptr = (char *)(pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
 
     //init.
     val.dptr = 0;
@@ -1372,7 +1372,7 @@ PyObject *pymdbm_get_page(register MDBMObj *pmdbm_link, PyObject *args) {
 
     //make a datum
     key.dptr = (char*)(pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_get_page(pmdbm_link->pmdbm, &key);
@@ -1401,7 +1401,7 @@ PyObject *pymdbm_delete(register MDBMObj *pmdbm_link, PyObject *args) {
 
     //make a datum
     key.dptr = (char*)(pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_delete(pmdbm_link->pmdbm, key);
@@ -2323,7 +2323,7 @@ PyObject *pymdbm_plock(register MDBMObj *pmdbm_link, PyObject *args, PyObject *k
 
     //make a datum
     key.dptr = (char*)(pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_plock(pmdbm_link->pmdbm, &key, flags);
@@ -2355,7 +2355,7 @@ PyObject *pymdbm_punlock(register MDBMObj *pmdbm_link, PyObject *args, PyObject 
 
     //make a datum
     key.dptr = (char*)(pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_punlock(pmdbm_link->pmdbm, &key, flags);
@@ -2386,7 +2386,7 @@ PyObject *pymdbm_tryplock(register MDBMObj *pmdbm_link, PyObject *args, PyObject
 
     //make a datum
     key.dptr = (char*)(pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_tryplock(pmdbm_link->pmdbm, &key, flags);
@@ -2418,7 +2418,7 @@ PyObject *pymdbm_lock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyObje
 
     //make a datum
     key.dptr = (char*)(pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_lock_smart(pmdbm_link->pmdbm, &key, flags);
@@ -2450,7 +2450,7 @@ PyObject *pymdbm_trylock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyO
 
     //make a datum
     key.dptr = (char*)(pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_trylock_smart(pmdbm_link->pmdbm, &key, flags);
@@ -2482,7 +2482,7 @@ PyObject *pymdbm_unlock_smart(register MDBMObj *pmdbm_link, PyObject *args, PyOb
 
     //make a datum
     key.dptr = (char*)(pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_unlock_smart(pmdbm_link->pmdbm, &key, flags);
@@ -2598,7 +2598,7 @@ PyObject *pymdbm_get_hash_value(register MDBMObj *unused, PyObject *args, PyObje
 
     //make a datum
     key.dptr = (char*)(pkey).buf;
-    key.dsize = (size_t)(pkey).len;
+    key.dsize = (int)(pkey).len;
 
     CAPTURE_START();
     rv = mdbm_get_hash_value(key, hashfunc, &hashval);

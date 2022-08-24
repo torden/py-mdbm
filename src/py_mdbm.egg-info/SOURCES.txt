@@ -15,7 +15,6 @@ example/iterall_r.py
 example/iterkey.py
 example/store.py
 example/store_dup_fetch_all_value.py3
-src/.libmdbm.c.swp
 src/libmdbm.c
 src/libmdbm.h
 src/py_mdbm.egg-info/PKG-INFO
