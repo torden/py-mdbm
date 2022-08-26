@@ -6,9 +6,9 @@
 - MDBM is a high-performance, memory-mapped hash database similar to the homegrown libhash.
 - The records stored in a mdbm database may have keys and values of arbitrary and variable lengths.
 
-|Build Stats|Py-mdbm ver.|License.|Y! mdbm ver.|
+|Build Stats|Py-mdbm ver.|License|Y! mdbm ver.|
 |:-:|:-:|:-:|:-:|
-|[![Build Status](https://github.com/torden/py-mdbm/actions/workflows/py-mdbm.yaml/badge.svg)](https://github.com/torden/py-mdbm/actions)|[![GitHub version](https://badge.fury.io/gh/torden%2Fpy-mdbm.svg)](https://badge.fury.io/gh/torden%2Fpy-mdbm)|[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)|[![GitHub version](https://badge.fury.io/gh/yahoo%2Fmdbm.svg)](https://badge.fury.io/gh/yahoo%2Fmdbm)|
+[![Build Status](https://github.com/torden/php-mdbm/actions/workflows/py-mdbm.yml/badge.svg)](https://github.com/torden/php-mdbm/actions)|[![GitHub version](https://img.shields.io/github/v/release/torden/py-mdbm)](https://github.com/torden/py-mdbm)| [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)|[![GitHub version](https://img.shields.io/github/v/release/yahoo/mdbm)](https://github.com/yahoo/mdbm)|
 
 ## Table of Contents
 
