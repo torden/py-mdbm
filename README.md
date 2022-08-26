@@ -8,7 +8,7 @@
 
 |Build Stats|Py-mdbm ver.|License|Y! mdbm ver.|
 |:-:|:-:|:-:|:-:|
-[![Build Status](https://github.com/torden/php-mdbm/actions/workflows/py-mdbm.yaml/badge.svg)](https://github.com/torden/php-mdbm/actions)|[![GitHub version](https://img.shields.io/github/v/release/torden/py-mdbm)](https://github.com/torden/py-mdbm)| [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)|[![GitHub version](https://img.shields.io/github/v/release/yahoo/mdbm)](https://github.com/yahoo/mdbm)|
+[![Build Status](https://github.com/torden/py-mdbm/actions/workflows/py-mdbm.yaml/badge.svg)](https://github.com/torden/php-mdbm/actions)|[![GitHub version](https://img.shields.io/github/v/release/torden/py-mdbm)](https://github.com/torden/py-mdbm)| [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)|[![GitHub version](https://img.shields.io/github/v/release/yahoo/mdbm)](https://github.com/yahoo/mdbm)|
 
 ## Table of Contents
 
