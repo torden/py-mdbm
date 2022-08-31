@@ -83,8 +83,7 @@ the following is list of support api on now.
 
 ### MDBM
 
-- Ubuntu : See the [pre-build packages](https://github.com/torden/go-mdbm/tree/master/pkg)
-- RHEL (CentOS) : See the [pre-build packages](https://github.com/torden/go-mdbm/tree/master/pkg)
+- [MDBM Packages](https://github.com/torden/mdbm)
 
 ### py-mdbm (use pip)
 
