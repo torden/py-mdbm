@@ -1,7 +1,7 @@
 name: py-mdbm
 on: ["push", "pull_request"]
 jobs:
-  build:
+  build_and_test_on_ubuntu18:
     runs-on: ubuntu-18.04
     strategy:
       fail-fast: false
