@@ -19,7 +19,7 @@ jobs:
         sudo apt update -qq -y
         DEBIAN_FRONTEND=noninteractive sudo apt-get install -y --no-install-recommends tzdata
         sudo apt install -qq -y openssl libcppunit-dev libreadline7 libreadline-dev valgrind libmodule-install-perl gdb libffi-dev git zlib1g-dev libssl-dev
-        curl -ss -L -O https://github.com/torden/go-mdbm/raw/master/pkg/ubuntu/mdbm-4.13.0-Bionic_Beaver.deb
+        curl -ss -L -O https://github.com/torden/mdbm/raw/main/ubuntu/mdbm-4.13.0-Bionic_Beaver.deb
         sudo dpkg -i mdbm-4.13.0-Bionic_Beaver.deb
         sudo dd of=/etc/ld.so.conf <<EOF
         include /etc/ld.so.conf.d/*.conf
@@ -47,7 +47,7 @@ jobs:
         sudo apt update -qq -y
         DEBIAN_FRONTEND=noninteractive sudo apt-get install -y --no-install-recommends tzdata
         sudo apt install -qq -y openssl libcppunit-dev libreadline7 libreadline-dev valgrind libmodule-install-perl gdb libffi-dev git zlib1g-dev libssl-dev
-        curl -ss -L -O https://github.com/torden/go-mdbm/raw/master/pkg/ubuntu/mdbm-4.13.0-Bionic_Beaver.deb
+        curl -ss -L -O https://github.com/torden/mdbm/raw/main/ubuntu/mdbm-4.13.0-Bionic_Beaver.deb
         sudo dpkg -i mdbm-4.13.0-Bionic_Beaver.deb
         sudo dd of=/etc/ld.so.conf <<EOF
         include /etc/ld.so.conf.d/*.conf
@@ -83,7 +83,7 @@ jobs:
         sudo apt update -qq -y
         DEBIAN_FRONTEND=noninteractive sudo apt-get install -y --no-install-recommends tzdata
         sudo apt install -qq -y openssl libcppunit-dev libreadline7 libreadline-dev valgrind libmodule-install-perl gdb php-dev git
-        curl -ss -L -O https://github.com/torden/go-mdbm/raw/master/pkg/ubuntu/mdbm-4.13.0-Bionic_Beaver.deb
+        curl -ss -L -O https://github.com/torden/mdbm/raw/main/ubuntu/mdbm-4.13.0-Bionic_Beaver.deb
         sudo dpkg -i mdbm-4.13.0-Bionic_Beaver.deb
         sudo dd of=/etc/ld.so.conf <<EOF
         include /etc/ld.so.conf.d/*.conf
