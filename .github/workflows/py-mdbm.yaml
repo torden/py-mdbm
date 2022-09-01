@@ -107,5 +107,6 @@ jobs:
         ulimit -c unlimited -S 
         ulimit -s unlimited
         find /usr -name "*memcheck*"
-        export VALGRIND_LIB="/usr/lib/x86_64-linux-gnu/valgrind/"
+        #export VALGRIND_LIB="/usr/lib/x86_64-linux-gnu/valgrind/"
+        export VALGRIND_LIB="/usr/lib/valgrind/"
         CMD_PYTHON=/tmp/python3/bin/python3 CMD_PIP=/tmp/python3/bin/pip3 make init build testleak
