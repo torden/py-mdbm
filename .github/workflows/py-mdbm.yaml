@@ -75,7 +75,7 @@ jobs:
         sudo CMD_PYTHON=/tmp/python2/bin/python make init build testleak
 
   memory_leak_python3:
-    runs-on: ubuntu-18.04
+    runs-on: 	ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
@@ -83,8 +83,8 @@ jobs:
         sudo apt update -qq -y
         DEBIAN_FRONTEND=noninteractive sudo apt-get install -y --no-install-recommends tzdata
         sudo apt install -qq -y openssl libcppunit-dev libreadline7 libreadline-dev libmodule-install-perl gdb php-dev git
-        curl -ss -L -O https://github.com/torden/mdbm/raw/main/ubuntu/mdbm-4.13.0-Bionic_Beaver.deb
-        sudo dpkg -i mdbm-4.13.0-Bionic_Beaver.deb
+        curl -ss -L -O https://github.com/torden/mdbm/raw/main/ubuntu/mdbm-4.13.0-Focal_Fossa.deb
+        sudo dpkg -i mdbm-4.13.0-Focal_Fossa.deb
 
 
         curl -ss -L -O https://sourceware.org/pub/valgrind/valgrind-3.19.0.tar.bz2
