@@ -82,7 +82,7 @@ jobs:
       run: |
         sudo apt update -qq -y
         DEBIAN_FRONTEND=noninteractive sudo apt-get install -y --no-install-recommends tzdata
-        sudo apt install -qq -y openssl libcppunit-dev libreadline7 libreadline-dev valgrind libmodule-install-perl gdb php-dev git
+        sudo apt install -qq -y openssl libcppunit-dev libreadline7 libreadline-dev libmodule-install-perl gdb php-dev git
         curl -ss -L -O https://github.com/torden/mdbm/raw/main/ubuntu/mdbm-4.13.0-Bionic_Beaver.deb
         sudo dpkg -i mdbm-4.13.0-Bionic_Beaver.deb
 
@@ -117,4 +117,4 @@ jobs:
         ulimit -c unlimited -S 
         ulimit -s unlimited
         export VALGRIND_LIB="/usr/local/valgrind/libexec/valgrind/"
-        CMD_PYTHON=/tmp/python3/bin/python3 CMD_PIP=/tmp/python3/bin/pip3 CMD_VALGRIND=/usr/local/valgrind/bin/valgrind make init build testleak
+        PATH=/usr/local/valgrind/bin/:$PATH CMD_PYTHON=/tmp/python3/bin/python3 CMD_PIP=/tmp/python3/bin/pip3 CMD_VALGRIND=/usr/local/valgrind/bin/valgrind make init build testleak
