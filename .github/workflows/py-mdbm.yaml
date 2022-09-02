@@ -91,22 +91,25 @@ jobs:
         /usr/lib/php
         EOF
         sudo ldconfig -v
-
-        mkdir tmp
-        cd tmp
-        curl -ss -O https://www.python.org/ftp/python/3.9.13/Python-3.9.13.tgz
-        tar xvzf Python-3.9.13.tgz
-        cd Python-3.9.13
-        ./configure --prefix=/tmp/python3 --without-pymalloc --with-pydebug --with-valgrind
-        make OPT=-g -j4
-        sudo make install
-        cd ../../
-
-    - name: Build_Test
-      run: |
-        ulimit -c unlimited -S 
-        ulimit -s unlimited
+        
         find /usr -name "*memcheck*"
-        #export VALGRIND_LIB="/usr/lib/x86_64-linux-gnu/valgrind/"
-        export VALGRIND_LIB="/usr/lib/valgrind/"
-        CMD_PYTHON=/tmp/python3/bin/python3 CMD_PIP=/tmp/python3/bin/pip3 make init build testleak
+        find /usr -name "*valgrind*"
+
+#        mkdir tmp
+#        cd tmp
+#        curl -ss -O https://www.python.org/ftp/python/3.9.13/Python-3.9.13.tgz
+#        tar xvzf Python-3.9.13.tgz
+#        cd Python-3.9.13
+#        ./configure --prefix=/tmp/python3 --without-pymalloc --with-pydebug --with-valgrind
+#        make OPT=-g -j4
+#        sudo make install
+#        cd ../../
+
+#    - name: Build_Test
+#      run: |
+#        ulimit -c unlimited -S 
+#        ulimit -s unlimited
+#        find /usr -name "*memcheck*"
+#        #export VALGRIND_LIB="/usr/lib/x86_64-linux-gnu/valgrind/"
+#        export VALGRIND_LIB="/usr/lib/valgrind/"
+#        CMD_PYTHON=/tmp/python3/bin/python3 CMD_PIP=/tmp/python3/bin/pip3 make init build testleak
