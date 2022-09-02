@@ -82,7 +82,7 @@ jobs:
       run: |
         sudo apt update -qq -y
         DEBIAN_FRONTEND=noninteractive sudo apt-get install -y --no-install-recommends tzdata
-        sudo apt install -qq -y openssl libcppunit-dev libreadline8 libreadline-dev libmodule-install-perl gdb php-dev git
+        sudo apt install -qq -y openssl libcppunit-dev libreadline8 libreadline-dev libmodule-install-perl libtinfo5 gdb git
         curl -ss -L -O https://github.com/torden/mdbm/raw/main/ubuntu/mdbm-4.13.0-Focal_Fossa.deb
         sudo dpkg -i mdbm-4.13.0-Focal_Fossa.deb
 
