@@ -75,29 +75,20 @@ jobs:
         sudo CMD_PYTHON=/tmp/python2/bin/python make init build testleak
 
   memory_leak_python3:
-    runs-on: 	ubuntu-22.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
       run: |
         sudo apt update -qq -y
         DEBIAN_FRONTEND=noninteractive sudo apt-get install -y --no-install-recommends tzdata
-        sudo apt install -qq -y openssl libcppunit-dev libreadline8 libreadline-dev libmodule-install-perl libtinfo5 gdb git
+        sudo apt install -qq -y openssl libcppunit-dev libreadline8 libreadline-dev libmodule-install-perl libtinfo5 valgrind gdb git
         curl -ss -L -O https://github.com/torden/mdbm/raw/main/ubuntu/mdbm-4.13.0-Focal_Fossa.deb
         sudo dpkg -i mdbm-4.13.0-Focal_Fossa.deb
-
-
-        curl -ss -L -O https://sourceware.org/pub/valgrind/valgrind-3.19.0.tar.bz2
-        tar -xf valgrind-3.19.0.tar.bz2
-        cd valgrind-3.19.0/
-        ./configure --prefix=/usr/local/valgrind --enable-only64bit --enable-inner --enable-ubsan
-        make -j4
-        sudo make install
-
+        
         sudo dd of=/etc/ld.so.conf <<EOF
         include /etc/ld.so.conf.d/*.conf
         /usr/local/mdbm/lib64
-        /usr/local/valgrind/lib/valgrind/
         EOF
 
         sudo ldconfig
@@ -107,7 +98,7 @@ jobs:
         curl -ss -O https://www.python.org/ftp/python/3.9.13/Python-3.9.13.tgz
         tar xvzf Python-3.9.13.tgz
         cd Python-3.9.13
-        CFLAGS=-I/usr/local/valgrind/include/ ./configure --prefix=/tmp/python3 --without-pymalloc --with-pydebug --with-valgrind=/usr/local/valgrind/
+        ./configure --prefix=/tmp/python3 --without-pymalloc --with-pydebug --with-valgrind
         make OPT=-g -j4
         sudo make install
         cd ../../
@@ -116,5 +107,5 @@ jobs:
       run: |
         ulimit -c unlimited -S 
         ulimit -s unlimited
-        export VALGRIND_LIB="/usr/local/valgrind/libexec/valgrind/"
-        PATH=/usr/local/valgrind/bin/:$PATH CMD_PYTHON=/tmp/python3/bin/python3 CMD_PIP=/tmp/python3/bin/pip3 CMD_VALGRIND=/usr/local/valgrind/bin/valgrind make init build testleak
+        #export VALGRIND_LIB="/usr/local/valgrind/libexec/valgrind/"
+        sudo CMD_PYTHON=/tmp/python3/bin/python3 CMD_PIP=/tmp/python3/bin/pip3 make init build testleak
