@@ -107,7 +107,7 @@ jobs:
         curl -ss -O https://www.python.org/ftp/python/3.9.13/Python-3.9.13.tgz
         tar xvzf Python-3.9.13.tgz
         cd Python-3.9.13
-        ./configure --prefix=/tmp/python3 --without-pymalloc --with-pydebug --with-valgrind=/usr/local/valgrind/
+        CFLAGS=-I/usr/local/valgrind/include/ ./configure --prefix=/tmp/python3 --without-pymalloc --with-pydebug --with-valgrind=/usr/local/valgrind/
         make OPT=-g -j4
         sudo make install
         cd ../../
